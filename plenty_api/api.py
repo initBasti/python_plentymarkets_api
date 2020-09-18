@@ -53,7 +53,8 @@ class PlentyApi():
 
 
     """
-    def __init__(self, base_url, use_keyring=True, data_format='json'):
+    def __init__(self, base_url, use_keyring=True, data_format='json',
+                 debug=False):
         """
             Initialize the object and directly authenticate to the API to get
             the bearer token.
@@ -68,6 +69,7 @@ class PlentyApi():
         """
         self.url = base_url
         self.keyring = plenty_api.keyring.CredentialManager()
+        self.debug = debug
         self.data_format = data_format.lower()
         if data_format.lower() not in ['json', 'dataframe']:
             self.data_format = 'json'
@@ -137,6 +139,8 @@ class PlentyApi():
 
         route = utils.get_route(domain=domain)
         endpoint = utils.build_endpoint(url=self.url, route=route, query=query)
+        if self.debug:
+            print(f"DEBUG: Endpoint: {endpoint}")
         if method.lower() == 'get':
             raw_response = requests.get(endpoint, headers=self.creds)
         if method.lower() == 'post':
