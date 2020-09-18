@@ -21,8 +21,7 @@ classifiers = [
     "Natural Language :: English",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.7.8",
+    "Programming Language :: Python :: 3.7"
 ]
 
 [tool.poetry.dependencies]
@@ -49,5 +48,6 @@ pytest-random = "*"
 # Tooling
 pyinstaller = "*"
 
+[build-system]
 requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"
