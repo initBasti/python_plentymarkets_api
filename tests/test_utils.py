@@ -119,16 +119,16 @@ def expected_query():
     expected = [
         '?createdAtFrom=2020-09-14T08%3A00%3A00%2B02%3A00' +
         '&createdAtTo=2020-09-14T10%3A00%3A30%2B02%3A00' +
-        '&with=documents',
+        '&with%5B%5D=documents',
         '?paidAtFrom=2020-09-14T08%3A00%3A00%2B02%3A00' +
         '&paidAtTo=2020-09-14T10%3A00%3A30%2B02%3A00' +
-        '&with=documents&with=comments',
+        '&with%5B%5D=documents&with%5B%5D=comments',
         '?updatedAtFrom=2020-09-14T08%3A00%3A00%2B02%3A00' +
         '&updatedAtTo=2020-09-14T10%3A00%3A30%2B02%3A00' +
-        '&with=shippingPackages',
+        '&with%5B%5D=shippingPackages',
         '?outgoingItemsBookedAtFrom=2020-09-14T08%3A00%3A00%2B02%3A00' +
         '&outgoingItemsBookedAtTo=2020-09-14T10%3A00%3A30%2B02%3A00' +
-        '&with=documents',
+        '&with%5B%5D=documents',
         '',
         '',
         '?createdAtFrom=2020-09-14T08%3A00%3A00%2B02%3A00' +
@@ -153,25 +153,26 @@ def test_build_endpoint():
     sample_data = [
         {'url': 'https://test.plentymarkets-cloud01.com',
          'route': '/rest/orders',
-         'query': "?orderType=1&with=documents"},
+         'query': "?orderType=1&with%5B%5D=documents"},
         {'url': 'https://test.plentymarkets-cloud01.com',
          'route': '/rest/orders',
          'query': ""},
         {'url': 'https://invalid.com',
          'route': '/rest/orders',
-         'query': "?orderType=1&with=documents"},
+         'query': "?orderType=1&with%5B%5D=documents"},
         {'url': 'https://test.plentymarkets-cloud01.com',
          'route': '/rest/invalid',
-         'query': "?orderType=1&with=documents"},
+         'query': "?orderType=1&with%5B%5D=documents"},
         {'url': '',
          'route': '/rest/orders',
-         'query': "?orderType=1&with=documents"},
+         'query': "?orderType=1&with%5B%5D=documents"},
         {'url': 'https://test.plentymarkets-cloud01.com',
          'route': '',
-         'query': "?orderType=1&with=documents"}
+         'query': "?orderType=1&with%5B%5D=documents"}
     ]
 
-    expected = ['https://test.plentymarkets-cloud01.com/rest/orders?orderType=1&with=documents',
+    expected = ['https://test.plentymarkets-cloud01.com/rest/orders' +
+                '?orderType=1&with%5B%5D=documents',
                 'https://test.plentymarkets-cloud01.com/rest/orders', '', '',
                 '', '']
     result = []
@@ -218,6 +219,7 @@ def test_build_date_request_query(sample_query_data, expected_query):
     for sample in sample_query_data:
         result.append(build_date_request_query(date_range=sample['date_range'],
                                                date_type=sample['date_type'],
-                                               additonal=sample['additional']))
+                                               additional=sample['additional'])
+                      )
 
     assert expected_query == result

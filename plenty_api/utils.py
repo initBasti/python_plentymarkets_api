@@ -70,7 +70,7 @@ def build_date_request_query(date_range, date_type, **kwargs):
             date_type [String]  -   Identifier for the type of date range
                                     {Creation, Payment, Change, Delivery}
             (Optional)
-            additional [List]   -   List of additonal query arguments
+            additional [List]   -   List of additional query arguments
                                     used with `&with=`
     """
     query = ''
@@ -83,9 +83,9 @@ def build_date_request_query(date_range, date_type, **kwargs):
     date_type = ORDER_DATE_ARGUMENTS[date_type.lower()]
     query += str(f"?{date_type}AtFrom={date_range['start']}")
     query += str(f"&{date_type}AtTo={date_range['end']}")
-    if 'additonal' in kwargs.keys():
-        for argument in kwargs['additonal']:
-            query += str(f"&with={argument}")
+    if 'additional' in kwargs.keys():
+        for argument in kwargs['additional']:
+            query += str(f"&with[]={argument}")
     return urllib.parse.quote(query, safe='?,&,=')
 
 
