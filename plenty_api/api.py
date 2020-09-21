@@ -20,6 +20,7 @@
 
 import requests
 import simplejson
+from typing import List
 
 import plenty_api.keyring
 import plenty_api.utils as utils
@@ -48,10 +49,16 @@ class PlentyApi():
                         2020-09-16T08:00+02:00  (CEST timezone)
 
                 ** Reference of query arguments
-                (https://developers.plentymarkets.com/rest-doc#/Order/get_rest_orders)
+                (developers.plentymarkets.com/rest-doc#/Order/get_rest_orders)
             ___
+            **plenty_api_get_vat_id_mappings**
+                Get a mapping of VAT configuration IDs to country IDs,
+                together with the TaxID for each country.
+                [subset]        -   limit the data to the given country IDs
 
-
+                Reference:
+                (developers.plentymarkets.com/rest-doc#/Accounting/get_rest_vat)
+            ___
     """
     def __init__(self, base_url, use_keyring=True, data_format='json',
                  debug=False):
@@ -168,7 +175,7 @@ class PlentyApi():
                                         as specified in the manual
 
             Return:
-                [Json/DataFrame] <= self.data_format
+                [JSON(Dict) / DataFrame] <= self.data_format
         """
         date_range = utils.build_date_range(start=start, end=end)
         if not date_range:
@@ -206,3 +213,46 @@ class PlentyApi():
 
         if self.data_format == 'dataframe':
             return utils.json_to_dataframe(json=orders)
+
+    def plenty_api_get_vat_id_mappings(self, subset: List[int] = None):
+        """
+            Get a mapping of all VAT configuration IDs to each country or
+            if specified for a subset of countries.
+            A VAT configuration is a combination of country, vat rates,
+            restrictions and date range.
+
+            Parameter:
+                subset [List]   -   restrict the mappings to only the given
+                                    IDs (integer)
+                You can locate those IDs in your Plenty- Markets system under:
+                Setup-> Orders-> Shipping-> Settings-> Countries of delivery
+
+            Return:
+                [JSON(Dict) / DataFrame] <= self.data_format
+        """
+        response = self.__plenty_api_request(method='get',
+                                             domain='vat',
+                                             query='')
+        if not response:
+            return None
+
+        vat_data = response['entries']
+
+        while not response['isLastPage']:
+            new_query = str("?page={response['page'] + 1}")
+            response = self.__plenty_api_request(method='get',
+                                                 domain='vat',
+                                                 query=new_query)
+            if not response:
+                print("ERROR: subsequent API calls failed.")
+                return None
+
+            vat_data += response['entries']
+
+        vat_table = utils.create_vat_mapping(data=vat_data, subset=subset)
+
+        if self.data_format == 'json':
+            return vat_table
+
+        if self.data_format == 'dateframe':
+            return utils.json_to_dataframe(json=vat_table)

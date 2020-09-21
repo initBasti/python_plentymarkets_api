@@ -2,7 +2,7 @@ import pytest
 
 from plenty_api.utils import (
     get_route, build_endpoint, check_date_range, parse_date, build_date_range,
-    get_utc_offset, build_date_request_query
+    get_utc_offset, build_date_request_query, create_vat_mapping
 )
 
 
@@ -115,6 +115,49 @@ def sample_query_data():
 
 
 @pytest.fixture
+def sample_vat_data():
+    samples = [
+        [
+            {
+                'id': 1,
+                'countryId': 1,
+                'taxIdNumber': 'DE12345678910',
+                'locationId': 1
+            },
+            {
+                'id': 2,
+                'countryId': 2,
+                'taxIdNumber': 'GB12345678910',
+                'locationId': 2
+            },
+            {
+                'id': 3,
+                'countryId': 2,
+                'taxIdNumber': 'GB12345678910',
+                'locationId': 2
+            },
+            {
+                'id': 4,
+                'countryId': 3,
+                'taxIdNumber': 'FR12345678910',
+                'locationId': 3
+            },
+            {
+                'id': 5,
+                'countryId': 1,
+                'taxIdNumber': 'DE12345678910',
+                'locationId': 1
+            }
+        ],
+        [
+            ''
+        ]
+    ]
+
+    return samples
+
+
+@pytest.fixture
 def expected_query():
     expected = [
         '?createdAtFrom=2020-09-14T08%3A00%3A00%2B02%3A00' +
@@ -223,3 +266,27 @@ def test_build_date_request_query(sample_query_data, expected_query):
                       )
 
     assert expected_query == result
+
+
+def test_create_vat_mapping(sample_vat_data: list) -> None:
+    subset = [[], [1, 2]]
+    expected = [
+        {
+            '1': {'config': ['1', '5'], 'TaxId': 'DE12345678910'},
+            '2': {'config': ['2', '3'], 'TaxId': 'GB12345678910'},
+            '3': {'config': ['4'], 'TaxId': 'FR12345678910'}
+        },
+        {
+            '1': {'config': ['1', '5'], 'TaxId': 'DE12345678910'},
+            '2': {'config': ['2', '3'], 'TaxId': 'GB12345678910'}
+        },
+        {},
+        {}
+    ]
+    result = []
+
+    for sample in sample_vat_data:
+        for sub in subset:
+            result.append(create_vat_mapping(data=sample, subset=sub))
+
+    assert expected == result

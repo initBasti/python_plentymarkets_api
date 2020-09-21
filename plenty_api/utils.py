@@ -33,6 +33,35 @@ ORDER_DATE_ARGUMENTS = {
     'delivery': 'outgoingItemsBooked'
 }
 
+
+def create_vat_mapping(data: list, subset: list = None) -> dict:
+    """
+        Create a mapping of each country ID to (Tax ID and configuration ID),
+        restrict the mapping to a subset if given.
+
+        Parameter:
+            data [List]         -   Response JSON data from /rest/vat request
+
+        Return:
+            [Dict]
+    """
+    mapping = {}
+    if not data or not isinstance(data[0], dict):
+        return {}
+    for entry in data:
+        country = str(entry['countryId'])
+        if country not in mapping.keys():
+            mapping[country] = {'config': [str(entry['id'])],
+                                'TaxId': entry['taxIdNumber']}
+        else:
+            mapping[country]['config'].append(str(entry['id']))
+
+    if subset:
+        return {x: y for x, y in mapping.items() if int(x) in subset}
+
+    return mapping
+
+
 def get_route(domain: str) -> str:
     """
         Use fixed mappings to determine the correct route for the endpoint.
