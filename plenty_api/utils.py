@@ -25,7 +25,7 @@ import urllib.parse
 import dateutil.parser
 import pandas
 
-VALID_ROUTES = ['/rest/orders', '/rest/items']
+VALID_ROUTES = ['/rest/orders', '/rest/items', '/rest/vat']
 ORDER_DATE_ARGUMENTS = {
     'creation': 'created',
     'change': 'updated',
@@ -33,8 +33,7 @@ ORDER_DATE_ARGUMENTS = {
     'delivery': 'outgoingItemsBooked'
 }
 
-
-def get_route(domain):
+def get_route(domain: str) -> str:
     """
         Use fixed mappings to determine the correct route for the endpoint.
 
@@ -49,10 +48,13 @@ def get_route(domain):
         return '/rest/orders'
     if re.match(r'item', domain.lower()):
         return '/rest/items'
+    if re.match(r'vat', domain.lower()):
+        return '/rest/vat'
     return ''
 
 
-def build_date_request_query(date_range, date_type, **kwargs):
+def build_date_request_query(date_range: dict, date_type: str,
+                             **kwargs) -> str:
     """
         Create a query for the API endpoint, with valid values from the
         PlentyMarkets API documentation:
@@ -89,7 +91,7 @@ def build_date_request_query(date_range, date_type, **kwargs):
     return urllib.parse.quote(query, safe='?,&,=')
 
 
-def build_endpoint(url, route, query):
+def build_endpoint(url: str, route: str, query: str) -> str:
     """
         Perform basic checks to ensure that a valid endpoint is used for the
         request. Query elements should be obtained by usind the
@@ -119,7 +121,7 @@ def json_to_dataframe(json):
     return pandas.json_normalize(json)
 
 
-def get_utc_offset():
+def get_utc_offset() -> str:
     """
         Determine the time difference between the current timezone of the user
         and UTC and return a string with the format "02:00"
@@ -133,7 +135,7 @@ def get_utc_offset():
     return str("{:0>2d}:00".format(offset_hours))
 
 
-def check_date_range(date_range):
+def check_date_range(date_range: dict) -> bool:
     """
         Check if the user specified date range is a valid range in the past.
 
@@ -166,7 +168,7 @@ def check_date_range(date_range):
     return True
 
 
-def parse_date(date):
+def parse_date(date: str) -> str:
     """
         Transform the given date into a W3C date format as required by
         the PlentyMarkets API.
@@ -188,7 +190,7 @@ def parse_date(date):
     return date_str + offset[:3] + ':' + offset[3:]
 
 
-def build_date_range(start, end):
+def build_date_range(start: str, end: str) -> dict:
     """
         Create a range of 2 dates in the W3C dateformat.
 
@@ -206,7 +208,7 @@ def build_date_range(start, end):
     return {'start': w3c_start, 'end': w3c_end}
 
 
-def get_temp_creds():
+def get_temp_creds() -> dict:
     """ Get the credentials for the API from the user and don't store
         them permanently """
     username = ''
@@ -218,7 +220,7 @@ def get_temp_creds():
     return {'username': username, 'password': password}
 
 
-def new_keyring_creds(kr):
+def new_keyring_creds(kr: object) -> dict:
     """
         Get the credentials for the API from the user and store them into
         a system wide keyring
@@ -232,7 +234,7 @@ def new_keyring_creds(kr):
     return kr.get_credentials()
 
 
-def update_keyring_creds(kr):
+def update_keyring_creds(kr: object) -> dict:
     """
         Delete the current content of the keyring and get new credentials
         for the API from the user, store them into the keyring
@@ -246,7 +248,7 @@ def update_keyring_creds(kr):
     return new_keyring_creds(kr=kr)
 
 
-def build_login_token(response_json):
+def build_login_token(response_json: dict) -> str:
     """ Fetch the bearer token from the API response object """
     token_type = response_json['token_type']
     access_token = response_json['access_token']
