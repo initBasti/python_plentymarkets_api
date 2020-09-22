@@ -39,6 +39,7 @@ class PlentyApi():
                 [end]           -   end date
                 [date_type]     -   {Creation, Change, Payment, Delivery}
                 [additional]    -   List of additional arguments **
+                [refine]        -   Dictionary of filter query names and values
 
                 Accepted date formats:
                     {Y-m-d | Y-m-dTH:M | Y-m-dTH:M:S+UTC-OFFSET}
@@ -162,7 +163,7 @@ class PlentyApi():
         return response
 
     def plenty_api_get_orders_by_date(self, start, end, date_type='create',
-                                      additional=''):
+                                      additional=None, refine=None):
         """
             Get all orders within a specific date range.
 
@@ -173,6 +174,13 @@ class PlentyApi():
                                         {Creation, Change, Payment, Delivery}
                 additional [List]   -   Additional arguments for the query
                                         as specified in the manual
+                refine [Dict]       -   Apply filters to the request
+                                        Example:
+                                        {'orderType': '1,4', referrerId: '1'}
+                                        Restrict the request to order types:
+                                            1 and 4 (sales orders and refund)
+                                        And restrict it to only orders from
+                                        the referrer with id '1'
 
             Return:
                 [JSON(Dict) / DataFrame] <= self.data_format
@@ -187,7 +195,8 @@ class PlentyApi():
 
         query = utils.build_date_request_query(date_range=date_range,
                                                date_type=date_type,
-                                               additional=additional)
+                                               additional=additional,
+                                               refine=refine)
 
         response = self.__plenty_api_request(method='get',
                                              domain='orders',

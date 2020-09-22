@@ -1,7 +1,7 @@
 [tool.poetry]
 
 name = "plenty_api"
-version = "0.0"
+version = "0.2"
 description = "Interface for the PlentyMarkets API."
 
 license = "GPLv3"

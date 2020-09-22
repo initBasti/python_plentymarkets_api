@@ -26,6 +26,15 @@ import dateutil.parser
 import pandas
 
 VALID_ROUTES = ['/rest/orders', '/rest/items', '/rest/vat']
+VALID_REFINE_KEYS = [
+    'orderType', 'contactId', 'referrerId', 'shippingProfileId',
+    'shippingServiceProviderId', 'ownerUserId', 'warehouseId',
+    'isEbayPlus', 'includedVariation', 'includedItem', 'orderIds',
+    'countryId', 'orderItemName', 'variationNumber', 'sender.contact',
+    'sender.warehouse', 'receiver.contact', 'receiver.warehouse',
+    'externalOrderId', 'clientId', 'paymentStatus', 'statusFrom',
+    'statusTo', 'hasDocument', 'hasDocumentNumber', 'parentOrderId'
+]
 ORDER_DATE_ARGUMENTS = {
     'creation': 'created',
     'change': 'updated',
@@ -117,6 +126,10 @@ def build_date_request_query(date_range: dict, date_type: str,
     if 'additional' in kwargs.keys():
         for argument in kwargs['additional']:
             query += str(f"&with[]={argument}")
+    if 'refine' in kwargs.keys():
+        for key, item in kwargs['refine'].items():
+            if key in VALID_REFINE_KEYS:
+                query += str(f"&{key}={item}")
     return urllib.parse.quote(query, safe='?,&,=')
 
 

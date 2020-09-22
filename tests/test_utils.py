@@ -86,30 +86,37 @@ def sample_query_data():
         {'date_range': {'start': '2020-09-14T08:00:00+02:00',
                         'end': '2020-09-14T10:00:30+02:00'},
          'date_type': 'Creation',
-         'additional': ['documents']},
+         'additional': ['documents'],
+         'refine': {}},
         {'date_range': {'start': '2020-09-14T08:00:00+02:00',
                         'end': '2020-09-14T10:00:30+02:00'},
          'date_type': 'Payment',
-         'additional': ['documents', 'comments']},
+         'additional': ['documents', 'comments'],
+         'refine': {'orderType': '1,4', 'referrerId': '1'}},
         {'date_range': {'start': '2020-09-14T08:00:00+02:00',
                         'end': '2020-09-14T10:00:30+02:00'},
          'date_type': 'Change',
-         'additional': ['shippingPackages']},
+         'additional': ['shippingPackages'],
+         'refine': {'countryId': '1'}},
         {'date_range': {'start': '2020-09-14T08:00:00+02:00',
                         'end': '2020-09-14T10:00:30+02:00'},
          'date_type': 'Delivery',
-         'additional': ['documents']},
+         'additional': ['documents'],
+         'refine': {}},
         {'date_range': {},
          'date_type': 'Creation',
-         'additional': ['documents']},
+         'additional': ['documents'],
+         'refine': {}},
         {'date_range': {'start': '2020-09-14T08:00:00+02:00',
                         'end': '2020-09-14T10:00:30+02:00'},
          'date_type': '',
-         'additional': ['documents']},
+         'additional': ['documents'],
+         'refine': {}},
         {'date_range': {'start': '2020-09-14T08:00:00+02:00',
                         'end': '2020-09-14T10:00:30+02:00'},
          'date_type': 'Creation',
-         'additional': ''}
+         'additional': '',
+         'refine': {}}
     ]
     return samples
 
@@ -165,10 +172,11 @@ def expected_query():
         '&with%5B%5D=documents',
         '?paidAtFrom=2020-09-14T08%3A00%3A00%2B02%3A00' +
         '&paidAtTo=2020-09-14T10%3A00%3A30%2B02%3A00' +
-        '&with%5B%5D=documents&with%5B%5D=comments',
+        '&with%5B%5D=documents&with%5B%5D=comments' +
+        '&orderType=1,4&referrerId=1',
         '?updatedAtFrom=2020-09-14T08%3A00%3A00%2B02%3A00' +
         '&updatedAtTo=2020-09-14T10%3A00%3A30%2B02%3A00' +
-        '&with%5B%5D=shippingPackages',
+        '&with%5B%5D=shippingPackages&countryId=1',
         '?outgoingItemsBookedAtFrom=2020-09-14T08%3A00%3A00%2B02%3A00' +
         '&outgoingItemsBookedAtTo=2020-09-14T10%3A00%3A30%2B02%3A00' +
         '&with%5B%5D=documents',
@@ -262,7 +270,8 @@ def test_build_date_request_query(sample_query_data, expected_query):
     for sample in sample_query_data:
         result.append(build_date_request_query(date_range=sample['date_range'],
                                                date_type=sample['date_type'],
-                                               additional=sample['additional'])
+                                               additional=sample['additional'],
+                                               refine=sample['refine'])
                       )
 
     assert expected_query == result

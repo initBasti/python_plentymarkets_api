@@ -29,6 +29,11 @@ The **additional** field expects a list of strings, valid values are:
 'orderItems.transactions', 'orderItems.serialNumbers', 'orderItems.variationBarcodes', 'orderItems.comments',
 'originOrderReferences' 'shippingPackages'
 
+The **refine** field can be used to filter the request results by some aspect of the orders.
+The field expects a dictionary, where the key has to match one of the following fields:
+orderType, contactId, referrerId, shippingProfileId, shippingServiceProviderId, ownerUserId, warehouseId, isEbayPlus, includedVariation, includedItem, orderIds, countryId, orderItemName, variationNumber, sender.contact, sender.warehouse, receiver.contact, receiver.warehouse, externalOrderId, clientId, paymentStatus, statusFrom, statusTo, hasDocument, hasDocumentNumber, parentOrderId
+For more information about the valid values: [Plenty Developer Doc](https://developers.plentymarakets.com/rest-doc#/Order/get_rest_orders)
+
 [*Output format*]:
 
 There are currently two supported output formats: 'json' and 'dataframe'.
