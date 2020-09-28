@@ -18,9 +18,9 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+from typing import List
 import requests
 import simplejson
-from typing import List
 
 import plenty_api.keyring
 import plenty_api.utils as utils
@@ -59,6 +59,14 @@ class PlentyApi():
 
                 Reference:
                 (developers.plentymarkets.com/rest-doc#/Accounting/get_rest_vat)
+            ___
+            **plenty_api_get_items**
+                Generic interface to item data from Plentymarkets with little
+                abstraction.
+                [refine]        -   Apply filters to the request
+                [additional]    -   Add additional elements to the response.
+                [last_update]   -   Date of the last update
+                [lang]          -   Provide the text within a specific language
             ___
     """
     def __init__(self, base_url, use_keyring=True, data_format='json',
@@ -103,7 +111,7 @@ class PlentyApi():
         response = requests.post(endpoint, params=creds)
         if response.status_code == 403:
             print("ERROR: Login to API failed, your account is locked")
-            print("unlock @ Setup->settings->accounts->go to user->unlock login")
+            print("unlock @ Setup->settings->accounts->{user}->unlock login")
         try:
             token = utils.build_login_token(response_json=response.json())
         except KeyError as err:
@@ -162,6 +170,42 @@ class PlentyApi():
 
         return response
 
+    def __repeat_get_request_for_all_records(self,
+                                             domain: str,
+                                             query: str) -> dict:
+        """
+            Collect data records from multiple API requests in a single JSON
+            data structure.
+
+            Parameter:
+                domain [str]        -   Orders/Items/..
+                query  [str]        -   Additional options for the request
+
+            Return:
+                [dict]              -   API response in as javascript object
+                                        notation
+        """
+        response = self.__plenty_api_request(method='get',
+                                             domain=domain,
+                                             query=query)
+        if not response:
+            return None
+
+        entries = response['entries']
+
+        while not response['isLastPage']:
+            new_query = query + str(f"&page={response['page'] + 1}")
+            response = self.__plenty_api_request(method='get',
+                                                 domain=domain,
+                                                 query=new_query)
+            if not response:
+                print(f"ERROR: subsequent {domain} API requests failed.")
+                return None
+
+            entries += response['entries']
+
+        return entries
+
     def plenty_api_get_orders_by_date(self, start, end, date_type='create',
                                       additional=None, refine=None):
         """
@@ -191,31 +235,20 @@ class PlentyApi():
 
         if not utils.check_date_range(date_range=date_range):
             print(f"ERROR: {date_range['start']} -> {date_range['end']}")
-            return None
+            return {}
 
-        query = utils.build_date_request_query(date_range=date_range,
-                                               date_type=date_type,
-                                               additional=additional,
-                                               refine=refine)
+        query_date = utils.build_query_date(date_range=date_range,
+                                            date_type=date_type)
+        query_attributes = utils.build_query_attributes(domain='orders',
+                                                        refine=refine,
+                                                        additional=additional)
+        query = utils.build_request_query(
+            elements=[query_date, query_attributes])
 
-        response = self.__plenty_api_request(method='get',
-                                             domain='orders',
-                                             query=query)
-        if not response:
-            return None
-
-        orders = response['entries']
-
-        while not response['isLastPage']:
-            new_query = query + str(f"&page={response['page'] + 1}")
-            response = self.__plenty_api_request(method='get',
-                                                 domain='orders',
-                                                 query=new_query)
-            if not response:
-                print("ERROR: subsequent API calls failed.")
-                return None
-
-            orders += response['entries']
+        orders = self.__repeat_get_request_for_all_records(domain='orders',
+                                                           query=query)
+        if not orders:
+            return {}
 
         if self.data_format == 'json':
             return orders
@@ -239,24 +272,8 @@ class PlentyApi():
             Return:
                 [JSON(Dict) / DataFrame] <= self.data_format
         """
-        response = self.__plenty_api_request(method='get',
-                                             domain='vat',
-                                             query='')
-        if not response:
-            return None
-
-        vat_data = response['entries']
-
-        while not response['isLastPage']:
-            new_query = str("?page={response['page'] + 1}")
-            response = self.__plenty_api_request(method='get',
-                                                 domain='vat',
-                                                 query=new_query)
-            if not response:
-                print("ERROR: subsequent API calls failed.")
-                return None
-
-            vat_data += response['entries']
+        vat_data = self.__repeat_get_request_for_all_records(domain='vat',
+                                                             query='')
 
         vat_table = utils.create_vat_mapping(data=vat_data, subset=subset)
 
@@ -265,3 +282,60 @@ class PlentyApi():
 
         if self.data_format == 'dateframe':
             return utils.json_to_dataframe(json=vat_table)
+
+    def plenty_api_get_items(self,
+                             refine: dict = None,
+                             additional: list = None,
+                             last_update: str = '',
+                             lang: str = ''):
+        """
+            Get product data from PlentyMarkets.
+
+            Parameter:
+                refine [dict]       -   Apply filters to the request
+                                        Example:
+                                        {'id': '12345', 'flagOne: '5'}
+                additional [list]   -   Add additional elements to the
+                                        data response.
+                                        Example:
+                                        ['variations', 'itemImages']
+                last_update [str]   -   Date of the last update given as one
+                                        of the following formats:
+                                            YYYY-MM-DDTHH:MM:SS+UTC-OFFSET
+                                            YYYY-MM-DDTHH:MM
+                                            YYYY-MM-DD
+                lang [str]          -   Provide the text within the data
+                                        in one of the following languages:
+
+                developers.plentymarkets.com/rest-doc/gettingstarted#countries
+
+            Return:
+                [JSON(Dict) / DataFrame] <= self.data_format
+        """
+        items = None
+        query_attributes = ''
+        change_date = ''
+        language = ''
+        query = ''
+
+        if refine or additional:
+            query_attributes = utils.build_query_attributes(
+                domain='items', refine=refine, additional=additional)
+        if last_update:
+            change_date = utils.date_to_timestamp(date=last_update)
+
+        if lang:
+            language = utils.get_language(lang=lang)
+
+        query = utils.build_request_query(elements=[query_attributes,
+                                                    change_date,
+                                                    language])
+
+        items = self.__repeat_get_request_for_all_records(domain='items',
+                                                          query=query)
+
+        if self.data_format == 'json':
+            return items
+
+        if self.data_format == 'dataframe':
+            return utils.json_to_dataframe(json=items)

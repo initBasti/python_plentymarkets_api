@@ -2,12 +2,13 @@ import pytest
 
 from plenty_api.utils import (
     get_route, build_endpoint, check_date_range, parse_date, build_date_range,
-    get_utc_offset, build_date_request_query, create_vat_mapping
+    get_utc_offset, build_query_date, create_vat_mapping, date_to_timestamp,
+    get_language
 )
 
 
 @pytest.fixture
-def sample_date_ranges():
+def sample_date_ranges() -> list:
     samples = [
         {'start': '2020-09-14T08:00:00+02:00',  # Normal date => CORRECT
          'end': '2020-09-15T08:00:00+02:00'},
@@ -22,7 +23,7 @@ def sample_date_ranges():
 
 
 @pytest.fixture
-def sample_input_date():
+def sample_input_date() -> list:
     samples = [
         '2020-09-14',
         '14-09-2020',
@@ -36,7 +37,7 @@ def sample_input_date():
 
 
 @pytest.fixture
-def expected_date():
+def expected_date() -> list:
     expected = [
         str(f'2020-09-14T00:00:00+{get_utc_offset()}'),
         str(f'2020-09-14T00:00:00+{get_utc_offset()}'),
@@ -50,7 +51,7 @@ def expected_date():
 
 
 @pytest.fixture
-def sample_date_range_input():
+def sample_date_range_input() -> list:
     samples = [
         {'start': '2020-09-14', 'end': '2020-09-15'},
         {'start': '2020-09-14', 'end': '2020-09-13'},
@@ -64,7 +65,7 @@ def sample_date_range_input():
 
 
 @pytest.fixture
-def expected_date_range():
+def expected_date_range() -> list:
     expected = [
         {'start': str(f'2020-09-14T00:00:00+{get_utc_offset()}'),
          'end': str(f'2020-09-15T00:00:00+{get_utc_offset()}')},
@@ -81,48 +82,34 @@ def expected_date_range():
 
 
 @pytest.fixture
-def sample_query_data():
+def sample_query_data() -> list:
     samples = [
         {'date_range': {'start': '2020-09-14T08:00:00+02:00',
                         'end': '2020-09-14T10:00:30+02:00'},
-         'date_type': 'Creation',
-         'additional': ['documents'],
-         'refine': {}},
+         'date_type': 'Creation'},
         {'date_range': {'start': '2020-09-14T08:00:00+02:00',
                         'end': '2020-09-14T10:00:30+02:00'},
-         'date_type': 'Payment',
-         'additional': ['documents', 'comments'],
-         'refine': {'orderType': '1,4', 'referrerId': '1'}},
+         'date_type': 'Payment'},
         {'date_range': {'start': '2020-09-14T08:00:00+02:00',
                         'end': '2020-09-14T10:00:30+02:00'},
-         'date_type': 'Change',
-         'additional': ['shippingPackages'],
-         'refine': {'countryId': '1'}},
+         'date_type': 'Change'},
         {'date_range': {'start': '2020-09-14T08:00:00+02:00',
                         'end': '2020-09-14T10:00:30+02:00'},
-         'date_type': 'Delivery',
-         'additional': ['documents'],
-         'refine': {}},
+         'date_type': 'Delivery'},
         {'date_range': {},
-         'date_type': 'Creation',
-         'additional': ['documents'],
-         'refine': {}},
+         'date_type': 'Creation'},
         {'date_range': {'start': '2020-09-14T08:00:00+02:00',
                         'end': '2020-09-14T10:00:30+02:00'},
-         'date_type': '',
-         'additional': ['documents'],
-         'refine': {}},
+         'date_type': ''},
         {'date_range': {'start': '2020-09-14T08:00:00+02:00',
                         'end': '2020-09-14T10:00:30+02:00'},
-         'date_type': 'Creation',
-         'additional': '',
-         'refine': {}}
+         'date_type': 'Creation'}
     ]
     return samples
 
 
 @pytest.fixture
-def sample_vat_data():
+def sample_vat_data() -> list:
     samples = [
         [
             {
@@ -165,30 +152,36 @@ def sample_vat_data():
 
 
 @pytest.fixture
-def expected_query():
+def expected_date_query() -> list:
     expected = [
-        '?createdAtFrom=2020-09-14T08%3A00%3A00%2B02%3A00' +
-        '&createdAtTo=2020-09-14T10%3A00%3A30%2B02%3A00' +
-        '&with%5B%5D=documents',
-        '?paidAtFrom=2020-09-14T08%3A00%3A00%2B02%3A00' +
-        '&paidAtTo=2020-09-14T10%3A00%3A30%2B02%3A00' +
-        '&with%5B%5D=documents&with%5B%5D=comments' +
-        '&orderType=1,4&referrerId=1',
-        '?updatedAtFrom=2020-09-14T08%3A00%3A00%2B02%3A00' +
-        '&updatedAtTo=2020-09-14T10%3A00%3A30%2B02%3A00' +
-        '&with%5B%5D=shippingPackages&countryId=1',
-        '?outgoingItemsBookedAtFrom=2020-09-14T08%3A00%3A00%2B02%3A00' +
-        '&outgoingItemsBookedAtTo=2020-09-14T10%3A00%3A30%2B02%3A00' +
-        '&with%5B%5D=documents',
+        '&createdAtFrom=2020-09-14T08%3A00%3A00%2B02%3A00' +
+        '&createdAtTo=2020-09-14T10%3A00%3A30%2B02%3A00',
+        '&paidAtFrom=2020-09-14T08%3A00%3A00%2B02%3A00' +
+        '&paidAtTo=2020-09-14T10%3A00%3A30%2B02%3A00',
+        '&updatedAtFrom=2020-09-14T08%3A00%3A00%2B02%3A00' +
+        '&updatedAtTo=2020-09-14T10%3A00%3A30%2B02%3A00',
+        '&outgoingItemsBookedAtFrom=2020-09-14T08%3A00%3A00%2B02%3A00' +
+        '&outgoingItemsBookedAtTo=2020-09-14T10%3A00%3A30%2B02%3A00',
         '',
         '',
-        '?createdAtFrom=2020-09-14T08%3A00%3A00%2B02%3A00' +
+        '&createdAtFrom=2020-09-14T08%3A00%3A00%2B02%3A00' +
         '&createdAtTo=2020-09-14T10%3A00%3A30%2B02%3A00'
     ]
     return expected
 
 
-def test_get_route():
+@pytest.fixture
+def expected_query_attributes() -> list:
+    expected = [
+        '&with%5B%5D=documents',
+        '&with%5B%5D=documents&with%5B%5D=comments&orderType=1,4&referrerId=1',
+        '&with%5B%5D=shippingPackages&countryId=1',
+        '&with%5B%5D=documents'
+    ]
+    return expected
+
+
+def test_get_route() -> None:
     sample_data = ['order', 'item', 'ITEMS', 'oRdErS', 'wrong', '']
     result = []
     expected = ['/rest/orders', '/rest/items', '/rest/items', '/rest/orders',
@@ -200,7 +193,7 @@ def test_get_route():
     assert expected == result
 
 
-def test_build_endpoint():
+def test_build_endpoint() -> None:
     sample_data = [
         {'url': 'https://test.plentymarkets-cloud01.com',
          'route': '/rest/orders',
@@ -236,7 +229,7 @@ def test_build_endpoint():
     assert expected == result
 
 
-def test_check_date_range(sample_date_ranges):
+def test_check_date_range(sample_date_ranges: list) -> None:
     expected = [True, False, True, False]
     result = []
 
@@ -246,7 +239,8 @@ def test_check_date_range(sample_date_ranges):
     assert expected == result
 
 
-def test_parse_date(sample_input_date, expected_date):
+def test_parse_date(sample_input_date: list,
+                    expected_date: list) -> None:
     result = []
 
     for sample in sample_input_date:
@@ -255,7 +249,8 @@ def test_parse_date(sample_input_date, expected_date):
     assert expected_date == result
 
 
-def test_build_date_range(sample_date_range_input, expected_date_range):
+def test_build_date_range(sample_date_range_input: list,
+                          expected_date_range: list) -> None:
     result = []
     for sample in sample_date_range_input:
         result.append(build_date_range(start=sample['start'],
@@ -264,17 +259,15 @@ def test_build_date_range(sample_date_range_input, expected_date_range):
     assert expected_date_range == result
 
 
-def test_build_date_request_query(sample_query_data, expected_query):
+def test_build_query_date(sample_query_data: list,
+                          expected_date_query: list) -> None:
     result = []
 
     for sample in sample_query_data:
-        result.append(build_date_request_query(date_range=sample['date_range'],
-                                               date_type=sample['date_type'],
-                                               additional=sample['additional'],
-                                               refine=sample['refine'])
-                      )
+        result.append(build_query_date(date_range=sample['date_range'],
+                                       date_type=sample['date_type']))
 
-    assert expected_query == result
+    assert expected_date_query == result
 
 
 def test_create_vat_mapping(sample_vat_data: list) -> None:
@@ -297,5 +290,30 @@ def test_create_vat_mapping(sample_vat_data: list) -> None:
     for sample in sample_vat_data:
         for sub in subset:
             result.append(create_vat_mapping(data=sample, subset=sub))
+
+    assert expected == result
+
+
+def test_date_to_timestamp() -> None:
+    samples = ['2020-08-01', '2020-08-01T15:00', '2020-08-01T15:00:00+02:00',
+               '01-08-2020', '2020.08.01', 'abc', '']
+    loc = int(get_utc_offset()[0:3].strip(':'))*3600
+    expected = [1596232800, 1596286800, 1596290400,
+                -1, 1596232800, -1, -1]
+    result = []
+
+    for sample in samples:
+        result.append(date_to_timestamp(date=sample))
+
+    assert expected == result
+
+
+def test_get_language() -> None:
+    samples = ['de', 'GB', 'fR', 'Greece', '12', '']
+    expected = [1, 12, 10, -1, -1, -1]
+    result = []
+
+    for sample in samples:
+        result.append(get_language(lang=sample))
 
     assert expected == result
