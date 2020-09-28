@@ -1,9 +1,11 @@
-import keyring
 import getpass
+import keyring
+
 
 class CredentialManager():
     def __init__(self):
         pass
+
     def set_credentials(self):
         username = input('Username: ')
         keyring.set_password('plenty-identity', 'user', username)
@@ -14,7 +16,7 @@ class CredentialManager():
         password = keyring.get_password('plenty-identity', 'password')
         if not user or not password:
             return {}
-        return {'username':user, 'password':password}
+        return {'username': user, 'password': password}
 
     def delete_credentials(self):
         keyring.delete_password('plenty-identity', 'user')
