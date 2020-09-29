@@ -32,6 +32,7 @@ class PlentyApi():
         over the RestAPI.
 
         Public methods:
+            GET REQUESTS
             **plenty_api_get_orders_by_date**
                 Get all orders of all types within a specified range of two
                 dates.
@@ -67,6 +68,17 @@ class PlentyApi():
                 [additional]    -   Add additional elements to the response.
                 [last_update]   -   Date of the last update
                 [lang]          -   Provide the text within a specific language
+            ___
+
+            POST REQUESTS
+            **plenty_api_set_image_availability**
+                Update the availability of an image for a marketplace, client
+                or listing on PlentyMarkets.
+                [item_id]       -   item ID, where the image is found
+                [image_id]      -   ID of the specific image
+                [target]        -   ID of the target
+                                    Example:
+                                        {'marketplace': 102}
             ___
     """
     def __init__(self, base_url, use_keyring=True, data_format='json',
@@ -364,7 +376,7 @@ class PlentyApi():
                 image_id [str]      -   Image ID from PlentyMarkets
                 target [dict]       -   ID of the specific:
                                             * marketplace
-                                            * mandant
+                                            * mandant (client)
                                             * listing
                                         together with a specifier
 
