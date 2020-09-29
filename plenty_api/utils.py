@@ -224,13 +224,15 @@ def build_query_attributes(domain: str,
     query = ''
     if refine is None and additional is None:
         return ''
-    for key, item in refine.items():
-        if key in VALID_ORDER_REFINE_KEYS and domain.lower() == 'orders':
-            query += str(f"&{key}={item}")
-        elif key in VALID_ITEM_REFINE_KEYS and domain.lower() == 'items':
-            query += str(f"&{key}={item}")
-    for argument in additional:
-        query += str(f"&with={argument}")
+    if refine is not None:
+        for key, item in refine.items():
+            if key in VALID_ORDER_REFINE_KEYS and domain.lower() == 'orders':
+                query += str(f"&{key}={item}")
+            elif key in VALID_ITEM_REFINE_KEYS and domain.lower() == 'items':
+                query += str(f"&{key}={item}")
+    if additional is not None:
+        for argument in additional:
+            query += str(f"&with={argument}")
 
     return urllib.parse.quote(query, safe='?,&,=')
 
