@@ -297,7 +297,6 @@ def test_create_vat_mapping(sample_vat_data: list) -> None:
 def test_date_to_timestamp() -> None:
     samples = ['2020-08-01', '2020-08-01T15:00', '2020-08-01T15:00:00+02:00',
                '01-08-2020', '2020.08.01', 'abc', '']
-    loc = int(get_utc_offset()[0:3].strip(':'))*3600
     expected = [1596232800, 1596286800, 1596290400,
                 -1, 1596232800, -1, -1]
     result = []
