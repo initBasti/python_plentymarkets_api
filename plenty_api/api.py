@@ -76,12 +76,12 @@ class PlentyApi():
             the bearer token.
 
             Parameter:
-                base_url [String]       -   Base URL to the PlentyMarkets API
+                base_url [str]      -  Base URL to the PlentyMarkets API
                                             Endpoint, format:
                                     [https://{name}.plentymarkets-cloud01.com]
-                use_keyring [Bool]      -   Save the credentials temporarily or
-                                            permanently
-                data_format [String]    -   Output format of the response
+                use_keyring [bool]  -  Save the credentials temporarily or
+                                        permanently
+                data_format [str]   -  Output format of the response
         """
         self.url = base_url
         self.keyring = plenty_api.keyring.CredentialManager()
@@ -97,7 +97,8 @@ class PlentyApi():
             Get the bearer token from the PlentyMarkets API.
 
             Parameter:
-                persistent [Bool] : Permanent or temporary credential storage
+                persistent [bool]   -   Permanent or temporary credential
+                                        storage
         """
 
         token = ''
@@ -138,15 +139,20 @@ class PlentyApi():
         self.creds['Authorization'] = token
         return True
 
-    def __plenty_api_request(self, method, domain, query=''):
+    def __plenty_api_request(self,
+                             method: str,
+                             domain: str,
+                             query: str = '',
+                             data: dict = None) -> dict:
         """
             Make a request to the PlentyMarkets API.
 
             Parameter:
-                method [String]     -   GET/POST
-                domain [String]     -   Orders/Items...
+                method [str]        -   GET/POST
+                domain [str]        -   Orders/Items...
             (Optional)
-                query [String]      -   Additional options for the request
+                query [str]         -   Additional options for the request
+                data  [dict]        -   Data body for post requests
         """
         route = ''
         endpoint = ''
@@ -160,7 +166,8 @@ class PlentyApi():
         if method.lower() == 'get':
             raw_response = requests.get(endpoint, headers=self.creds)
         if method.lower() == 'post':
-            raw_response = requests.post(endpoint, headers=self.creds)
+            raw_response = requests.post(endpoint, headers=self.creds,
+                                         data=data)
 
         try:
             response = raw_response.json()
@@ -169,6 +176,8 @@ class PlentyApi():
             return None
 
         return response
+
+# GET REQUESTS
 
     def __repeat_get_request_for_all_records(self,
                                              domain: str,
@@ -212,13 +221,13 @@ class PlentyApi():
             Get all orders within a specific date range.
 
             Parameter:
-                start [String]      -   Start date
-                end   [String]      -   End date
-                date_type [String]  -   Specify the type of date
+                start [str]         -   Start date
+                end   [str]         -   End date
+                date_type [str]     -   Specify the type of date
                                         {Creation, Change, Payment, Delivery}
-                additional [List]   -   Additional arguments for the query
+                additional [list]   -   Additional arguments for the query
                                         as specified in the manual
-                refine [Dict]       -   Apply filters to the request
+                refine [dict]       -   Apply filters to the request
                                         Example:
                                         {'orderType': '1,4', referrerId: '1'}
                                         Restrict the request to order types:
@@ -264,8 +273,8 @@ class PlentyApi():
             restrictions and date range.
 
             Parameter:
-                subset [List]   -   restrict the mappings to only the given
-                                    IDs (integer)
+                subset [list]       -   restrict the mappings to only
+                                        the given IDs (integer)
                 You can locate those IDs in your Plenty- Markets system under:
                 Setup-> Orders-> Shipping-> Settings-> Countries of delivery
 
@@ -339,3 +348,62 @@ class PlentyApi():
 
         if self.data_format == 'dataframe':
             return utils.json_to_dataframe(json=items)
+
+# POST REQUESTS
+
+    def plenty_api_set_image_availability(self,
+                                          item_id: str,
+                                          image_id: str,
+                                          target: dict) -> bool:
+        """
+            Create a marketplace availability for a specific item/image
+            combiniation.
+
+            Parameter:
+                item_id [str]       -   Item ID from PlentyMarkets
+                image_id [str]      -   Image ID from PlentyMarkets
+                target [dict]       -   ID of the specific:
+                                            * marketplace
+                                            * mandant
+                                            * listing
+                                        together with a specifier
+
+
+
+            Marketplace IDs: (@setup->orders->order origins)
+            Mandant IDs: (@setup->client->{client}->settings[Plenty ID])
+
+            Return:
+                [bool]
+        """
+        target_name = ''
+        target_id = ''
+        for element in target:
+            if element in ['marketplace', 'mandant', 'listing']:
+                if target[element]:
+                    target_name = element
+                    target_id = target[element]
+            else:
+                print(f"WARNING: {element} is not a valid target "
+                      "for the image availability POST request.")
+
+        if not target_name or not target_id:
+            print("ERROR: target for availability configuration required.")
+            return False
+
+        data = {
+            "imageId": image_id,
+            "type": target_name,
+            "value": str(target_id)
+        }
+        query = str(f"/{item_id}/images/{image_id}/availabilities")
+
+        response = self.__plenty_api_request(method="post",
+                                             domain="items",
+                                             query=query,
+                                             data=data)
+
+        if not response:
+            return False
+
+        return True
