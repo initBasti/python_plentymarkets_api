@@ -1,4 +1,5 @@
 import pytest
+import requests
 
 from plenty_api.utils import (
     get_route, build_endpoint, check_date_range, parse_date, build_date_range,
@@ -154,17 +155,17 @@ def sample_vat_data() -> list:
 @pytest.fixture
 def expected_date_query() -> list:
     expected = [
-        '&createdAtFrom=2020-09-14T08%3A00%3A00%2B02%3A00' +
+        'createdAtFrom=2020-09-14T08%3A00%3A00%2B02%3A00' +
         '&createdAtTo=2020-09-14T10%3A00%3A30%2B02%3A00',
-        '&paidAtFrom=2020-09-14T08%3A00%3A00%2B02%3A00' +
+        'paidAtFrom=2020-09-14T08%3A00%3A00%2B02%3A00' +
         '&paidAtTo=2020-09-14T10%3A00%3A30%2B02%3A00',
-        '&updatedAtFrom=2020-09-14T08%3A00%3A00%2B02%3A00' +
+        'updatedAtFrom=2020-09-14T08%3A00%3A00%2B02%3A00' +
         '&updatedAtTo=2020-09-14T10%3A00%3A30%2B02%3A00',
-        '&outgoingItemsBookedAtFrom=2020-09-14T08%3A00%3A00%2B02%3A00' +
+        'outgoingItemsBookedAtFrom=2020-09-14T08%3A00%3A00%2B02%3A00' +
         '&outgoingItemsBookedAtTo=2020-09-14T10%3A00%3A30%2B02%3A00',
         '',
         '',
-        '&createdAtFrom=2020-09-14T08%3A00%3A00%2B02%3A00' +
+        'createdAtFrom=2020-09-14T08%3A00%3A00%2B02%3A00' +
         '&createdAtTo=2020-09-14T10%3A00%3A30%2B02%3A00'
     ]
     return expected
@@ -196,35 +197,27 @@ def test_get_route() -> None:
 def test_build_endpoint() -> None:
     sample_data = [
         {'url': 'https://test.plentymarkets-cloud01.com',
-         'route': '/rest/orders',
-         'query': "?orderType=1&with%5B%5D=documents"},
+         'route': '/rest/orders'},
         {'url': 'https://test.plentymarkets-cloud01.com',
-         'route': '/rest/orders',
-         'query': ""},
+         'route': '/rest/orders'},
         {'url': 'https://invalid.com',
-         'route': '/rest/orders',
-         'query': "?orderType=1&with%5B%5D=documents"},
+         'route': '/rest/orders'},
         {'url': 'https://test.plentymarkets-cloud01.com',
-         'route': '/rest/invalid',
-         'query': "?orderType=1&with%5B%5D=documents"},
+         'route': '/rest/invalid'},
         {'url': '',
-         'route': '/rest/orders',
-         'query': "?orderType=1&with%5B%5D=documents"},
+         'route': '/rest/orders'},
         {'url': 'https://test.plentymarkets-cloud01.com',
-         'route': '',
-         'query': "?orderType=1&with%5B%5D=documents"}
+         'route': ''}
     ]
 
-    expected = ['https://test.plentymarkets-cloud01.com/rest/orders' +
-                '?orderType=1&with%5B%5D=documents',
+    expected = ['https://test.plentymarkets-cloud01.com/rest/orders',
                 'https://test.plentymarkets-cloud01.com/rest/orders', '', '',
                 '', '']
     result = []
 
     for sample in sample_data:
         result.append(build_endpoint(url=sample['url'],
-                                     route=sample['route'],
-                                     query=sample['query']))
+                                     route=sample['route']))
 
     assert expected == result
 
@@ -259,14 +252,18 @@ def test_build_date_range(sample_date_range_input: list,
     assert expected_date_range == result
 
 
-def test_build_query_date(sample_query_data: list,
-                          expected_date_query: list) -> None:
+def test_F_date(sample_query_data: list,
+                expected_date_query: list) -> None:
     result = []
 
     for sample in sample_query_data:
-        result.append(build_query_date(date_range=sample['date_range'],
-                                       date_type=sample['date_type']))
-
+        query = build_query_date(date_range=sample['date_range'],
+                                 date_type=sample['date_type'])
+        req = requests.Request('POST', 'https://httpbin.org/get', params=query)
+        prepped = req.prepare()
+        result += (prepped.url.split('?')[1:])
+        if not prepped.url.split('?')[1:]:
+            result.append('')
     assert expected_date_query == result
 
 
