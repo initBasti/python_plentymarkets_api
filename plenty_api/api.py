@@ -25,6 +25,19 @@ import simplejson
 import plenty_api.keyring
 import plenty_api.utils as utils
 
+VALID_ORDER_REFINE_KEYS = {
+    'orderType', 'contactId', 'referrerId', 'shippingProfileId',
+    'shippingServiceProviderId', 'ownerUserId', 'warehouseId',
+    'isEbayPlus', 'includedVariation', 'includedItem', 'orderIds',
+    'countryId', 'orderItemName', 'variationNumber', 'sender.contact',
+    'sender.warehouse', 'receiver.contact', 'receiver.warehouse',
+    'externalOrderId', 'clientId', 'paymentStatus', 'statusFrom',
+    'statusTo', 'hasDocument', 'hasDocumentNumber', 'parentOrderId'
+}
+VALID_ITEM_REFINE_KEYS = {
+    'name', 'manfacturerId', 'id', 'flagOne', 'flagTwo'
+}
+
 
 class PlentyApi():
     """
@@ -252,6 +265,7 @@ class PlentyApi():
             Return:
                 [JSON(Dict) / DataFrame] <= self.data_format
         """
+
         date_range = utils.build_date_range(start=start, end=end)
         if not date_range:
             print(f"ERROR: Invalid range {start} -> {end}")
@@ -263,6 +277,8 @@ class PlentyApi():
         query = utils.build_query_date(date_range=date_range,
                                        date_type=date_type)
         if refine:
+            invalid_keys = set(refine.keys()).difference(VALID_ORDER_REFINE_KEYS)
+            print(f"Invalid keys for the refine argument: {invalid_keys}")
             query.update(refine)
         if additional:
             query.update({'with': additional})
@@ -338,6 +354,8 @@ class PlentyApi():
         query = {}
 
         if refine:
+            invalid_keys = set(refine.keys()).difference(VALID_ITEM_REFINE_KEYS)
+            print(f"Invalid keys for the refine argument: {invalid_keys}")
             query.update(refine)
 
         if additional:
