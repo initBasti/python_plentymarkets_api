@@ -19,7 +19,7 @@ $ pip install python_plenty_api
 or add it to your [Poetry](https://poetry.eustace.io/) project:
 
 ```text
-$ poetry add python_plenty_api
+$ poetry add plenty_api
 ```
 
 # Usage
