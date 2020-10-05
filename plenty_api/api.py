@@ -189,6 +189,7 @@ class PlentyApi():
         endpoint = utils.build_endpoint(url=self.url, route=route, path=path)
         if self.debug:
             print(f"DEBUG: Endpoint: {endpoint}")
+            print(f"DEBUG: Params: {query}")
         if method.lower() == 'get':
             raw_response = requests.get(endpoint, headers=self.creds,
                                         params=query)
@@ -278,10 +279,12 @@ class PlentyApi():
                                        date_type=date_type)
         if refine:
             invalid_keys = set(refine.keys()).difference(VALID_ORDER_REFINE_KEYS)
-            print(f"Invalid keys for the refine argument removed: {invalid_keys}")
-            for invalid_key in invalid_keys:
-                refine.pop(invalid_key, None)
+            if invalid_keys:
+                print(f"Invalid keys for the refine argument removed: {invalid_keys}")
+                for invalid_key in invalid_keys:
+                    refine.pop(invalid_key, None)
             query.update(refine)
+
         if additional:
             query.update({'with': additional})
 
@@ -357,9 +360,10 @@ class PlentyApi():
 
         if refine:
             invalid_keys = set(refine.keys()).difference(VALID_ITEM_REFINE_KEYS)
-            print(f"Invalid keys for the refine argument removed: {invalid_keys}")
-            for invalid_key in invalid_keys:
-                refine.pop(invalid_key, None)
+            if invalid_keys:
+                print(f"Invalid keys for the refine argument removed: {invalid_keys}")
+                for invalid_key in invalid_keys:
+                    refine.pop(invalid_key, None)
             query.update(refine)
 
         if additional:
