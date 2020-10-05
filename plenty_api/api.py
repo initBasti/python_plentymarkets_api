@@ -278,7 +278,9 @@ class PlentyApi():
                                        date_type=date_type)
         if refine:
             invalid_keys = set(refine.keys()).difference(VALID_ORDER_REFINE_KEYS)
-            print(f"Invalid keys for the refine argument: {invalid_keys}")
+            print(f"Invalid keys for the refine argument removed: {invalid_keys}")
+            for invalid_key in invalid_keys:
+                refine.pop(invalid_key, None)
             query.update(refine)
         if additional:
             query.update({'with': additional})
@@ -355,7 +357,9 @@ class PlentyApi():
 
         if refine:
             invalid_keys = set(refine.keys()).difference(VALID_ITEM_REFINE_KEYS)
-            print(f"Invalid keys for the refine argument: {invalid_keys}")
+            print(f"Invalid keys for the refine argument removed: {invalid_keys}")
+            for invalid_key in invalid_keys:
+                refine.pop(invalid_key, None)
             query.update(refine)
 
         if additional:
