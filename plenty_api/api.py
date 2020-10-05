@@ -187,6 +187,10 @@ class PlentyApi():
             print(f"ERROR: No response for request {method} at {endpoint}")
             return None
 
+        if 'error' in response.keys():
+            print(f"ERROR: Request failed:\n{response['error']['message']}")
+            return None
+
         return response
 
 # GET REQUESTS
