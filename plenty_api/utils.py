@@ -25,7 +25,7 @@ import re
 import dateutil.parser
 import pandas
 
-
+VALID_ROUTES = ['/rest/orders', '/rest/items', '/rest/vat']
 VALID_COUNTRY_MAP = {
     "DE": 1, "AT": 2, "BE": 3, "CH": 4, "CY": 5, "CZ": 6, "DK": 7, "ES": 8,
     "EE": 9, "FR": 10, "FI": 11, "GB": 12, "GR": 13, "HU": 14, "IT": 15,
