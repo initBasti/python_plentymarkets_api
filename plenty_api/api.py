@@ -25,19 +25,6 @@ import simplejson
 import plenty_api.keyring
 import plenty_api.utils as utils
 
-VALID_ORDER_REFINE_KEYS = {
-    'orderType', 'contactId', 'referrerId', 'shippingProfileId',
-    'shippingServiceProviderId', 'ownerUserId', 'warehouseId',
-    'isEbayPlus', 'includedVariation', 'includedItem', 'orderIds',
-    'countryId', 'orderItemName', 'variationNumber', 'sender.contact',
-    'sender.warehouse', 'receiver.contact', 'receiver.warehouse',
-    'externalOrderId', 'clientId', 'paymentStatus', 'statusFrom',
-    'statusTo', 'hasDocument', 'hasDocumentNumber', 'parentOrderId'
-}
-VALID_ITEM_REFINE_KEYS = {
-    'name', 'manfacturerId', 'id', 'flagOne', 'flagTwo'
-}
-
 
 class PlentyApi():
     """
@@ -169,7 +156,7 @@ class PlentyApi():
                              domain: str,
                              query: dict = None,
                              data: dict = None,
-                             path: str = '',) -> dict:
+                             path: str = '') -> dict:
         """
             Make a request to the PlentyMarkets API.
 
@@ -278,9 +265,10 @@ class PlentyApi():
         query = utils.build_query_date(date_range=date_range,
                                        date_type=date_type)
         if refine:
-            invalid_keys = set(refine.keys()).difference(VALID_ORDER_REFINE_KEYS)
+            invalid_keys = set(refine.keys()).difference(
+                utils.VALID_ORDER_REFINE_KEYS)
             if invalid_keys:
-                print(f"Invalid keys for the refine argument removed: {invalid_keys}")
+                print(f"Invalid refine argument key removed: {invalid_keys}")
                 for invalid_key in invalid_keys:
                     refine.pop(invalid_key, None)
             query.update(refine)
@@ -359,9 +347,10 @@ class PlentyApi():
         query = {}
 
         if refine:
-            invalid_keys = set(refine.keys()).difference(VALID_ITEM_REFINE_KEYS)
+            invalid_keys = set(refine.keys()).difference(
+                utils.VALID_ITEM_REFINE_KEYS)
             if invalid_keys:
-                print(f"Invalid keys for the refine argument removed: {invalid_keys}")
+                print(f"Invalid refine argument key removed: {invalid_keys}")
                 for invalid_key in invalid_keys:
                     refine.pop(invalid_key, None)
             query.update(refine)
