@@ -22,12 +22,11 @@ import getpass
 import datetime
 import time
 import re
-import urllib.parse
 import dateutil.parser
 import pandas
 
 VALID_ROUTES = ['/rest/orders', '/rest/items', '/rest/vat']
-VALID_ORDER_REFINE_KEYS = [
+VALID_ORDER_REFINE_KEYS = {
     'orderType', 'contactId', 'referrerId', 'shippingProfileId',
     'shippingServiceProviderId', 'ownerUserId', 'warehouseId',
     'isEbayPlus', 'includedVariation', 'includedItem', 'orderIds',
@@ -35,10 +34,10 @@ VALID_ORDER_REFINE_KEYS = [
     'sender.warehouse', 'receiver.contact', 'receiver.warehouse',
     'externalOrderId', 'clientId', 'paymentStatus', 'statusFrom',
     'statusTo', 'hasDocument', 'hasDocumentNumber', 'parentOrderId'
-]
-VALID_ITEM_REFINE_KEYS = [
+}
+VALID_ITEM_REFINE_KEYS = {
     'name', 'manfacturerId', 'id', 'flagOne', 'flagTwo'
-]
+}
 VALID_COUNTRY_MAP = {
     "DE": 1, "AT": 2, "BE": 3, "CH": 4, "CY": 5, "CZ": 6, "DK": 7, "ES": 8,
     "EE": 9, "FR": 10, "FI": 11, "GB": 12, "GR": 13, "HU": 14, "IT": 15,
@@ -156,30 +155,7 @@ def get_language(lang: str) -> int:
         return -1
 
 
-def build_request_query(elements: list) -> str:
-    """
-        Combine different query elements and check the query format.
-
-        Parameter:
-            elements [list]     -   List of strings containing one or more
-                                    query sub-elements
-
-        Return:
-            [str]               -   Full query
-    """
-    query = ''
-    query = query.join(elements)
-
-    # Set the first character to '?' and search for invalid occurences
-    if re.search(r'\?', query):
-        print(f"WARNING: {query} -> found a '?' at position > 0")
-    if query:
-        query = '?' + query[1:]
-
-    return query
-
-
-def build_query_date(date_range: dict, date_type: str) -> str:
+def build_query_date(date_range: dict, date_type: str) -> dict:
     """
         Create a query for the API endpoint, with valid values from the
         PlentyMarkets API documentation:
@@ -198,9 +174,9 @@ def build_query_date(date_range: dict, date_type: str) -> str:
                                     {Creation, Payment, Change, Delivery}
 
         Return:
-            [str]               -   Date range in query format
+            [dict]               -   Date range in python dictionary
     """
-    query = ''
+    query = {}
     if not date_range or not date_type:
         print("ERROR: Both date type and date range required")
         return ''
@@ -208,36 +184,13 @@ def build_query_date(date_range: dict, date_type: str) -> str:
         print(f"ERROR: Invalid date type for query creation: {date_type}")
         return ''
     date_type = ORDER_DATE_ARGUMENTS[date_type.lower()]
-    query += str(f"&{date_type}AtFrom={date_range['start']}")
-    query += str(f"&{date_type}AtTo={date_range['end']}")
-    return urllib.parse.quote(query, safe='?,&,=')
+    query.update({f"{date_type}AtFrom": date_range['start']})
+    query.update({f"{date_type}AtTo": date_range['end']})
+
+    return query
 
 
-def build_query_attributes(domain: str,
-                           refine: dict = None,
-                           additional: list = None) -> str:
-    """
-            refine
-            additional [List]   -   List of additional query arguments
-                                    used with `&with=`
-    """
-    query = ''
-    if refine is None and additional is None:
-        return ''
-    if refine is not None:
-        for key, item in refine.items():
-            if key in VALID_ORDER_REFINE_KEYS and domain.lower() == 'orders':
-                query += str(f"&{key}={item}")
-            elif key in VALID_ITEM_REFINE_KEYS and domain.lower() == 'items':
-                query += str(f"&{key}={item}")
-    if additional is not None:
-        for argument in additional:
-            query += str(f"&with={argument}")
-
-    return urllib.parse.quote(query, safe='?,&,=')
-
-
-def build_endpoint(url: str, route: str, query: str) -> str:
+def build_endpoint(url: str, route: str, path: str = '') -> str:
     """
         Perform basic checks to ensure that a valid endpoint is used for the
         request. Query elements should be obtained by usind the
@@ -247,7 +200,7 @@ def build_endpoint(url: str, route: str, query: str) -> str:
         Parameter:
             url [String]        -   Base url of the plentymarkets API
             route [String]      -   Route part endpoint (e.g. /rest/items)
-            query [String]      -   Complete query
+            path [String]       -   Sub route part (e.g. /{item_id}/images)
 
         Parameter:
             [String]            -   complete endpoint
@@ -260,7 +213,7 @@ def build_endpoint(url: str, route: str, query: str) -> str:
         print(f"ERROR: invalid route, [{route}]")
         return ''
 
-    return url + route + query
+    return url + route + path
 
 
 def json_to_dataframe(json):

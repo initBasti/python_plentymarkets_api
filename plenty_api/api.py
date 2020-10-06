@@ -154,8 +154,9 @@ class PlentyApi():
     def __plenty_api_request(self,
                              method: str,
                              domain: str,
-                             query: str = '',
-                             data: dict = None) -> dict:
+                             query: dict = None,
+                             data: dict = None,
+                             path: str = '') -> dict:
         """
             Make a request to the PlentyMarkets API.
 
@@ -163,7 +164,7 @@ class PlentyApi():
                 method [str]        -   GET/POST
                 domain [str]        -   Orders/Items...
             (Optional)
-                query [str]         -   Additional options for the request
+                query [dict]         -   Additional options for the request
                 data  [dict]        -   Data body for post requests
         """
         route = ''
@@ -172,14 +173,16 @@ class PlentyApi():
         response = {}
 
         route = utils.get_route(domain=domain)
-        endpoint = utils.build_endpoint(url=self.url, route=route, query=query)
+        endpoint = utils.build_endpoint(url=self.url, route=route, path=path)
         if self.debug:
             print(f"DEBUG: Endpoint: {endpoint}")
+            print(f"DEBUG: Params: {query}")
         if method.lower() == 'get':
-            raw_response = requests.get(endpoint, headers=self.creds)
+            raw_response = requests.get(endpoint, headers=self.creds,
+                                        params=query)
         if method.lower() == 'post':
             raw_response = requests.post(endpoint, headers=self.creds,
-                                         data=data)
+                                         params=query, data=data)
 
         try:
             response = raw_response.json()
@@ -197,14 +200,14 @@ class PlentyApi():
 
     def __repeat_get_request_for_all_records(self,
                                              domain: str,
-                                             query: str) -> dict:
+                                             query: dict) -> dict:
         """
             Collect data records from multiple API requests in a single JSON
             data structure.
 
             Parameter:
                 domain [str]        -   Orders/Items/..
-                query  [str]        -   Additional options for the request
+                query  [dict]        -   Additional options for the request
 
             Return:
                 [dict]              -   API response in as javascript object
@@ -219,10 +222,10 @@ class PlentyApi():
         entries = response['entries']
 
         while not response['isLastPage']:
-            new_query = query + str(f"&page={response['page'] + 1}")
+            query.update({'page': response['page'] + 1})
             response = self.__plenty_api_request(method='get',
                                                  domain=domain,
-                                                 query=new_query)
+                                                 query=query)
             if not response:
                 print(f"ERROR: subsequent {domain} API requests failed.")
                 return None
@@ -254,6 +257,7 @@ class PlentyApi():
             Return:
                 [JSON(Dict) / DataFrame] <= self.data_format
         """
+
         date_range = utils.build_date_range(start=start, end=end)
         if not date_range:
             print(f"ERROR: Invalid range {start} -> {end}")
@@ -262,13 +266,19 @@ class PlentyApi():
             print(f"ERROR: {date_range['start']} -> {date_range['end']}")
             return {}
 
-        query_date = utils.build_query_date(date_range=date_range,
-                                            date_type=date_type)
-        query_attributes = utils.build_query_attributes(domain='orders',
-                                                        refine=refine,
-                                                        additional=additional)
-        query = utils.build_request_query(
-            elements=[query_date, query_attributes])
+        query = utils.build_query_date(date_range=date_range,
+                                       date_type=date_type)
+        if refine:
+            invalid_keys = set(refine.keys()).difference(
+                utils.VALID_ORDER_REFINE_KEYS)
+            if invalid_keys:
+                print(f"Invalid refine argument key removed: {invalid_keys}")
+                for invalid_key in invalid_keys:
+                    refine.pop(invalid_key, None)
+            query.update(refine)
+
+        if additional:
+            query.update({'with': additional})
 
         orders = self.__repeat_get_request_for_all_records(domain='orders',
                                                            query=query)
@@ -298,7 +308,7 @@ class PlentyApi():
                 [JSON(Dict) / DataFrame] <= self.data_format
         """
         vat_data = self.__repeat_get_request_for_all_records(domain='vat',
-                                                             query='')
+                                                             query={})
 
         vat_table = utils.create_vat_mapping(data=vat_data, subset=subset)
 
@@ -338,23 +348,26 @@ class PlentyApi():
                 [JSON(Dict) / DataFrame] <= self.data_format
         """
         items = None
-        query_attributes = ''
-        change_date = ''
-        language = ''
-        query = ''
+        query = {}
 
-        if refine or additional:
-            query_attributes = utils.build_query_attributes(
-                domain='items', refine=refine, additional=additional)
+        if refine:
+            invalid_keys = set(refine.keys()).difference(
+                utils.VALID_ITEM_REFINE_KEYS)
+            if invalid_keys:
+                print(f"Invalid refine argument key removed: {invalid_keys}")
+                for invalid_key in invalid_keys:
+                    refine.pop(invalid_key, None)
+            query.update(refine)
+
+        if additional:
+            query.update({'with': additional})
+
         if last_update:
-            change_date = utils.date_to_timestamp(date=last_update)
+            query.update({'updatedBetween': utils.date_to_timestamp(
+                         date=last_update)})
 
         if lang:
-            language = utils.get_language(lang=lang)
-
-        query = utils.build_request_query(elements=[query_attributes,
-                                                    change_date,
-                                                    language])
+            query.update({'lang': utils.get_language(lang=lang)})
 
         items = self.__repeat_get_request_for_all_records(domain='items',
                                                           query=query)
@@ -412,11 +425,11 @@ class PlentyApi():
             "type": target_name,
             "value": str(target_id)
         }
-        query = str(f"/{item_id}/images/{image_id}/availabilities")
+        path = str(f"/{item_id}/images/{image_id}/availabilities")
 
         response = self.__plenty_api_request(method="post",
                                              domain="items",
-                                             query=query,
+                                             path=path,
                                              data=data)
 
         if not response:
