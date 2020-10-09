@@ -24,6 +24,7 @@ import simplejson
 
 import plenty_api.keyring
 import plenty_api.utils as utils
+import plenty_api.valid_parameter as param
 
 
 class PlentyApi():
@@ -69,6 +70,11 @@ class PlentyApi():
                 [last_update]   -   Date of the last update
                 [lang]          -   Provide the text within a specific language
             ___
+            **plenty_api_get_variations**
+                Generic interface to variation data from PlentyMarkets
+                [refine]        -   Apply filters to the request
+                [additional]    -   Add additional elements to the response.
+                [lang]          -   Provide the text within a specific language
 
             POST REQUESTS
             **plenty_api_set_image_availability**
@@ -164,7 +170,7 @@ class PlentyApi():
                 method [str]        -   GET/POST
                 domain [str]        -   Orders/Items...
             (Optional)
-                query [dict]         -   Additional options for the request
+                query [dict]        -   Additional options for the request
                 data  [dict]        -   Data body for post requests
         """
         route = ''
@@ -182,7 +188,7 @@ class PlentyApi():
                                         params=query)
         if method.lower() == 'post':
             raw_response = requests.post(endpoint, headers=self.creds,
-                                         params=query, data=data)
+                                         params=query, json=data)
 
         try:
             response = raw_response.json()
@@ -270,7 +276,7 @@ class PlentyApi():
                                        date_type=date_type)
         if refine:
             invalid_keys = set(refine.keys()).difference(
-                utils.VALID_ORDER_REFINE_KEYS)
+                param.VALID_ORDER_REFINE_KEYS)
             if invalid_keys:
                 print(f"Invalid refine argument key removed: {invalid_keys}")
                 for invalid_key in invalid_keys:
@@ -352,7 +358,7 @@ class PlentyApi():
 
         if refine:
             invalid_keys = set(refine.keys()).difference(
-                utils.VALID_ITEM_REFINE_KEYS)
+                param.VALID_ITEM_REFINE_KEYS)
             if invalid_keys:
                 print(f"Invalid refine argument key removed: {invalid_keys}")
                 for invalid_key in invalid_keys:
@@ -377,6 +383,57 @@ class PlentyApi():
 
         if self.data_format == 'dataframe':
             return utils.json_to_dataframe(json=items)
+
+    def plenty_api_get_variations(self,
+                                  refine: dict = None,
+                                  additional: list = None,
+                                  lang: str = ''):
+        """
+            Get product data from PlentyMarkets.
+
+            Parameter:
+                refine [dict]       -   Apply filters to the request
+                                        Example:
+                                        {'id': '2345', 'flagOne: '5'}
+                additional [list]   -   Add additional elements to the
+                                        data response.
+                                        Example:
+                                        ['stock', 'images']
+                lang [str]          -   Provide the text within the data
+                                        in one of the following languages:
+                                        Example: 'de', 'en', etc.
+
+                developers.plentymarkets.com/rest-doc/gettingstarted#countries
+
+            Return:
+                [JSON(Dict) / DataFrame] <= self.data_format
+        """
+        variations = None
+        query = {}
+
+        if refine:
+            invalid_keys = set(refine.keys()).difference(
+                param.VALID_VARIATION_REFINE_KEYS)
+            if invalid_keys:
+                print(f"Invalid refine argument key removed: {invalid_keys}")
+                for invalid_key in invalid_keys:
+                    refine.pop(invalid_key, None)
+            query.update(refine)
+
+        if additional:
+            query.update({'with': additional})
+
+        if lang:
+            query.update({'lang': utils.get_language(lang=lang)})
+
+        variations = self.__repeat_get_request_for_all_records(
+            domain='variations', query=query)
+
+        if self.data_format == 'json':
+            return variations
+
+        if self.data_format == 'dataframe':
+            return utils.json_to_dataframe(json=variations)
 
 # POST REQUESTS
 

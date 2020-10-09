@@ -71,6 +71,8 @@ def get_route(domain: str) -> str:
         return '/rest/orders'
     if re.match(r'item', domain.lower()):
         return '/rest/items'
+    if re.match(r'variation', domain.lower()):
+        return '/rest/items/variations'
     if re.match(r'vat', domain.lower()):
         return '/rest/vat'
     return ''

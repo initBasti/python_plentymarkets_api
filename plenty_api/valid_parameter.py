@@ -22,7 +22,8 @@
     https://developers.plentymarkets.com/rest-doc#
 """
 
-VALID_ROUTES = ['/rest/orders', '/rest/items', '/rest/vat']
+VALID_ROUTES = ['/rest/orders', '/rest/items', '/rest/items/variations',
+                '/rest/vat']
 
 # Mapping of date_type function parameter value to query parameter
 # the date_type function parameter is supposed to be more descriptive

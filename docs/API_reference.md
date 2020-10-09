@@ -67,6 +67,27 @@ There are currently two supported output formats: 'json' and 'dataframe'.
 The 'json' format simply returns the raw response, without page information and with multiple pages combined into a single data structure.  
 The 'dataframe' format transforms that data structure into a pandas DataFrame, which contains sub parts in json, that can be split further by the user application.
 
+##### plenty_api_get_variations:
+
+[*Optional parameter*]:
+
+The **refine** field can be used to filter the request results by one or more of the attributes of the item:  
+id, itemId, flagOne, flagTwo, categoryId, isMain, isActive, barcode, referrerId, sku, date
+
+Use the **additional** field to add more values to the response, valid values are:  
+properties, variationProperties, variationBarcodes, variationBundleComponents, variationComponentBundles, variationSalesPrices, marketItemNumbers, variationCategories,
+variationClients, variationMarkets, variationDefaultCategory, variationSuppliers, variationWarehouses, images, itemImages, variationAttributeValues, variationSkus,
+variationAdditionalSkus, unit, parent, item, stock
+
+The **lang** field specifies the language of the texts used in the response. Valid values are country abbreviations in ISO-3166-1:  
+[List of countries](https://developers.plentymarkets.com/rest-doc/gettingstarted#countries)
+
+[*Output format*]:
+
+There are currently two supported output formats: 'json' and 'dataframe'.  
+The 'json' format simply returns the raw response, without page information and with multiple pages combined into a single data structure.  
+The 'dataframe' format transforms that data structure into a pandas DataFrame, which contains sub parts in json, that can be split further by the user application.
+
 #### Tax data
 
 ##### plenty_api_get_vat_id_mappings:
