@@ -71,7 +71,7 @@ The 'dataframe' format transforms that data structure into a pandas DataFrame, w
 
 [*Optional parameter*]:
 
-The **refine** field can be used to filter the request results by one or more of the attributes of the item:  
+The **refine** field can be used to filter the request results by one or more of the attributes of the variation:  
 id, itemId, flagOne, flagTwo, categoryId, isMain, isActive, barcode, referrerId, sku, date
 
 Use the **additional** field to add more values to the response, valid values are:  
@@ -81,6 +81,25 @@ variationAdditionalSkus, unit, parent, item, stock
 
 The **lang** field specifies the language of the texts used in the response. Valid values are country abbreviations in ISO-3166-1:  
 [List of countries](https://developers.plentymarkets.com/rest-doc/gettingstarted#countries)
+
+[*Output format*]:
+
+There are currently two supported output formats: 'json' and 'dataframe'.  
+The 'json' format simply returns the raw response, without page information and with multiple pages combined into a single data structure.  
+The 'dataframe' format transforms that data structure into a pandas DataFrame, which contains sub parts in json, that can be split further by the user application.
+
+##### plenty_api_get_price_configuration:
+
+Fetch price configuration from PlentyMarkets, this can be used among other things to get the ID of a price used by a specific referrer in order to get the price date from variations.
+
+[*Optional parameter*]:
+
+You can reduce the response data to just IDs and names by using the **minimal** parameter (*True/False*).
+And you can filter out price configurations, where the last change timestamp is further in the past than the specified date from the **last_change** parameter.
+The dates are accepted in the following formats:
+- YEAR-MONTH-DAY                                    (2020-09-16)        [ISO 8601 date format]
+- YEAR-MONTH-DAYTHOUR:MINUTE                        (2020-09-16T08:00)
+- YEAR-MONTH-DAYTHOUR:MINUTE:SECOND+UTC-OFFSET      (2020-09-16T08:00)  [W3C date format]
 
 [*Output format*]:
 

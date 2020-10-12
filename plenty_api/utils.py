@@ -25,7 +25,7 @@ import re
 import dateutil.parser
 import pandas
 
-import plenty_api.valid_parameter as param
+import plenty_api.valid_parameter as constants
 
 
 def create_vat_mapping(data: list, subset: list = None) -> dict:
@@ -56,6 +56,56 @@ def create_vat_mapping(data: list, subset: list = None) -> dict:
     return mapping
 
 
+def shrink_price_configuration(data: dict) -> dict:
+    """
+        reduce the API response to a minimum by deleting
+        date information and other additional mappings.
+
+        Parameter:
+            data [dict]         -   The response JSON dictionary
+
+        Return:
+            [dict]
+    """
+    configuration: dict = {
+        'id': 0,
+        'type': '',
+        'position': 0,
+        'names': {},
+        'referrers': [],
+        'accounts': [],
+        'clients': [],
+        'countries': [],
+        'currencies': [],
+        'customerClasses': []
+    }
+
+    if not data:
+        return {}
+
+    key_subkey_map = {
+        'clients': 'plentyId',
+        'countries': 'countryId',
+        'currencies': 'currency',
+        'customerClasses': 'customerClassId',
+        'referrers': 'referrerId',
+        'names': 'nameExternal'
+    }
+
+    for key in ['id', 'type', 'position']:
+        configuration[key] = data[key]
+
+    for key in key_subkey_map:
+        for entity in data[key]:
+            subkey = key_subkey_map[key]
+            if key == 'names':
+                configuration[key].update({entity['lang']: entity[subkey]})
+                continue
+            configuration[key].append(entity[subkey])
+
+    return configuration
+
+
 def get_route(domain: str) -> str:
     """
         Use fixed mappings to determine the correct route for the endpoint.
@@ -67,14 +117,9 @@ def get_route(domain: str) -> str:
         Return:
             [String]
     """
-    if re.match(r'order', domain.lower()):
-        return '/rest/orders'
-    if re.match(r'item', domain.lower()):
-        return '/rest/items'
-    if re.match(r'variation', domain.lower()):
-        return '/rest/items/variations'
-    if re.match(r'vat', domain.lower()):
-        return '/rest/vat'
+    for valid_domain in constants.VALID_DOMAINS:
+        if re.match(valid_domain, domain.lower()):
+            return constants.DOMAIN_ROUTE_MAP[valid_domain]
     return ''
 
 
@@ -90,7 +135,7 @@ def get_language(lang: str) -> int:
             [int]               -   ID from Plentymarkets
     """
     try:
-        return param.VALID_COUNTRY_MAP[lang.upper()]
+        return constants.VALID_COUNTRY_MAP[lang.upper()]
     except KeyError:
         print(f"ERROR: invalid country abbreviation: {lang}")
         return -1
@@ -121,10 +166,10 @@ def build_query_date(date_range: dict, date_type: str) -> dict:
     if not date_range or not date_type:
         print("ERROR: Both date type and date range required")
         return ''
-    if date_type.lower() not in param.ORDER_DATE_ARGUMENTS.keys():
+    if date_type.lower() not in constants.ORDER_DATE_ARGUMENTS.keys():
         print(f"ERROR: Invalid date type for query creation: {date_type}")
         return ''
-    date_type = param.ORDER_DATE_ARGUMENTS[date_type.lower()]
+    date_type = constants.ORDER_DATE_ARGUMENTS[date_type.lower()]
     query.update({f"{date_type}AtFrom": date_range['start']})
     query.update({f"{date_type}AtTo": date_range['end']})
 
@@ -150,7 +195,7 @@ def build_endpoint(url: str, route: str, path: str = '') -> str:
         print("ERROR: invalid URL, need: {https://*.plentymarkets-cloud01.com")
         return ''
 
-    if route not in param.VALID_ROUTES:
+    if route not in constants.VALID_ROUTES:
         print(f"ERROR: invalid route, [{route}]")
         return ''
 

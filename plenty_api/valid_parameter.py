@@ -22,8 +22,11 @@
     https://developers.plentymarkets.com/rest-doc#
 """
 
+VALID_DOMAINS = ['order', 'item', 'variation', 'vat', 'prices']
 VALID_ROUTES = ['/rest/orders', '/rest/items', '/rest/items/variations',
-                '/rest/vat']
+                '/rest/vat', '/rest/items/sales_prices']
+DOMAIN_ROUTE_MAP = {VALID_DOMAINS[i]: VALID_ROUTES[i]
+                    for i in range(len(VALID_DOMAINS))}
 
 # Mapping of date_type function parameter value to query parameter
 # the date_type function parameter is supposed to be more descriptive

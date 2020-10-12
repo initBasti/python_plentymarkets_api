@@ -24,7 +24,7 @@ import simplejson
 
 import plenty_api.keyring
 import plenty_api.utils as utils
-import plenty_api.valid_parameter as param
+import plenty_api.valid_parameter as constants
 
 
 class PlentyApi():
@@ -62,6 +62,16 @@ class PlentyApi():
                 Reference:
                 (developers.plentymarkets.com/rest-doc#/Accounting/get_rest_vat)
             ___
+            **plenty_api_get_price_configuration**
+                Fetch the set of price configuration, that were setup on
+                PlentyMarkets.
+                [minimal]       -   reduce the response body to necessary info
+                [last_change]   -   filter out configuration were the last
+                                    change is older than the specified date
+
+                Reference:
+                (https://developers.plentymarkets.com/rest-doc#/Item/get_rest_items_sales_prices)
+            ___
             **plenty_api_get_items**
                 Generic interface to item data from Plentymarkets with little
                 abstraction.
@@ -69,12 +79,19 @@ class PlentyApi():
                 [additional]    -   Add additional elements to the response.
                 [last_update]   -   Date of the last update
                 [lang]          -   Provide the text within a specific language
+
+                Reference:
+                (https://developers.plentymarkets.com/rest-doc#/Item/get_rest_items)
+
             ___
             **plenty_api_get_variations**
                 Generic interface to variation data from PlentyMarkets
                 [refine]        -   Apply filters to the request
                 [additional]    -   Add additional elements to the response.
                 [lang]          -   Provide the text within a specific language
+
+                Reference:
+                (https://developers.plentymarkets.com/rest-doc#/Item/get_rest_items_variations)
 
             POST REQUESTS
             **plenty_api_set_image_availability**
@@ -85,6 +102,9 @@ class PlentyApi():
                 [target]        -   ID of the target
                                     Example:
                                         {'marketplace': 102}
+
+                Reference:
+                (https://developers.plentymarkets.com/rest-doc#/Item/post_rest_items__id__images__imageId__availabilities)
             ___
     """
     def __init__(self, base_url, use_keyring=True, data_format='json',
@@ -276,7 +296,7 @@ class PlentyApi():
                                        date_type=date_type)
         if refine:
             invalid_keys = set(refine.keys()).difference(
-                param.VALID_ORDER_REFINE_KEYS)
+                constants.VALID_ORDER_REFINE_KEYS)
             if invalid_keys:
                 print(f"Invalid refine argument key removed: {invalid_keys}")
                 for invalid_key in invalid_keys:
@@ -324,6 +344,51 @@ class PlentyApi():
         if self.data_format == 'dateframe':
             return utils.json_to_dataframe(json=vat_table)
 
+    def plenty_api_get_price_configuration(self,
+                                           minimal: bool = False,
+                                           last_update: str = ''):
+        """
+            Fetch the price configuration from PlentyMarkets.
+
+            Parameter:
+                minimal [bool]      -   reduce the response data to necessary
+                                        IDs.
+                last_update [str]   -   Date of the last update given as one
+                                        of the following formats:
+                                            YYYY-MM-DDTHH:MM:SS+UTC-OFFSET
+                                            YYYY-MM-DDTHH:MM
+                                            YYYY-MM-DD
+
+            Result:
+                [JSON(Dict) / DataFrame] <= self.data_format
+        """
+        prices = None
+        minimal_prices: list = []
+        query = {}
+
+        if last_update:
+            # The documentation refers to Unix timestamps being a valid
+            # format, but that is not the case within my tests.
+            query.update({'updatedAt': last_update})
+
+        prices = self.__repeat_get_request_for_all_records(
+            domain='prices', query=query)
+
+        if not prices:
+            return None
+
+        if minimal:
+            for price in prices:
+                minimal_prices.append(
+                    utils.shrink_price_configuration(data=price))
+            prices = minimal_prices
+
+        if self.data_format == 'json':
+            return prices
+
+        if self.data_format == 'dataframe':
+            return utils.json_to_dataframe(json=prices)
+
     def plenty_api_get_items(self,
                              refine: dict = None,
                              additional: list = None,
@@ -358,7 +423,7 @@ class PlentyApi():
 
         if refine:
             invalid_keys = set(refine.keys()).difference(
-                param.VALID_ITEM_REFINE_KEYS)
+                constants.VALID_ITEM_REFINE_KEYS)
             if invalid_keys:
                 print(f"Invalid refine argument key removed: {invalid_keys}")
                 for invalid_key in invalid_keys:
@@ -413,7 +478,7 @@ class PlentyApi():
 
         if refine:
             invalid_keys = set(refine.keys()).difference(
-                param.VALID_VARIATION_REFINE_KEYS)
+                constants.VALID_VARIATION_REFINE_KEYS)
             if invalid_keys:
                 print(f"Invalid refine argument key removed: {invalid_keys}")
                 for invalid_key in invalid_keys:

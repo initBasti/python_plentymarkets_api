@@ -4,7 +4,7 @@ import requests
 from plenty_api.utils import (
     get_route, build_endpoint, check_date_range, parse_date, build_date_range,
     get_utc_offset, build_query_date, create_vat_mapping, date_to_timestamp,
-    get_language
+    get_language, shrink_price_configuration
 )
 
 
@@ -63,6 +63,81 @@ def sample_date_range_input() -> list:
         {'start': '', 'end': ''}
     ]
     return samples
+
+
+@pytest.fixture
+def sample_price_response() -> list:
+    samples = [
+        {
+            'accounts': [],
+            'clients': [{'createdAt': '1990-07-09T15:33:46+02:00',
+                         'plentyId': 1234, 'salesPriceId': 1,
+                         'updatedAt': '1990-07-09T15:33:46+02:00'}],
+            'countries': [{'countryId': -1,
+                           'createdAt': '1990-07-09T15:33:46+02:00',
+                           'salesPriceId': 1,
+                           'updatedAt': '1990-07-09T15:33:46+02:00'}],
+            'createdAt': '1990-09-05 13:24:53',
+            'currencies': [{'createdAt': '1990-07-09T15:33:46+02:00',
+                              'currency': 'EUR',
+                              'salesPriceId': 1,
+                              'updatedAt': '1990-07-09T15:33:46+02:00'},
+                             {'createdAt': '1990-07-09T15:33:46+02:00',
+                              'currency': 'GBP',
+                              'salesPriceId': 1,
+                              'updatedAt': '1990-07-09T15:33:46+02:00'}],
+            'customerClasses': [{'createdAt': '1990-07-09T15:33:46+02:00',
+                                   'customerClassId': -1,
+                                   'salesPriceId': 1,
+                                   'updatedAt': '1990-07-09T15:33:46+02:00'}],
+            'id': 1,
+            'interval': 'none',
+            'isCustomerPrice': False,
+            'isDisplayedByDefault': True,
+            'isLiveConversion': False,
+            'minimumOrderQuantity': 1,
+            'names': [{'createdAt': '1990-09-05T13:24:53+02:00',
+                       'lang': 'de',
+                       'nameExternal': 'Preis',
+                       'nameInternal': 'Preis',
+                       'salesPriceId': 1,
+                       'updatedAt': '1990-09-05T14:46:34+02:00'},
+                      {'createdAt': '1990-09-05T13:24:53+02:00',
+                       'lang': 'en',
+                       'nameExternal': 'Price',
+                       'nameInternal': 'Price',
+                       'salesPriceId': 1,
+                       'updatedAt': '1990-09-05T14:46:34+02:00'}],
+            'position': 0,
+            'referrers': [{'createdAt': '1990-07-09T15:33:46+02:00',
+                           'referrerId': 0,
+                           'salesPriceId': 1,
+                           'updatedAt': '1990-07-09T15:33:46+02:00'}],
+            'type': 'default',
+            'updatedAt': '1990-07-09 15:33:46'
+        },
+        {}
+    ]
+    return samples
+
+
+@pytest.fixture
+def expected_prices() -> list:
+    expected = [
+        {
+            'id': 1,
+            'type': 'default',
+            'position': 0,
+            'names': {'de': 'Preis', 'en': 'Price'},
+            'referrers': [0],
+            'accounts': [],
+            'clients': [1234],
+            'countries': [-1],
+            'currencies': ['EUR', 'GBP'],
+            'customerClasses': [-1]
+         }, {}
+    ]
+    return expected
 
 
 @pytest.fixture
@@ -313,3 +388,13 @@ def test_get_language() -> None:
         result.append(get_language(lang=sample))
 
     assert expected == result
+
+
+def test_shrink_price_configuration(sample_price_response: dict,
+                                    expected_prices: dict) -> None:
+    result = []
+
+    for sample in sample_price_response:
+        result.append(shrink_price_configuration(data=sample))
+
+    assert result == expected_prices
