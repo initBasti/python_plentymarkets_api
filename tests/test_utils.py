@@ -248,14 +248,14 @@ def sample_sanity_check_parameter() -> list:
             'domain': 'item',
             'query': {},
             'refine': {'id': 10234, 'wrong': 'wrong'},
-            'additional': ['variations'],
+            'additional': ['variations', 'itemImages'],
             'lang': ''
         },
         {
             'domain': 'order',
             'query': {'orderType': 1},
             'refine': {'wrong': 'wrong'},
-            'additional': ['wrong'],
+            'additional': ['wrong', 'addresses', 'documents'],
             'lang': ''
         },
         {
@@ -306,13 +306,14 @@ def expected_sanity_check_query() -> list:
         # domain: variation
         # valid domain, 2 refine, 2 additional, lang all valid arguments
         {'id': 1234, 'itemId': 10234,
-         'with': ['properties', 'stock'], 'lang': 2},
+         'with': 'properties,stock', 'lang': 2},
         # domain: item
         # valid domain 2 refine, 1 additional, 1 invalid refine
-        {'id': 10234, 'with': ['variations']},
+        {'id': 10234, 'with': 'variations,itemImages'},
         # domain: order
-        # all invalid arguments, but preexisting query
-        {'orderType': 1},
+        # invalid & valid arguments, but preexisting query
+        # check if the 'additional' field is handled differently for 'order'
+        {'orderType': 1, 'with': ['addresses', 'documents']},
         # domain: wrong
         # invalid domain
         {}
