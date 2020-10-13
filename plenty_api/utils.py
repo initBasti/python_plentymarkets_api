@@ -184,7 +184,11 @@ def sanity_check_parameter(domain: str,
             for invalid_value in invalid_values:
                 additional.remove(invalid_value)
         if additional:
-            query.update({'with': additional})
+            if domain == 'order':
+                query.update({'with': additional})
+            else:
+                query.update({'with': ','.join(additional)})
+
 
     if lang:
         query.update({'lang': get_language(lang=lang)})
