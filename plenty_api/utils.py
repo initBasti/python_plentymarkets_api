@@ -258,7 +258,20 @@ def build_endpoint(url: str, route: str, path: str = '') -> str:
 
 
 def json_to_dataframe(json):
+    """ simple wrapper for the data conversion from JSON dict to dataframe """
     return pandas.json_normalize(json)
+
+
+def transform_data_type(data: dict, data_format: str):
+    """ simple wrapper around the data conversion before return """
+    if not data:
+        return {}
+
+    if data_format == 'json':
+        return data
+
+    if data_format == 'dataframe':
+        return json_to_dataframe(json=data)
 
 
 def get_utc_offset() -> str:

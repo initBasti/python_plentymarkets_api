@@ -107,6 +107,30 @@ There are currently two supported output formats: 'json' and 'dataframe'.
 The 'json' format simply returns the raw response, without page information and with multiple pages combined into a single data structure.  
 The 'dataframe' format transforms that data structure into a pandas DataFrame, which contains sub parts in json, that can be split further by the user application.
 
+##### plenty_api_get_manufacturers:
+
+Fetch a list of manufacturers, that were setup on PlentyMarkets.
+
+[*Optional parameter*]:
+
+The **refine** field can be used to reduce the request to only manufacturers with the given name.
+example: refine={'name': 'abc_company'}
+
+Use the **additional** field to add more values to the response, valid values are:  
+commisions, externals
+
+With the **last_update** parameter, you can filter the results down to items that were changed at or after the specified date  
+The dates are accepted in the following formats:
+- YEAR-MONTH-DAY                                    (2020-09-16)        [ISO 8601 date format]
+- YEAR-MONTH-DAYTHOUR:MINUTE                        (2020-09-16T08:00)
+- YEAR-MONTH-DAYTHOUR:MINUTE:SECOND+UTC-OFFSET      (2020-09-16T08:00)  [W3C date format]
+
+[*Output format*]:
+
+There are currently two supported output formats: 'json' and 'dataframe'.  
+The 'json' format simply returns the raw response, without page information and with multiple pages combined into a single data structure.  
+The 'dataframe' format transforms that data structure into a pandas DataFrame, which contains sub parts in json, that can be split further by the user application.
+
 #### Tax data
 
 ##### plenty_api_get_vat_id_mappings:

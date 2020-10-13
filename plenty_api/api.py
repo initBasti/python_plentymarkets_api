@@ -24,7 +24,6 @@ import simplejson
 
 import plenty_api.keyring
 import plenty_api.utils as utils
-import plenty_api.valid_parameter as constants
 
 
 class PlentyApi():
@@ -72,6 +71,15 @@ class PlentyApi():
                 Reference:
                 (https://developers.plentymarkets.com/rest-doc#/Item/get_rest_items_sales_prices)
             ___
+            **plenty_api_get_manufacturers**
+                Fetch a list of manufacturer (brands) in PlentyMarkets.
+                [refine]        -   Apply filters to the request
+                [additional]    -   Add additional elements to the response.
+                [last_update]   -   Date of the last update
+
+                Reference:
+                (https://developers.plentymarkets.com/rest-doc#/Item/get_rest_items_manufacturers)
+            ___
             **plenty_api_get_items**
                 Generic interface to item data from Plentymarkets with little
                 abstraction.
@@ -114,7 +122,7 @@ class PlentyApi():
             the bearer token.
 
             Parameter:
-                base_url [str]      -  Base URL to the PlentyMarkets API
+                base_url    [str]   -  Base URL to the PlentyMarkets API
                                             Endpoint, format:
                                     [https://{name}.plentymarkets-cloud01.com]
                 use_keyring [bool]  -  Save the credentials temporarily or
@@ -135,7 +143,7 @@ class PlentyApi():
             Get the bearer token from the PlentyMarkets API.
 
             Parameter:
-                persistent [bool]   -   Permanent or temporary credential
+                persistent  [bool]  -   Permanent or temporary credential
                                         storage
         """
 
@@ -143,7 +151,7 @@ class PlentyApi():
         if persistent:
             creds = self.keyring.get_credentials()
             if not creds:
-                creds = utils.new_keyring_creds(kr=self.keyring)
+                creds = utils.new_keyring_creds(keyring=self.keyring)
         else:
             creds = utils.get_temp_creds()
         endpoint = self.url + '/rest/login'
@@ -157,7 +165,7 @@ class PlentyApi():
             try:
                 if response.json()['error'] == 'invalid_credentials':
                     print("Wrong credentials: Please enter valid credentials.")
-                    creds = utils.update_keyring_creds(kr=self.keyring)
+                    creds = utils.update_keyring_creds(keyring=self.keyring)
                     response = requests.post(endpoint, params=creds)
                     token = utils.build_login_token(
                         response_json=response.json())
@@ -187,11 +195,11 @@ class PlentyApi():
             Make a request to the PlentyMarkets API.
 
             Parameter:
-                method [str]        -   GET/POST
-                domain [str]        -   Orders/Items...
+                method      [str]   -   GET/POST
+                domain      [str]   -   Orders/Items...
             (Optional)
-                query [dict]        -   Additional options for the request
-                data  [dict]        -   Data body for post requests
+                query       [dict]  -   Additional options for the request
+                data        [dict]  -   Data body for post requests
         """
         route = ''
         endpoint = ''
@@ -234,11 +242,11 @@ class PlentyApi():
             data structure.
 
             Parameter:
-                domain [str]        -   Orders/Items/..
-                query  [dict]        -   Additional options for the request
+                domain      [str]   -   Orders/Items/..
+                query       [dict]  -   Additional options for the request
 
             Return:
-                [dict]              -   API response in as javascript object
+                            [dict]  -   API response in as javascript object
                                         notation
         """
         response = self.__plenty_api_request(method='get',
@@ -268,13 +276,13 @@ class PlentyApi():
             Get all orders within a specific date range.
 
             Parameter:
-                start [str]         -   Start date
-                end   [str]         -   End date
-                date_type [str]     -   Specify the type of date
+                start       [str]   -   Start date
+                end         [str]   -   End date
+                date_type   [str]   -   Specify the type of date
                                         {Creation, Change, Payment, Delivery}
-                additional [list]   -   Additional arguments for the query
+                additional  [list]  -   Additional arguments for the query
                                         as specified in the manual
-                refine [dict]       -   Apply filters to the request
+                refine      [dict]  -   Apply filters to the request
                                         Example:
                                         {'orderType': '1,4', referrerId: '1'}
                                         Restrict the request to order types:
@@ -304,14 +312,12 @@ class PlentyApi():
 
         orders = self.__repeat_get_request_for_all_records(domain='orders',
                                                            query=query)
-        if not orders:
-            return {}
 
-        if self.data_format == 'json':
-            return orders
+        orders = utils.transform_data_type(data=orders,
+                                           data_format=self.data_format)
 
-        if self.data_format == 'dataframe':
-            return utils.json_to_dataframe(json=orders)
+        return orders
+
 
     def plenty_api_get_vat_id_mappings(self, subset: List[int] = None):
         """
@@ -321,7 +327,7 @@ class PlentyApi():
             restrictions and date range.
 
             Parameter:
-                subset [list]       -   restrict the mappings to only
+                subset      [list]  -   restrict the mappings to only
                                         the given IDs (integer)
                 You can locate those IDs in your Plenty- Markets system under:
                 Setup-> Orders-> Shipping-> Settings-> Countries of delivery
@@ -334,11 +340,9 @@ class PlentyApi():
 
         vat_table = utils.create_vat_mapping(data=vat_data, subset=subset)
 
-        if self.data_format == 'json':
-            return vat_table
-
-        if self.data_format == 'dateframe':
-            return utils.json_to_dataframe(json=vat_table)
+        vat_table = utils.transform_data_type(data=vat_table,
+                                              data_format=self.data_format)
+        return vat_table
 
     def plenty_api_get_price_configuration(self,
                                            minimal: bool = False,
@@ -347,7 +351,7 @@ class PlentyApi():
             Fetch the price configuration from PlentyMarkets.
 
             Parameter:
-                minimal [bool]      -   reduce the response data to necessary
+                minimal     [bool]  -   reduce the response data to necessary
                                         IDs.
                 last_update [str]   -   Date of the last update given as one
                                         of the following formats:
@@ -379,11 +383,51 @@ class PlentyApi():
                     utils.shrink_price_configuration(data=price))
             prices = minimal_prices
 
-        if self.data_format == 'json':
-            return prices
+        prices = utils.transform_data_type(data=prices,
+                                           data_format=self.data_format)
+        return prices
 
-        if self.data_format == 'dataframe':
-            return utils.json_to_dataframe(json=prices)
+    def plenty_api_get_manufacturers(self,
+                                     refine: dict = None,
+                                     additional: list = None,
+                                     last_update: str = ''):
+        """
+            Get a list of manufacturers (brands), which are setup on
+            PlentyMarkets.
+
+            Parameter:
+                refine      [dict]  -   Apply a filter to the request
+                                        The only viable option currently is:
+                                        'name'
+                additional  [list]  -   Add additional elements to the
+                                        response data.
+                                        Viable options currently:
+                                        ['commisions', 'externals']
+                last_update [str]   -   Date of the last update given as one
+                                        of the following formats:
+                                            YYYY-MM-DDTHH:MM:SS+UTC-OFFSET
+                                            YYYY-MM-DDTHH:MM
+                                            YYYY-MM-DD
+
+            Return:
+                [JSON(Dict) / DataFrame] <= self.data_format
+        """
+        manufacturers = None
+        query = {}
+        query = utils.sanity_check_parameter(domain='manufacturer',
+                                             query=query,
+                                             refine=refine,
+                                             additional=additional)
+
+        if last_update:
+            query.update({'updatedAt': last_update})
+
+        manufacturers = self.__repeat_get_request_for_all_records(
+            domain='manufacturer', query=query)
+
+        manufacturers = utils.transform_data_type(data=manufacturers,
+                                                  data_format=self.data_format)
+        return manufacturers
 
     def plenty_api_get_items(self,
                              refine: dict = None,
@@ -394,11 +438,11 @@ class PlentyApi():
             Get product data from PlentyMarkets.
 
             Parameter:
-                refine [dict]       -   Apply filters to the request
+                refine      [dict]  -   Apply filters to the request
                                         Example:
                                         {'id': '12345', 'flagOne: '5'}
-                additional [list]   -   Add additional elements to the
-                                        data response.
+                additional  [list]  -   Add additional elements to the
+                                        response data.
                                         Example:
                                         ['variations', 'itemImages']
                 last_update [str]   -   Date of the last update given as one
@@ -406,7 +450,7 @@ class PlentyApi():
                                             YYYY-MM-DDTHH:MM:SS+UTC-OFFSET
                                             YYYY-MM-DDTHH:MM
                                             YYYY-MM-DD
-                lang [str]          -   Provide the text within the data
+                lang        [str]   -   Provide the text within the data
                                         in one of the following languages:
 
                 developers.plentymarkets.com/rest-doc/gettingstarted#countries
@@ -430,11 +474,9 @@ class PlentyApi():
         items = self.__repeat_get_request_for_all_records(domain='items',
                                                           query=query)
 
-        if self.data_format == 'json':
-            return items
-
-        if self.data_format == 'dataframe':
-            return utils.json_to_dataframe(json=items)
+        items = utils.transform_data_type(data=items,
+                                           data_format=self.data_format)
+        return items
 
     def plenty_api_get_variations(self,
                                   refine: dict = None,
@@ -444,14 +486,14 @@ class PlentyApi():
             Get product data from PlentyMarkets.
 
             Parameter:
-                refine [dict]       -   Apply filters to the request
+                refine      [dict]  -   Apply filters to the request
                                         Example:
                                         {'id': '2345', 'flagOne: '5'}
-                additional [list]   -   Add additional elements to the
-                                        data response.
+                additional  [list]  -   Add additional elements to the
+                                        response data.
                                         Example:
                                         ['stock', 'images']
-                lang [str]          -   Provide the text within the data
+                lang        [str]   -   Provide the text within the data
                                         in one of the following languages:
                                         Example: 'de', 'en', etc.
 
@@ -472,11 +514,9 @@ class PlentyApi():
         variations = self.__repeat_get_request_for_all_records(
             domain='variations', query=query)
 
-        if self.data_format == 'json':
-            return variations
-
-        if self.data_format == 'dataframe':
-            return utils.json_to_dataframe(json=variations)
+        variations = utils.transform_data_type(data=variations,
+                                           data_format=self.data_format)
+        return variations
 
 # POST REQUESTS
 
@@ -489,9 +529,9 @@ class PlentyApi():
             combiniation.
 
             Parameter:
-                item_id [str]       -   Item ID from PlentyMarkets
-                image_id [str]      -   Image ID from PlentyMarkets
-                target [dict]       -   ID of the specific:
+                item_id     [str]   -   Item ID from PlentyMarkets
+                image_id    [str]   -   Image ID from PlentyMarkets
+                target      [dict]  -   ID of the specific:
                                             * marketplace
                                             * mandant (client)
                                             * listing
