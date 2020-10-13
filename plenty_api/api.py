@@ -210,6 +210,8 @@ class PlentyApi():
             raw_response = requests.post(endpoint, headers=self.creds,
                                          params=query, json=data)
 
+        if self.debug:
+            print(f"DEBUG: request url: {raw_response.request.url}")
         try:
             response = raw_response.json()
         except simplejson.errors.JSONDecodeError:
