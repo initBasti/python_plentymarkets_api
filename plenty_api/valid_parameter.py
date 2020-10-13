@@ -22,7 +22,7 @@
     https://developers.plentymarkets.com/rest-doc#
 """
 
-VALID_DOMAINS = ['order', 'item', 'variation', 'vat', 'prices', 'manfacturer']
+VALID_DOMAINS = ['order', 'item', 'variation', 'vat', 'prices', 'manufacturer']
 VALID_ROUTES = ['/rest/orders', '/rest/items', '/rest/items/variations',
                 '/rest/vat', '/rest/items/sales_prices',
                 '/rest/items/manufacturers']
@@ -55,7 +55,7 @@ VALID_REFINE_KEYS = {
         'id', 'itemId', 'flagOne', 'flagTwo', 'categoryId', 'isMain',
         'isActive', 'barcode', 'referrerId', 'sku', 'date'
     ],
-    'manfacturer': [
+    'manufacturer': [
         'name'
     ]
 }
