@@ -4,7 +4,7 @@ import requests
 from plenty_api.utils import (
     get_route, build_endpoint, check_date_range, parse_date, build_date_range,
     get_utc_offset, build_query_date, create_vat_mapping, date_to_timestamp,
-    get_language, shrink_price_configuration
+    get_language, shrink_price_configuration, sanity_check_parameter
 )
 
 
@@ -79,17 +79,17 @@ def sample_price_response() -> list:
                            'updatedAt': '1990-07-09T15:33:46+02:00'}],
             'createdAt': '1990-09-05 13:24:53',
             'currencies': [{'createdAt': '1990-07-09T15:33:46+02:00',
-                              'currency': 'EUR',
-                              'salesPriceId': 1,
-                              'updatedAt': '1990-07-09T15:33:46+02:00'},
-                             {'createdAt': '1990-07-09T15:33:46+02:00',
-                              'currency': 'GBP',
-                              'salesPriceId': 1,
-                              'updatedAt': '1990-07-09T15:33:46+02:00'}],
+                            'currency': 'EUR',
+                            'salesPriceId': 1,
+                            'updatedAt': '1990-07-09T15:33:46+02:00'},
+                           {'createdAt': '1990-07-09T15:33:46+02:00',
+                            'currency': 'GBP',
+                            'salesPriceId': 1,
+                            'updatedAt': '1990-07-09T15:33:46+02:00'}],
             'customerClasses': [{'createdAt': '1990-07-09T15:33:46+02:00',
-                                   'customerClassId': -1,
-                                   'salesPriceId': 1,
-                                   'updatedAt': '1990-07-09T15:33:46+02:00'}],
+                                 'customerClassId': -1,
+                                 'salesPriceId': 1,
+                                 'updatedAt': '1990-07-09T15:33:46+02:00'}],
             'id': 1,
             'interval': 'none',
             'isCustomerPrice': False,
@@ -228,6 +228,47 @@ def sample_vat_data() -> list:
 
 
 @pytest.fixture
+def sample_sanity_check_parameter() -> list:
+    samples = [
+        {
+            'domain': 'manufacturer',
+            'query': {},
+            'refine': {},
+            'additional': [],
+            'lang': ''
+        },
+        {
+            'domain': 'variation',
+            'query': {},
+            'refine': {'id': 1234, 'itemId': 10234},
+            'additional': ['properties', 'stock'],
+            'lang': 'at'
+        },
+        {
+            'domain': 'item',
+            'query': {},
+            'refine': {'id': 10234, 'wrong': 'wrong'},
+            'additional': ['variations'],
+            'lang': ''
+        },
+        {
+            'domain': 'order',
+            'query': {'orderType': 1},
+            'refine': {'wrong': 'wrong'},
+            'additional': ['wrong'],
+            'lang': ''
+        },
+        {
+            'domain': 'wrong',
+            'query': {'shall': 'not_appear'},
+            'refine': {'should': 'be_insignificant'},
+            'additional': ['nono'],
+            'lang': 'de'
+        }
+    ]
+    return samples
+
+@pytest.fixture
 def expected_date_query() -> list:
     expected = [
         'createdAtFrom=2020-09-14T08%3A00%3A00%2B02%3A00' +
@@ -253,6 +294,28 @@ def expected_query_attributes() -> list:
         '&with%5B%5D=documents&with%5B%5D=comments&orderType=1,4&referrerId=1',
         '&with%5B%5D=shippingPackages&countryId=1',
         '&with%5B%5D=documents'
+    ]
+    return expected
+
+
+@pytest.fixture
+def expected_sanity_check_query() -> list:
+    expected = [
+        # empty query
+        {},
+        # domain: variation
+        # valid domain, 2 refine, 2 additional, lang all valid arguments
+        {'id': 1234, 'itemId': 10234,
+         'with': ['properties', 'stock'], 'lang': 2},
+        # domain: item
+        # valid domain 2 refine, 1 additional, 1 invalid refine
+        {'id': 10234, 'with': ['variations']},
+        # domain: order
+        # all invalid arguments, but preexisting query
+        {'orderType': 1},
+        # domain: wrong
+        # invalid domain
+        {}
     ]
     return expected
 
@@ -397,4 +460,18 @@ def test_shrink_price_configuration(sample_price_response: dict,
     for sample in sample_price_response:
         result.append(shrink_price_configuration(data=sample))
 
-    assert result == expected_prices
+    assert expected_prices == result
+
+
+def test_sanity_check_parameter(sample_sanity_check_parameter: dict,
+                                expected_sanity_check_query: dict) -> None:
+    result = []
+
+    for sample in sample_sanity_check_parameter:
+        result.append(sanity_check_parameter(domain=sample['domain'],
+                                             query=sample['query'],
+                                             refine=sample['refine'],
+                                             additional=sample['additional'],
+                                             lang=sample['lang']))
+
+    assert expected_sanity_check_query == result

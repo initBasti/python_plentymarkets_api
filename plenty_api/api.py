@@ -294,17 +294,11 @@ class PlentyApi():
 
         query = utils.build_query_date(date_range=date_range,
                                        date_type=date_type)
-        if refine:
-            invalid_keys = set(refine.keys()).difference(
-                constants.VALID_ORDER_REFINE_KEYS)
-            if invalid_keys:
-                print(f"Invalid refine argument key removed: {invalid_keys}")
-                for invalid_key in invalid_keys:
-                    refine.pop(invalid_key, None)
-            query.update(refine)
 
-        if additional:
-            query.update({'with': additional})
+        query = utils.sanity_check_parameter(domain='order',
+                                             query=query,
+                                             refine=refine,
+                                             additional=additional)
 
         orders = self.__repeat_get_request_for_all_records(domain='orders',
                                                            query=query)
@@ -421,24 +415,15 @@ class PlentyApi():
         items = None
         query = {}
 
-        if refine:
-            invalid_keys = set(refine.keys()).difference(
-                constants.VALID_ITEM_REFINE_KEYS)
-            if invalid_keys:
-                print(f"Invalid refine argument key removed: {invalid_keys}")
-                for invalid_key in invalid_keys:
-                    refine.pop(invalid_key, None)
-            query.update(refine)
-
-        if additional:
-            query.update({'with': additional})
+        query = utils.sanity_check_parameter(domain='item',
+                                             query=query,
+                                             refine=refine,
+                                             additional=additional,
+                                             lang=lang)
 
         if last_update:
             query.update({'updatedBetween': utils.date_to_timestamp(
                          date=last_update)})
-
-        if lang:
-            query.update({'lang': utils.get_language(lang=lang)})
 
         items = self.__repeat_get_request_for_all_records(domain='items',
                                                           query=query)
@@ -476,20 +461,11 @@ class PlentyApi():
         variations = None
         query = {}
 
-        if refine:
-            invalid_keys = set(refine.keys()).difference(
-                constants.VALID_VARIATION_REFINE_KEYS)
-            if invalid_keys:
-                print(f"Invalid refine argument key removed: {invalid_keys}")
-                for invalid_key in invalid_keys:
-                    refine.pop(invalid_key, None)
-            query.update(refine)
-
-        if additional:
-            query.update({'with': additional})
-
-        if lang:
-            query.update({'lang': utils.get_language(lang=lang)})
+        query = utils.sanity_check_parameter(domain='variation',
+                                             query=query,
+                                             refine=refine,
+                                             additional=additional,
+                                             lang=lang)
 
         variations = self.__repeat_get_request_for_all_records(
             domain='variations', query=query)

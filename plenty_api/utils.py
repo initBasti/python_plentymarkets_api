@@ -34,10 +34,10 @@ def create_vat_mapping(data: list, subset: list = None) -> dict:
         restrict the mapping to a subset if given.
 
         Parameter:
-            data [List]         -   Response JSON data from /rest/vat request
+            data    [list]      -   Response JSON data from /rest/vat request
 
         Return:
-            [Dict]
+                    [dict]
     """
     mapping = {}
     if not data or not isinstance(data[0], dict):
@@ -62,10 +62,10 @@ def shrink_price_configuration(data: dict) -> dict:
         date information and other additional mappings.
 
         Parameter:
-            data [dict]         -   The response JSON dictionary
+            data    [dict]      -   The response JSON dictionary
 
         Return:
-            [dict]
+                    [dict]
     """
     configuration: dict = {
         'id': 0,
@@ -111,11 +111,11 @@ def get_route(domain: str) -> str:
         Use fixed mappings to determine the correct route for the endpoint.
 
         Parameter:
-            domain [String]     -   Specifies the type of route for the request
-                                    {item/order}
+            domain  [str]       -   Specifies the type of route for the request
+                                    {item/order/..}
 
         Return:
-            [String]
+                    [str]
     """
     for valid_domain in constants.VALID_DOMAINS:
         if re.match(valid_domain, domain.lower()):
@@ -129,16 +129,67 @@ def get_language(lang: str) -> int:
         country abbreviation.
 
         Parameter:
-            lang [str]          -   Country abbreviation
+            lang    [str]       -   Country abbreviation
 
         Return:
-            [int]               -   ID from Plentymarkets
+                    [int]       -   ID from Plentymarkets
     """
     try:
         return constants.VALID_COUNTRY_MAP[lang.upper()]
     except KeyError:
         print(f"ERROR: invalid country abbreviation: {lang}")
         return -1
+
+
+def sanity_check_parameter(domain: str,
+                           query: dict,
+                           refine: dict = None,
+                           additional: list = None,
+                           lang: str = ''):
+    """
+        Build the query dictionary, while checking for invalid arguments
+        and removing them.
+
+        Parameter:
+            domain     [str]    -   specifies the type of route for the request
+                                    {item/order/..}
+            query      [dict]   -   Dictionary used for the params field
+                                    for the requests module.
+            refine     [dict]   -   Filters for the request
+            additional [list]   -   additional elements for the response body
+            lang       [str]    -   Name of the language for product texts
+
+        Return:
+                       [dict]   -   updated query
+    """
+    if domain not in constants.VALID_DOMAINS:
+        print(f"ERROR: invalid domain name {domain}")
+        return {}
+
+    if refine:
+        invalid_keys = set(refine.keys()).difference(
+            constants.VALID_REFINE_KEYS[domain])
+        if invalid_keys:
+            print(f"Invalid refine argument key removed: {invalid_keys}")
+            for invalid_key in invalid_keys:
+                refine.pop(invalid_key, None)
+        if refine:
+            query.update(refine)
+
+    if additional:
+        invalid_values = set(additional).difference(
+            constants.VALID_ADDITIONAL_VALUES[domain])
+        if invalid_values:
+            print(f"Invalid additional argument removed: {invalid_values}")
+            for invalid_value in invalid_values:
+                additional.remove(invalid_value)
+        if additional:
+            query.update({'with': additional})
+
+    if lang:
+        query.update({'lang': get_language(lang=lang)})
+
+    return query
 
 
 def build_query_date(date_range: dict, date_type: str) -> dict:
@@ -154,13 +205,13 @@ def build_query_date(date_range: dict, date_type: str) -> dict:
             Delivery : {outgoingItemsBookedAtFrom & outgoingItemsBookedAtTo}
 
         Parameter:
-            date_range [Dict]   -   Start & End date in W3C date format
+            date_range  [dict]  -   Start & End date in W3C date format
                                     (use `build_date_range`)
-            date_type [String]  -   Identifier for the type of date range
+            date_type   [str]   -   Identifier for the type of date range
                                     {Creation, Payment, Change, Delivery}
 
         Return:
-            [dict]               -   Date range in python dictionary
+                        [dict]  -   Date range in python dictionary
     """
     query = {}
     if not date_range or not date_type:
@@ -184,12 +235,12 @@ def build_endpoint(url: str, route: str, path: str = '') -> str:
         and having the correcting HTTP encoding for special signs.
 
         Parameter:
-            url [String]        -   Base url of the plentymarkets API
-            route [String]      -   Route part endpoint (e.g. /rest/items)
-            path [String]       -   Sub route part (e.g. /{item_id}/images)
+            url     [str]       -   Base url of the plentymarkets API
+            route   [str]       -   Route part endpoint (e.g. /rest/items)
+            path    [str]       -   Sub route part (e.g. /{item_id}/images)
 
         Parameter:
-            [String]            -   complete endpoint
+                    [str]       -   complete endpoint
     """
     if not re.search(r'https://.*.plentymarkets-cloud01.com', url):
         print("ERROR: invalid URL, need: {https://*.plentymarkets-cloud01.com")
@@ -212,7 +263,7 @@ def get_utc_offset() -> str:
         and UTC and return a string with the format "02:00"
 
         Return:
-            [String]
+                    [str]
     """
     current = datetime.datetime.now(datetime.timezone.utc).astimezone()
     offset = current.tzinfo.utcoffset(None)
@@ -225,10 +276,10 @@ def check_date_range(date_range: dict) -> bool:
         Check if the user specified date range is a valid range in the past.
 
         Parameter:
-            date_range [Dict]   -   start and end date
+            date_range [dict]   -   start and end date
 
         Return:
-            [Bool]
+                       [bool]
     """
     now = datetime.datetime.now().astimezone()
     try:
@@ -259,10 +310,11 @@ def parse_date(date: str) -> str:
         the PlentyMarkets API.
 
         Parameter:
-            date [String]   -   user supplied string with the original date.
+            date    [str]       -   user supplied string with the
+                                    original date.
 
         Return:
-            [String]
+                    [str]
     """
     try:
         date = dateutil.parser.parse(date)
@@ -280,11 +332,11 @@ def build_date_range(start: str, end: str) -> dict:
         Create a range of 2 dates in the W3C dateformat.
 
         Parameter:
-            start [String]  -   user supplied string with the start date
-            end [String]    -   user supplied string with the end date
+            start   [str]       -   user supplied string with the start date
+            end     [str]       -   user supplied string with the end date
 
         Return:
-            [Dict]/None
+                    [dict]/None
     """
     w3c_start = parse_date(date=start)
     w3c_end = parse_date(date=end)
@@ -298,14 +350,14 @@ def date_to_timestamp(date: str) -> int:
         Parse a date object in to a unix timestamp.
 
         Parameter:
-            date [str]      -   date as function parameter in on of the
-                                following formats:
+            date    [str]       -   date as function parameter in on of the
+                                    following formats:
                                     YYYY-MM-DD
                                     YYYY-MM-DDTHH:MM
                                     YYYY-MM-DDTHH:MM:SS+UTC-OFFSET
 
         Return:
-            [int]           -   Unix timestamp since 1970-01-01
+                    [int]       -   Unix timestamp since 1970-01-01
     """
     # Check if the date starts with anything else but the year
     first_number = re.search(r'^\d{2,}(?=\D)', date)
@@ -331,32 +383,32 @@ def get_temp_creds() -> dict:
     return {'username': username, 'password': password}
 
 
-def new_keyring_creds(kr: object) -> dict:
+def new_keyring_creds(keyring: object) -> dict:
     """
         Get the credentials for the API from the user and store them into
         a system wide keyring
 
         Parameter:
-            kr [CredentialManager object]
+            keyring [CredentialManager object]
         Return:
-            [Dict]  - containing username and password
+                    [dict]      - containing username and password
     """
-    kr.set_credentials()
-    return kr.get_credentials()
+    keyring.set_credentials()
+    return keyring.get_credentials()
 
 
-def update_keyring_creds(kr: object) -> dict:
+def update_keyring_creds(keyring: object) -> dict:
     """
         Delete the current content of the keyring and get new credentials
         for the API from the user, store them into the keyring
 
         Parameter:
-            kr [CredentialManager object]
+            keyring [CredentialManager object]
         Return:
-            [Dict]  - containing username and password
+                    [dict]      - containing username and password
     """
-    kr.delete_credentials()
-    return new_keyring_creds(kr=kr)
+    keyring.delete_credentials()
+    return new_keyring_creds(keyring=keyring)
 
 
 def build_login_token(response_json: dict) -> str:
