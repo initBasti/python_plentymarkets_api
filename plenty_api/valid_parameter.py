@@ -22,9 +22,10 @@
     https://developers.plentymarkets.com/rest-doc#
 """
 
-VALID_DOMAINS = ['order', 'item', 'variation', 'vat', 'prices']
+VALID_DOMAINS = ['order', 'item', 'variation', 'vat', 'prices', 'manfacturer']
 VALID_ROUTES = ['/rest/orders', '/rest/items', '/rest/items/variations',
-                '/rest/vat', '/rest/items/sales_prices']
+                '/rest/vat', '/rest/items/sales_prices',
+                '/rest/items/manufacturers']
 DOMAIN_ROUTE_MAP = {VALID_DOMAINS[i]: VALID_ROUTES[i]
                     for i in range(len(VALID_DOMAINS))}
 
@@ -37,34 +38,57 @@ ORDER_DATE_ARGUMENTS = {
     'delivery': 'outgoingItemsBooked'
 }
 # Refine argument keys for GET requests to filter the data
-VALID_ORDER_REFINE_KEYS = [
-    'orderType', 'contactId', 'referrerId', 'shippingProfileId',
-    'shippingServiceProviderId', 'ownerUserId', 'warehouseId',
-    'isEbayPlus', 'includedVariation', 'includedItem', 'orderIds',
-    'countryId', 'orderItemName', 'variationNumber', 'sender.contact',
-    'sender.warehouse', 'receiver.contact', 'receiver.warehouse',
-    'externalOrderId', 'clientId', 'paymentStatus', 'statusFrom',
-    'statusTo', 'hasDocument', 'hasDocumentNumber', 'parentOrderId'
-]
-VALID_ITEM_REFINE_KEYS = [
-    'name', 'manfacturerId', 'id', 'flagOne', 'flagTwo'
-]
-VALID_VARIATION_REFINE_KEYS = [
-    'id', 'itemId', 'flagOne', 'flagTwo', 'categoryId', 'isMain',
-    'isActive', 'barcode', 'referrerId', 'sku', 'date'
-]
+VALID_REFINE_KEYS = {
+    'order': [
+        'orderType', 'contactId', 'referrerId', 'shippingProfileId',
+        'shippingServiceProviderId', 'ownerUserId', 'warehouseId',
+        'isEbayPlus', 'includedVariation', 'includedItem', 'orderIds',
+        'countryId', 'orderItemName', 'variationNumber', 'sender.contact',
+        'sender.warehouse', 'receiver.contact', 'receiver.warehouse',
+        'externalOrderId', 'clientId', 'paymentStatus', 'statusFrom',
+        'statusTo', 'hasDocument', 'hasDocumentNumber', 'parentOrderId'
+    ],
+    'item': [
+        'name', 'manfacturerId', 'id', 'flagOne', 'flagTwo'
+    ],
+    'variation': [
+        'id', 'itemId', 'flagOne', 'flagTwo', 'categoryId', 'isMain',
+        'isActive', 'barcode', 'referrerId', 'sku', 'date'
+    ],
+    'manfacturer': [
+        'name'
+    ]
+}
 
 # Valid additional argument values for GET requests, which are used to
 # add optional data to the response body
-VALID_VARIATION_ADDITIONAL_VALUES = [
-    'properties', 'variationProperties', 'variationBarcodes',
-    'variationBundleComponents', 'variationComponentBundles',
-    'variationSalesPrices', 'marketItemNumbers', 'variationCategories',
-    'variationClients', 'variationMarkets', 'variationDefaultCategory',
-    'variationSuppliers', 'variationWarehouses', 'images', 'itemImages',
-    'variationAttributeValues', 'variationSkus', 'variationAdditionalSkus',
-    'unit', 'parent', 'item', 'stock'
-]
+VALID_ADDITIONAL_VALUES = {
+    'order': [
+        'addresses', 'relations', 'comments', 'location', 'payments',
+        'documents', 'contactSender', 'contactReceiver',
+        'warehouseSender', 'warehouseReceiver', 'orderItems.variation',
+        'orderItems.giftCardCodes', 'orderItems.transactions',
+        'orderItems.serialNumbers', 'orderItems.variationBarcodes',
+        'orderItems.comments', 'originOrderReferences',
+        'shippingPackages'
+    ],
+    'item': [
+        'itemProperties', 'itemCrossSelling', 'variations', 'itemImages',
+        'itemShippingProfiles', 'ebayTitles'
+    ],
+    'variation': [
+        'properties', 'variationProperties', 'variationBarcodes',
+        'variationBundleComponents', 'variationComponentBundles',
+        'variationSalesPrices', 'marketItemNumbers', 'variationCategories',
+        'variationClients', 'variationMarkets', 'variationDefaultCategory',
+        'variationSuppliers', 'variationWarehouses', 'images', 'itemImages',
+        'variationAttributeValues', 'variationSkus', 'variationAdditionalSkus',
+        'unit', 'parent', 'item', 'stock'
+    ],
+    'manufacturer': [
+        'commisions', 'externals'
+    ]
+}
 
 VALID_COUNTRY_MAP = {
     "DE": 1, "AT": 2, "BE": 3, "CH": 4, "CY": 5, "CZ": 6, "DK": 7, "ES": 8,
