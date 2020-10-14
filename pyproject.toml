@@ -1,7 +1,7 @@
 [tool.poetry]
 
 name = "plenty_api"
-version = "0.2.3"
+version = "0.2.4"
 description = "Interface for the PlentyMarkets API."
 
 license = "GPLv3"
@@ -30,6 +30,7 @@ python = "^3.7"
 keyring = "^21.4.0"
 simplejson = "^3.17.2"
 pandas = "^1.1.2"
+requests = "^2.24.0"
 
 [tool.poetry.dev-dependencies]
 
