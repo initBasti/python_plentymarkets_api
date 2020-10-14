@@ -38,7 +38,10 @@ For more information about the valid values: [Plenty Developer Documentation](ht
 
 There are currently two supported output formats: 'json' and 'dataframe'.  
 The 'json' format simply returns the raw response, without page information and with multiple pages combined into a single data structure.  
-The 'dataframe' format transforms that data structure into a pandas DataFrame, which contains sub parts in json, that can be split further by the user application.
+The 'dataframe' format transforms that data structure into a pandas DataFrame, which contains subparts in json, that can be split further by the user application.
+
+---
+---
 
 #### Item data
 
@@ -65,7 +68,9 @@ The **lang** field specifies the language of the texts used in the response. Val
 
 There are currently two supported output formats: 'json' and 'dataframe'.  
 The 'json' format simply returns the raw response, without page information and with multiple pages combined into a single data structure.  
-The 'dataframe' format transforms that data structure into a pandas DataFrame, which contains sub parts in json, that can be split further by the user application.
+The 'dataframe' format transforms that data structure into a pandas DataFrame, which contains subparts in json, that can be split further by the user application.
+
+---
 
 ##### plenty_api_get_variations:
 
@@ -86,7 +91,9 @@ The **lang** field specifies the language of the texts used in the response. Val
 
 There are currently two supported output formats: 'json' and 'dataframe'.  
 The 'json' format simply returns the raw response, without page information and with multiple pages combined into a single data structure.  
-The 'dataframe' format transforms that data structure into a pandas DataFrame, which contains sub parts in json, that can be split further by the user application.
+The 'dataframe' format transforms that data structure into a pandas DataFrame, which contains subparts in json, that can be split further by the user application.
+
+---
 
 ##### plenty_api_get_attributes:
 
@@ -103,14 +110,16 @@ The dates are accepted in the following formats:
 - YEAR-MONTH-DAYTHOUR:MINUTE                        (2020-09-16T08:00)
 - YEAR-MONTH-DAYTHOUR:MINUTE:SECOND+UTC-OFFSET      (2020-09-16T08:00)  [W3C date format]
 
-Finaly, the **variation_map** parameter, performs an additional request to pull all variations in order to link them to the attribute values. Depending on the size of your
+Finally, the **variation_map** parameter, performs an additional request to pull all variations in order to link them to the attribute values. Depending on the size of your
 PlentyMarkets system, this can take a few seconds and consume some API calls.
 
 [*Output format*]:
 
 There are currently two supported output formats: 'json' and 'dataframe'.  
 The 'json' format simply returns the raw response, without page information and with multiple pages combined into a single data structure.  
-The 'dataframe' format transforms that data structure into a pandas DataFrame, which contains sub parts in json, that can be split further by the user application.
+The 'dataframe' format transforms that data structure into a pandas DataFrame, which contains subparts in json, that can be split further by the user application.
+
+---
 
 ##### plenty_api_get_price_configuration:
 
@@ -129,7 +138,9 @@ The dates are accepted in the following formats:
 
 There are currently two supported output formats: 'json' and 'dataframe'.  
 The 'json' format simply returns the raw response, without page information and with multiple pages combined into a single data structure.  
-The 'dataframe' format transforms that data structure into a pandas DataFrame, which contains sub parts in json, that can be split further by the user application.
+The 'dataframe' format transforms that data structure into a pandas DataFrame, which contains subparts in json, that can be split further by the user application.
+
+---
 
 ##### plenty_api_get_manufacturers:
 
@@ -153,7 +164,10 @@ The dates are accepted in the following formats:
 
 There are currently two supported output formats: 'json' and 'dataframe'.  
 The 'json' format simply returns the raw response, without page information and with multiple pages combined into a single data structure.  
-The 'dataframe' format transforms that data structure into a pandas DataFrame, which contains sub parts in json, that can be split further by the user application.
+The 'dataframe' format transforms that data structure into a pandas DataFrame, which contains subparts in json, that can be split further by the user application.
+
+---
+---
 
 #### Tax data
 
