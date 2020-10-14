@@ -53,6 +53,18 @@ class PlentyApi():
                 ** Reference of query arguments
                 (developers.plentymarkets.com/rest-doc#/Order/get_rest_orders)
             ___
+            **plenty_api_get_attributes**
+                List all the attributes from PlentyMarkets, optionally link
+                variation IDs to the response, that are connected to the
+                attribute value
+                [additional]    -   Add additional elements to the response.
+                [last_change]   -   filter out attributes were the last
+                                    change is older than the specified date
+                [variation_map] -   Add a list of connected variations
+
+                Reference:
+                (https://developers.plentymarkets.com/rest-doc#/Item/get_rest_items_attributes)
+            ___
             **plenty_api_get_vat_id_mappings**
                 Get a mapping of VAT configuration IDs to country IDs,
                 together with the TaxID for each country.
@@ -318,6 +330,68 @@ class PlentyApi():
 
         return orders
 
+    def plenty_api_get_attributes(self,
+                                  additional: list = None,
+                                  last_update: str = '',
+                                  variation_map: bool = False):
+        """
+            List all attributes from PlentyMarkets, this will fetch the
+            basic attribute structures, so if you require an attribute value
+            use: additional=['values'].
+            The option variation_map performs an additional request to
+            /rest/items/variations in order to map variation IDs to
+            attribute values.
+
+            Parameter:
+                additional  [list]  -   Add additional elements to the
+                                        response data.
+                                        Viable options:
+                                        ['values', 'names', 'maps']
+                last_update [str]   -   Date of the last update given as one
+                                        of the following formats:
+                                            YYYY-MM-DDTHH:MM:SS+UTC-OFFSET
+                                            attributes-MM-DDTHH:MM
+                                            YYYY-MM-DD
+                variation_map [bool]-   Fetch all variations and add a list
+                                        of variations, where the attribute
+                                        value matches to the corresponding
+                                        attribute value
+
+            Return:
+                [JSON(Dict) / DataFrame] <= self.data_format
+        """
+        attributes = None
+        query = {}
+
+        query = utils.sanity_check_parameter(domain='attribute',
+                                             query=query,
+                                             additional=additional)
+
+        if last_update:
+            query.update({'updatedAt': last_update})
+
+        # variation_map was given but the required '&with=values' query is
+        # missing, we assume the desired request was to be made with values
+        if variation_map:
+            if not additional:
+                query.update({'with': 'values'})
+            if additional:
+                if 'values' not in additional:
+                    query.update({'with': 'values'})
+
+        attributes = self.__repeat_get_request_for_all_records(
+            domain='attributes', query=query)
+
+        if variation_map:
+            variation = self.plenty_api_get_variations(
+                additional=['variationAttributeValues'])
+            attributes = utils.attribute_variation_mapping(
+                variation=variation, attribute=attributes)
+
+        attributes = utils.transform_data_type(data=attributes,
+                                               data_format=self.data_format)
+
+        return attributes
 
     def plenty_api_get_vat_id_mappings(self, subset: List[int] = None):
         """
@@ -475,7 +549,7 @@ class PlentyApi():
                                                           query=query)
 
         items = utils.transform_data_type(data=items,
-                                           data_format=self.data_format)
+                                          data_format=self.data_format)
         return items
 
     def plenty_api_get_variations(self,
@@ -515,7 +589,7 @@ class PlentyApi():
             domain='variations', query=query)
 
         variations = utils.transform_data_type(data=variations,
-                                           data_format=self.data_format)
+                                               data_format=self.data_format)
         return variations
 
 # POST REQUESTS

@@ -1,10 +1,12 @@
+import copy
 import pytest
 import requests
 
 from plenty_api.utils import (
     get_route, build_endpoint, check_date_range, parse_date, build_date_range,
     get_utc_offset, build_query_date, create_vat_mapping, date_to_timestamp,
-    get_language, shrink_price_configuration, sanity_check_parameter
+    get_language, shrink_price_configuration, sanity_check_parameter,
+    attribute_variation_mapping
 )
 
 
@@ -119,25 +121,6 @@ def sample_price_response() -> list:
         {}
     ]
     return samples
-
-
-@pytest.fixture
-def expected_prices() -> list:
-    expected = [
-        {
-            'id': 1,
-            'type': 'default',
-            'position': 0,
-            'names': {'de': 'Preis', 'en': 'Price'},
-            'referrers': [0],
-            'accounts': [],
-            'clients': [1234],
-            'countries': [-1],
-            'currencies': ['EUR', 'GBP'],
-            'customerClasses': [-1]
-         }, {}
-    ]
-    return expected
 
 
 @pytest.fixture
@@ -268,6 +251,116 @@ def sample_sanity_check_parameter() -> list:
     ]
     return samples
 
+
+@pytest.fixture
+def sample_attributes() -> list:
+    samples = [
+        [
+            {
+                'id': 1,
+                'position': 1,
+                'values': [
+                    {
+                        'id': 1,
+                        'attributeId': 1,
+                        'position': 1,
+                        'valueNames': [
+                            {
+                                'lang': 'de',
+                                'valueId': '1',
+                                'name': 'rot'
+                            },
+                            {
+                                'lang': 'en',
+                                'valueId': '1',
+                                'name': 'red'
+                            }
+                        ],
+                    },
+                    {
+                        'id': 2,
+                        'attributeId': 1,
+                        'position': 2,
+                        'valueNames': [
+                            {
+                                'lang': 'de',
+                                'valueId': '2',
+                                'name': 'grau'
+                            },
+                            {
+                                'lang': 'en',
+                                'valueId': '2',
+                                'name': 'grey'
+                            }
+                        ],
+                    },
+                    {
+                        'id': 3,
+                        'attributeId': 1,
+                        'position': 3,
+                        'valueNames': [
+                            {
+                                'lang': 'de',
+                                'valueId': '2',
+                                'name': 'gelb'
+                            },
+                            {
+                                'lang': 'en',
+                                'valueId': '2',
+                                'name': 'yellow'
+                            }
+                        ],
+                    }
+                ]
+            }
+        ]
+    ]
+
+    return samples
+
+
+@pytest.fixture
+def sample_variation_data() -> list:
+    samples = [
+        {
+            'id': 1234,
+            'number': 'test-variation_1',
+            'variationAttributeValues': [{'attributeId': 1, 'valueId': 1}],
+        },
+        {
+            'id': 2345,
+            'number': 'test-variation_2',
+            'variationAttributeValues': [{'attributeId': 1, 'valueId': 1}],
+        },
+        {
+            'id': 3456,
+            'number': 'test-variation_3',
+            'variationAttributeValues': [{'attributeId': 1, 'valueId': 1}],
+        },
+        {
+            'id': 4567,
+            'number': 'test-variation_4',
+            'variationAttributeValues': [{'attributeId': 1, 'valueId': 2}],
+        },
+        {
+            'id': 5678,
+            'number': 'test-variation_5',
+            'variationAttributeValues': [{'attributeId': 1, 'valueId': 2}],
+        },
+        {
+            'id': 6789,
+            'number': 'test-variation_6',
+            'variationAttributeValues': [{'attributeId': 1, 'valueId': 4}],
+        },
+        {
+            'id': 7891,
+            'number': 'test-variation_7',
+            'variationAttributeValues': [{'attributeId': 1, 'valueId': 4}],
+        }
+    ]
+    return samples
+
+
 @pytest.fixture
 def expected_date_query() -> list:
     expected = [
@@ -299,6 +392,25 @@ def expected_query_attributes() -> list:
 
 
 @pytest.fixture
+def expected_prices() -> list:
+    expected = [
+        {
+            'id': 1,
+            'type': 'default',
+            'position': 0,
+            'names': {'de': 'Preis', 'en': 'Price'},
+            'referrers': [0],
+            'accounts': [],
+            'clients': [1234],
+            'countries': [-1],
+            'currencies': ['EUR', 'GBP'],
+            'customerClasses': [-1]
+         }, {}
+    ]
+    return expected
+
+
+@pytest.fixture
 def expected_sanity_check_query() -> list:
     expected = [
         # empty query
@@ -321,11 +433,99 @@ def expected_sanity_check_query() -> list:
     return expected
 
 
+@pytest.fixture
+def expected_attribute_variation_map() -> list:
+    expected = [
+        [
+            {
+                'id': 1,
+                'position': 1,
+                'values': [
+                    {
+                        'id': 1,
+                        'attributeId': 1,
+                        'position': 1,
+                        'valueNames': [
+                            {'lang': 'de', 'valueId': '1', 'name': 'rot'},
+                            {'lang': 'en', 'valueId': '1', 'name': 'red'}
+                        ],
+                        'linked_variations': [
+                            1234, 2345, 3456
+                        ]
+                    },
+                    {
+                        'id': 2,
+                        'attributeId': 1,
+                        'position': 2,
+                        'valueNames': [
+                            {'lang': 'de', 'valueId': '2', 'name': 'grau'},
+                            {'lang': 'en', 'valueId': '2', 'name': 'grey'}
+                        ],
+                        'linked_variations': [
+                            4567, 5678
+                        ]
+                    },
+                    {
+                        'id': 3,
+                        'attributeId': 1,
+                        'position': 3,
+                        'valueNames': [
+                            {'lang': 'de', 'valueId': '2', 'name': 'gelb'},
+                            {'lang': 'en', 'valueId': '2', 'name': 'yellow'}
+                        ]
+                    }
+                ]
+            }
+        ],
+        # Missing variation data
+        [
+            {
+                'id': 1,
+                'position': 1,
+                'values': [
+                    {
+                        'id': 1,
+                        'attributeId': 1,
+                        'position': 1,
+                        'valueNames': [
+                            {'lang': 'de', 'valueId': '1', 'name': 'rot'},
+                            {'lang': 'en', 'valueId': '1', 'name': 'red'}
+                        ],
+                    },
+                    {
+                        'id': 2,
+                        'attributeId': 1,
+                        'position': 2,
+                        'valueNames': [
+                            {'lang': 'de', 'valueId': '2', 'name': 'grau'},
+                            {'lang': 'en', 'valueId': '2', 'name': 'grey'}
+                        ],
+                    },
+                    {
+                        'id': 3,
+                        'attributeId': 1,
+                        'position': 3,
+                        'valueNames': [
+                            {'lang': 'de', 'valueId': '2', 'name': 'gelb'},
+                            {'lang': 'en', 'valueId': '2', 'name': 'yellow'}
+                        ],
+                    }
+                ]
+            }
+        ],
+        # Missing attribute dat
+        {}
+    ]
+    return expected
+
+
 def test_get_route() -> None:
-    sample_data = ['order', 'item', 'ITEMS', 'oRdErS', 'wrong', '']
+    sample_data = ['order', 'item', 'ITEMS', 'oRdErS', 'wrong', '',
+                   'manufacturer', 'manfacturer', 'attribute']
     result = []
     expected = ['/rest/orders', '/rest/items', '/rest/items', '/rest/orders',
-                '', '']
+                '', '', '/rest/items/manufacturers', '',
+                '/rest/items/attributes']
 
     for domain in sample_data:
         result.append(get_route(domain=domain))
@@ -454,8 +654,8 @@ def test_get_language() -> None:
     assert expected == result
 
 
-def test_shrink_price_configuration(sample_price_response: dict,
-                                    expected_prices: dict) -> None:
+def test_shrink_price_configuration(sample_price_response: list,
+                                    expected_prices: list) -> None:
     result = []
 
     for sample in sample_price_response:
@@ -464,8 +664,8 @@ def test_shrink_price_configuration(sample_price_response: dict,
     assert expected_prices == result
 
 
-def test_sanity_check_parameter(sample_sanity_check_parameter: dict,
-                                expected_sanity_check_query: dict) -> None:
+def test_sanity_check_parameter(sample_sanity_check_parameter: list,
+                                expected_sanity_check_query: list) -> None:
     result = []
 
     for sample in sample_sanity_check_parameter:
@@ -476,3 +676,24 @@ def test_sanity_check_parameter(sample_sanity_check_parameter: dict,
                                              lang=sample['lang']))
 
     assert expected_sanity_check_query == result
+
+
+def test_attribute_variation_mapping(sample_attributes: list,
+                                     sample_variation_data: list,
+                                     expected_attribute_variation_map: list):
+    result = []
+
+    for sample in sample_attributes:
+        first = sample
+        second = copy.deepcopy(sample)
+        # Test with variations and attribute
+        result.append(attribute_variation_mapping(
+            variation=sample_variation_data, attribute=first))
+        # Test with attributes and without variations
+        result.append(attribute_variation_mapping(
+            variation=None, attribute=second))
+
+    # Test without attributes and without variations
+    result.append(attribute_variation_mapping(variation=None, attribute=None))
+
+    assert expected_attribute_variation_map == result

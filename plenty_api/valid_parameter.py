@@ -22,10 +22,11 @@
     https://developers.plentymarkets.com/rest-doc#
 """
 
-VALID_DOMAINS = ['order', 'item', 'variation', 'vat', 'prices', 'manufacturer']
+VALID_DOMAINS = ['order', 'item', 'variation', 'vat', 'prices', 'manufacturer',
+                 'attribute']
 VALID_ROUTES = ['/rest/orders', '/rest/items', '/rest/items/variations',
                 '/rest/vat', '/rest/items/sales_prices',
-                '/rest/items/manufacturers']
+                '/rest/items/manufacturers', '/rest/items/attributes']
 DOMAIN_ROUTE_MAP = {VALID_DOMAINS[i]: VALID_ROUTES[i]
                     for i in range(len(VALID_DOMAINS))}
 
@@ -87,6 +88,9 @@ VALID_ADDITIONAL_VALUES = {
     ],
     'manufacturer': [
         'commisions', 'externals'
+    ],
+    'attribute': [
+        'names', 'values', 'maps'
     ]
 }
 

@@ -56,6 +56,58 @@ def create_vat_mapping(data: list, subset: list = None) -> dict:
     return mapping
 
 
+def attribute_variation_mapping(variation: dict, attribute: dict) -> dict:
+    """
+        Add an additional field to the attribute JSON response body:
+        'linked_variations', which contains every variation ID from
+        @variation, where the attributeValueID matches the valueId of
+        the attribute value.
+
+        Parameter:
+            variation[dict]     -   response body entries from:
+                                    /rest/items/variations
+                                    (with variationAttributeValues)
+            attribute[dict]     -   response body entries from:
+                                    /rest/items/attributes (with values)
+
+        Return:
+                    [dict]      -   extended response body of the attributes
+    """
+    value_id_map = {}
+
+    if not attribute:
+        return {}
+
+    if not variation:
+        return attribute
+
+    for var in variation:
+        if 'variationAttributeValues' not in var.keys():
+            print("WARNING: variations without attribute values"
+                  " used for attribute mapping")
+            return attribute
+        for attr in var['variationAttributeValues']:
+            attr_id = str(attr['attributeId'])
+            val_id = str(attr['valueId'])
+            if attr_id not in value_id_map:
+                value_id_map[attr_id] = {val_id: [var['id']]}
+                continue
+            if val_id not in value_id_map[attr_id]:
+                value_id_map[attr_id][val_id] = [var['id']]
+                continue
+            value_id_map[attr_id][val_id].append(var['id'])
+
+    for entry in attribute:
+        attr_id = str(entry['id'])
+        if attr_id in value_id_map:
+            for value in entry['values']:
+                val_id = str(value['id'])
+                if val_id in value_id_map[attr_id]:
+                    value['linked_variations'] = value_id_map[attr_id][val_id]
+
+    return attribute
+
+
 def shrink_price_configuration(data: dict) -> dict:
     """
         reduce the API response to a minimum by deleting
@@ -189,7 +241,6 @@ def sanity_check_parameter(domain: str,
             else:
                 query.update({'with': ','.join(additional)})
 
-
     if lang:
         query.update({'lang': get_language(lang=lang)})
 
@@ -271,7 +322,8 @@ def transform_data_type(data: dict, data_format: str):
         return data
 
     if data_format == 'dataframe':
-        return json_to_dataframe(json=data)
+        data = json_to_dataframe(json=data)
+        return data
 
 
 def get_utc_offset() -> str:

@@ -88,6 +88,30 @@ There are currently two supported output formats: 'json' and 'dataframe'.
 The 'json' format simply returns the raw response, without page information and with multiple pages combined into a single data structure.  
 The 'dataframe' format transforms that data structure into a pandas DataFrame, which contains sub parts in json, that can be split further by the user application.
 
+##### plenty_api_get_attributes:
+
+List all the attributes from PlentyMarkets (size, color etc.), additionally there is an option to link variations from the PlentyMarkets system to the attribute values.
+
+[*Optional parameter*]:
+
+Use the **additional** field to add more values to the response, valid values are:  
+names, values, maps
+
+With the **last_update** parameter, you can filter the results down to items that were changed at or after the specified date  
+The dates are accepted in the following formats:
+- YEAR-MONTH-DAY                                    (2020-09-16)        [ISO 8601 date format]
+- YEAR-MONTH-DAYTHOUR:MINUTE                        (2020-09-16T08:00)
+- YEAR-MONTH-DAYTHOUR:MINUTE:SECOND+UTC-OFFSET      (2020-09-16T08:00)  [W3C date format]
+
+Finaly, the **variation_map** parameter, performs an additional request to pull all variations in order to link them to the attribute values. Depending on the size of your
+PlentyMarkets system, this can take a few seconds and consume some API calls.
+
+[*Output format*]:
+
+There are currently two supported output formats: 'json' and 'dataframe'.  
+The 'json' format simply returns the raw response, without page information and with multiple pages combined into a single data structure.  
+The 'dataframe' format transforms that data structure into a pandas DataFrame, which contains sub parts in json, that can be split further by the user application.
+
 ##### plenty_api_get_price_configuration:
 
 Fetch price configuration from PlentyMarkets, this can be used among other things to get the ID of a price used by a specific referrer in order to get the price date from variations.
