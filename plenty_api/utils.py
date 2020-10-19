@@ -237,7 +237,7 @@ def sanity_check_parameter(domain: str,
                 additional.remove(invalid_value)
         if additional:
             if domain == 'order':
-                query.update({'with': additional})
+                query.update({'with[]': additional})
             else:
                 query.update({'with': ','.join(additional)})
 
