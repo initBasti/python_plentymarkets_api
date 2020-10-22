@@ -1,5 +1,6 @@
 """
-    Python-PlentyMarkets-API-interface
+    Python-PlentyMarkets-API-interface.
+
     Interface to the resources from PlentyMarkets(https://www.plentymarkets.eu)
 
     Copyright (C) 2020  Sebastian Fricke, Panasiam
@@ -91,6 +92,17 @@ class PlentyApi():
 
                 Reference:
                 (https://developers.plentymarkets.com/rest-doc#/Item/get_rest_items_manufacturers)
+            ---
+            **plenty_api_get_referrers**
+                Fetch a list of referrers from PlentyMarkets.
+
+                [column]        -   Get only a specific column
+
+                Reference:
+                (https://developers.plentymarkets.com/rest-doc#/Order/get_rest_orders_referrers)
+                * WARNING the parameter description is just wrong, the columns
+                 attribute actually only takes a single 'string', instead of
+                 an integer and if you pass a list it only uses the last index*
             ___
             **plenty_api_get_items**
                 Generic interface to item data from Plentymarkets with little
@@ -237,6 +249,10 @@ class PlentyApi():
         except simplejson.errors.JSONDecodeError:
             print(f"ERROR: No response for request {method} at {endpoint}")
             return None
+
+        if domain == 'referrer':
+            # The referrer request responds with a different format
+            return response
 
         if 'error' in response.keys():
             print(f"ERROR: Request failed:\n{response['error']['message']}")
@@ -502,6 +518,45 @@ class PlentyApi():
         manufacturers = utils.transform_data_type(data=manufacturers,
                                                   data_format=self.data_format)
         return manufacturers
+
+    def plenty_api_get_referrers(self,
+                                 column: str = ''):
+        """
+            Get a list of order referrers from PlentyMarkets.
+
+            The description within the PlentyMarkets API documentation
+            is just wrong, the parameter doesn't expect an integer nor a
+            list of integers, it actually cannot query multiple columns.
+            All the parameter can query is a "single" column, which
+            is why I renamed the parameter in this method.
+
+            Parameter:
+                column      [str]   -   Name of the field from the referrer
+                                        to be exported.
+
+            Return:
+                [JSON(Dict) / DataFrame] <= self.data_format
+        """
+        # TODO actually only backendName, id and name are actually useful
+        # because all other attributes are useless without identification
+        valid_columns = ['backendName', 'id', 'isEditable', 'isFilterable',
+                         'name', 'orderOwnderId', 'origin']
+        referrers = None
+        query = {}
+        if column in valid_columns:
+            query = {'columns': column}
+        else:
+            print(f"Invalid column argument removed: {column}")
+
+        # This request doesn't export in form of pages
+        referrers = self.__plenty_api_request(method='get',
+                                              domain='referrer',
+                                              query=query)
+
+        referrers = utils.transform_data_type(data=referrers,
+                                              data_format=self.data_format)
+
+        return referrers
 
     def plenty_api_get_items(self,
                              refine: dict = None,

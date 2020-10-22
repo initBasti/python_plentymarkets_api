@@ -41,6 +41,23 @@ The 'json' format simply returns the raw response, without page information and 
 The 'dataframe' format transforms that data structure into a pandas DataFrame, which contains subparts in json, that can be split further by the user application.
 
 ---
+
+##### plenty_api_get_referrers:
+
+Fetch all referrers from PlentyMarkets, they contain the following attributes:
+'backendName', 'id', 'isEditable', 'isFilterable', 'name', 'orderOwnderId', 'origin'
+
+[*Optional parameter*]:
+
+The **column** parameter limits the response body to the values of a single column. This is actually only useful for 'name', 'id' & 'backendName', but for the sake of completeness the rest is included as well.
+
+[*Output format*]:
+
+There are currently two supported output formats: 'json' and 'dataframe'.  
+The 'json' format simply returns the raw response, without page information and with multiple pages combined into a single data structure.  
+The 'dataframe' format transforms that data structure into a pandas DataFrame, which contains subparts in json, that can be split further by the user application.
+
+---
 ---
 
 #### Item data

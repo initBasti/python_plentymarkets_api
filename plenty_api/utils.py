@@ -1,5 +1,6 @@
 """
-    Python-PlentyMarkets-API-interface
+    Python-PlentyMarkets-API-interface.
+
     Interface to the resources from PlentyMarkets(https://www.plentymarkets.eu)
 
     Copyright (C) 2020  Sebastian Fricke, Panasiam

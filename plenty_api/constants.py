@@ -23,10 +23,11 @@
 """
 
 VALID_DOMAINS = ['order', 'item', 'variation', 'vat', 'prices', 'manufacturer',
-                 'attribute']
+                 'attribute', 'referrer']
 VALID_ROUTES = ['/rest/orders', '/rest/items', '/rest/items/variations',
                 '/rest/vat', '/rest/items/sales_prices',
-                '/rest/items/manufacturers', '/rest/items/attributes']
+                '/rest/items/manufacturers', '/rest/items/attributes',
+                '/rest/orders/referrers']
 DOMAIN_ROUTE_MAP = {VALID_DOMAINS[i]: VALID_ROUTES[i]
                     for i in range(len(VALID_DOMAINS))}
 
