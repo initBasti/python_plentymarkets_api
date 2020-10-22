@@ -25,7 +25,7 @@ import re
 import dateutil.parser
 import pandas
 
-import plenty_api.valid_parameter as constants
+import plenty_api.constants as constants
 
 
 def create_vat_mapping(data: list, subset: list = None) -> dict:
@@ -175,22 +175,21 @@ def get_route(domain: str) -> str:
     return ''
 
 
-def get_language(lang: str) -> int:
+def get_language(lang: str) -> str:
     """
-        Use fixed mappings to get the associated PlentyMarkets ID for a
-        country abbreviation.
+        Check if the given language abbreviation is a valid value and
+        return it in lower-case letters.
 
         Parameter:
-            lang    [str]       -   Country abbreviation
+            lang    [str]       -   Language abbreviation
 
         Return:
-                    [int]       -   ID from Plentymarkets
+                    [str]       -   Language abbreviation in lower-case
     """
-    try:
-        return constants.VALID_COUNTRY_MAP[lang.upper()]
-    except KeyError:
-        print(f"ERROR: invalid country abbreviation: {lang}")
-        return -1
+    lang = lang.lower()
+    if lang not in constants.VALID_LANGUAGES:
+        return 'INVALID_LANGUAGE'
+    return lang
 
 
 def sanity_check_parameter(domain: str,

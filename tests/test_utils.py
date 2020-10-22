@@ -10,6 +10,9 @@ from plenty_api.utils import (
 )
 
 
+# ======== SAMPLE INPUT DATA ==========
+
+
 @pytest.fixture
 def sample_date_ranges() -> list:
     samples = [
@@ -225,7 +228,7 @@ def sample_sanity_check_parameter() -> list:
             'query': {},
             'refine': {'id': 1234, 'itemId': 10234},
             'additional': ['properties', 'stock'],
-            'lang': 'at'
+            'lang': 'de'
         },
         {
             'domain': 'item',
@@ -361,6 +364,9 @@ def sample_variation_data() -> list:
     return samples
 
 
+# ======== EXPECTED DATA ==========
+
+
 @pytest.fixture
 def expected_date_query() -> list:
     expected = [
@@ -418,14 +424,14 @@ def expected_sanity_check_query() -> list:
         # domain: variation
         # valid domain, 2 refine, 2 additional, lang all valid arguments
         {'id': 1234, 'itemId': 10234,
-         'with': 'properties,stock', 'lang': 2},
+         'with': 'properties,stock', 'lang': 'de'},
         # domain: item
         # valid domain 2 refine, 1 additional, 1 invalid refine
         {'id': 10234, 'with': 'variations,itemImages'},
         # domain: order
         # invalid & valid arguments, but preexisting query
         # check if the 'additional' field is handled differently for 'order'
-        {'orderType': 1, 'with': ['addresses', 'documents']},
+        {'orderType': 1, 'with[]': ['addresses', 'documents']},
         # domain: wrong
         # invalid domain
         {}
@@ -517,6 +523,9 @@ def expected_attribute_variation_map() -> list:
         {}
     ]
     return expected
+
+
+# ======== UNIT TESTS ==========
 
 
 def test_get_route() -> None:
@@ -644,8 +653,9 @@ def test_date_to_timestamp() -> None:
 
 
 def test_get_language() -> None:
-    samples = ['de', 'GB', 'fR', 'Greece', '12', '']
-    expected = [1, 12, 10, -1, -1, -1]
+    samples = ['de', 'EN', 'fR', 'Greece', '12', '']
+    expected = ['de', 'en', 'fr', 'INVALID_LANGUAGE',
+                'INVALID_LANGUAGE', 'INVALID_LANGUAGE']
     result = []
 
     for sample in samples:

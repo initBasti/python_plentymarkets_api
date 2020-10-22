@@ -94,6 +94,11 @@ VALID_ADDITIONAL_VALUES = {
     ]
 }
 
+VALID_LANGUAGES = [
+    'bg', 'cn', 'cz', 'da', 'de', 'en', 'es', 'fr', 'it', 'nl',
+    'nn', 'pl', 'pt', 'ro', 'ru', 'se', 'sk', 'tr', 'vn'
+]
+
 VALID_COUNTRY_MAP = {
     "DE": 1, "AT": 2, "BE": 3, "CH": 4, "CY": 5, "CZ": 6, "DK": 7, "ES": 8,
     "EE": 9, "FR": 10, "FI": 11, "GB": 12, "GR": 13, "HU": 14, "IT": 15,
