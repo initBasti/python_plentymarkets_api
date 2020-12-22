@@ -19,10 +19,11 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+import time
 from typing import List
 import requests
 import simplejson
-import time
+import gnupg
 
 import plenty_api.keyring
 import plenty_api.utils as utils
@@ -140,19 +141,27 @@ class PlentyApi():
                 (https://developers.plentymarkets.com/rest-doc#/Item/post_rest_items__id__images__imageId__availabilities)
             ___
     """
-    def __init__(self, base_url, use_keyring=True, data_format='json',
-                 debug=False):
+    def __init__(self, base_url: str, use_keyring: bool = True,
+                 data_format: str = 'json', debug: bool = False,
+                 username: str = '', password: str = ''):
         """
             Initialize the object and directly authenticate to the API to get
             the bearer token.
 
             Parameter:
-                base_url    [str]   -  Base URL to the PlentyMarkets API
+                base_url    [str]   -   Base URL to the PlentyMarkets API
                                             Endpoint, format:
                                     [https://{name}.plentymarkets-cloud01.com]
-                use_keyring [bool]  -  Save the credentials temporarily or
+                use_keyring [bool]  -   Save the credentials temporarily or
                                         permanently
-                data_format [str]   -  Output format of the response
+                data_format [str]   -   Output format of the response
+                debug       [bool]  -   Print out additional information
+                                        about the request URL and parameters
+                username    [str]   -   skip the keyring and directly enter
+                                        the username to the REST-API
+                password    [str]   -   path to a gpg-encrypted file that
+                                        contains the key.
+
         """
         self.url = base_url
         self.keyring = plenty_api.keyring.CredentialManager()
@@ -161,32 +170,65 @@ class PlentyApi():
         if data_format.lower() not in ['json', 'dataframe']:
             self.data_format = 'json'
         self.creds = {'Authorization': ''}
-        self.__authenticate(persistent=use_keyring)
+        self.__authenticate(persistent=use_keyring, user=username, pw=password)
 
-    def __authenticate(self, persistent):
+    def __authenticate(self, persistent: str, user: str, pw: str):
         """
             Get the bearer token from the PlentyMarkets API.
+            There are three possible methods:
+                + Enter once and keep the username and the password
+                  within a keyring
+                  [persistent TRUE & (user FALSE or pw FALSE)]
+
+                + Enter the username and password directly
+                  [persistent FALSE & (user FALSE or pw FALSE)]
+
+                + Provide username as an argument and get the password
+                  from a GnuPG encrypted file at a specified path.
+                  [user TRUE and pw TRUE]
 
             Parameter:
                 persistent  [bool]  -   Permanent or temporary credential
                                         storage
+                user        [str]   -   skip the keyring and directly enter
+                                        the username to the REST-API
+                pw          [str]   -   path to a gpg-encrypted file that
+                                        contains the key.
         """
 
         token = ''
-        if persistent:
+        decrypt_pw = None
+
+        if persistent and not (user and pw):
             creds = self.keyring.get_credentials()
             if not creds:
                 creds = utils.new_keyring_creds(keyring=self.keyring)
-        else:
+        elif not persistent and not (user and pw):
             creds = utils.get_temp_creds()
+        elif user and pw:
+            gpg = gnupg.GPG()
+            try:
+                with open(pw, 'rb') as pw_file:
+                    decrypt_pw = gpg.decrypt_file(pw_file)
+            except FileNotFoundError as err:
+                print("ERROR Login to API failed: Provided gpg file is not "
+                      f"valid\n=> {err}")
+                return False
+            if not decrypt_pw:
+                print("ERROR Login to API failed: Decryption of password file"
+                      " failed.")
+                return False
+            password = decrypt_pw.data.decode('utf-8').strip('\n')
+            creds = {'username': user, 'password': password}
+
         endpoint = self.url + '/rest/login'
         response = requests.post(endpoint, params=creds)
         if response.status_code == 403:
-            print("ERROR: Login to API failed, your account is locked")
+            print("ERROR: Login to API failed: your account is locked")
             print("unlock @ Setup->settings->accounts->{user}->unlock login")
         try:
             token = utils.build_login_token(response_json=response.json())
-        except KeyError as err:
+        except KeyError:
             try:
                 if response.json()['error'] == 'invalid_credentials':
                     print("Wrong credentials: Please enter valid credentials.")
@@ -195,14 +237,17 @@ class PlentyApi():
                     token = utils.build_login_token(
                         response_json=response.json())
                 else:
-                    print(f"ERROR: Login API failed:{err}\nstatus:{response}")
+                    print("ERROR: Login to API failed: login token retrieval "
+                          f"was unsuccessful.\nstatus:{response}")
                     return False
-            except KeyError as err:
-                print(f"ERROR: Login API failed:{err}\nstatus:{response}")
+            except KeyError:
+                print("ERROR: Login to API failed: login token retrieval was "
+                      f"unsuccessful.\nstatus:{response}")
                 try:
                     print(f"{response.json()}")
                 except Exception as err:
-                    print(f"Could not read the response: {err}")
+                    print("ERROR: Login to API failed: Could not read the "
+                          f"response: {err}")
                     return False
         if not token:
             return False

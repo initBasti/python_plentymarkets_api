@@ -2,6 +2,17 @@
 
 ## Reference
 
+### LOGIN
+
+The login request is sent automatically, as soon as the object is instantiated. There are three methods of providing credentials.
+
+1. Providing them over STDIN [Usually only useful for testing on someone else's machine]
+    + Activated by creating the `PlentyApi` object, with the option `use_keyring=False`
+2. Enter the credentials once per STDIN and save them into a keyring [Very convenient for commands that are started manually doesn't work for cronjobs]
+    + Activated by creating the `PlentyApi` object, with the option `use_keyring=True` (True is the default)
+3. Provide the username as an argument and a path to a GPG encrypted file for the password [Works for cronjobs and manual running]
+    + Activated by creating the `PlentyApi` object with the arguments, `username={REST-API username}` and `password={path to GPG encrypted file containing the REST-API password}`
+
 ### GET requests:
 
 #### Orders
