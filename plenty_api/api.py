@@ -22,6 +22,7 @@
 from typing import List
 import requests
 import simplejson
+import time
 
 import plenty_api.keyring
 import plenty_api.utils as utils
@@ -235,12 +236,18 @@ class PlentyApi():
         if self.debug:
             print(f"DEBUG: Endpoint: {endpoint}")
             print(f"DEBUG: Params: {query}")
-        if method.lower() == 'get':
-            raw_response = requests.get(endpoint, headers=self.creds,
-                                        params=query)
-        if method.lower() == 'post':
-            raw_response = requests.post(endpoint, headers=self.creds,
-                                         params=query, json=data)
+        while True:
+            if method.lower() == 'get':
+                raw_response = requests.get(endpoint, headers=self.creds,
+                                            params=query)
+
+            if method.lower() == 'post':
+                raw_response = requests.post(endpoint, headers=self.creds,
+                                             params=query, json=data)
+            if raw_response.status_code != 429:
+                break
+            print("API:Request throttled, limit for subscription reached")
+            time.sleep(3)
 
         if self.debug:
             print(f"DEBUG: request url: {raw_response.request.url}")
