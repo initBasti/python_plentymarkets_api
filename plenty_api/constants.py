@@ -143,3 +143,34 @@ VALID_COUNTRY_MAP = {
     "ZM": 252, "ZW": 253, "AE": 254, "CUW": 258, "SXM": 259,
     "BES": 260, "BL": 261
 }
+
+REQUIRED_ORDER_ATTRIBUTES = [
+    "typeId", "ownerId", "plentyId", "locationId", "statusId",
+    "orderItems", "properties", "addressRelations", "relations"
+]
+
+REQUIRED_RELATION_ATTRIBUTES = ["referenceType", "referenceId", "relation"]
+
+REQUIRED_ADDRESS_RELATION_ATTRIBUTES = ["typeId", "addressId"]
+
+REQUIRED_PROPERTY_ATTRIBUTES = ["typeId", "value"]
+
+REQUIRED_ORDER_PROPERTY_ATTRIBUTES = ["propertyId", "value", "fileUrl"]
+
+REQUIRED_AMOUNT_ATTRIBUTES = [
+    "isSystemCurrency", "currency", "exchangeRate", "priceOriginalGross",
+    "surcharge", "discount", "isPercentage"
+]
+
+REQUIRED_ORDER_ITEM_ATTRIBUTES = [
+    "typeId", "referrerId", "itemVariationId", "quantity",
+    "countryVatId", "vatField", "vatRate", "orderItemName",
+    "shippingProfileId", "amounts", "properties", "orderProperties",
+]
+
+REQUIRED_ATTRIBUTE_MAPPING = {
+    "relations": REQUIRED_RELATION_ATTRIBUTES,
+    "addressRelations": REQUIRED_ADDRESS_RELATION_ATTRIBUTES,
+    "properties": REQUIRED_PROPERTY_ATTRIBUTES,
+    "orderItems": REQUIRED_ORDER_ITEM_ATTRIBUTES,
+}
