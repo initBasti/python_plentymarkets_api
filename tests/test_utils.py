@@ -6,7 +6,7 @@ from plenty_api.utils import (
     get_route, build_endpoint, check_date_range, parse_date, build_date_range,
     get_utc_offset, build_query_date, create_vat_mapping, date_to_timestamp,
     get_language, shrink_price_configuration, sanity_check_parameter,
-    attribute_variation_mapping
+    attribute_variation_mapping, check_order_json
 )
 
 
@@ -364,6 +364,129 @@ def sample_variation_data() -> list:
     return samples
 
 
+@pytest.fixture
+def sample_orders() -> list:
+    orders = [
+        # Valid order
+        {
+            "typeId": 1, "ownerId": 3, "plentyId": 1000, "locationId": 1,
+            "statusId": 3, "orderItems": [
+                {
+                    "typeId": 1, "referrerId": 1, "itemVariationId": 1001,
+                    "quantity": 1, "countryVatId": 1, "vatField": 0,
+                    "vatRate": 19, "orderItemName": "Awesome shoes",
+                    "shippingProfileId": 1, "amounts": [
+                        {
+                            "isSystemCurrency": True, "currency": "EUR",
+                            "exchangeRate": 1, "priceOriginalGross": 300,
+                            "surcharge": 20, "discount": 10,
+                            "isPercentage": True
+                        }
+                    ],
+                    "properties": [{"typeId": 1, "value": "1"}],
+                    "orderProperties": [
+                        {
+                            "propertyId": 4, "value": "image.jpg",
+                            "fileUrl": "http://www.example.com/image.jpg"
+                        }
+                    ]
+                }
+            ],
+            "properties": [{"typeId": 13, "value": "14"}],
+            "addressRelations": [{ "typeId": 1, "addressId": 18 }],
+            "relations": [
+                {
+                    "referenceType": "contact", "referenceId": 118,
+                    "relation": "receiver"
+                }
+            ]
+        },
+        # Invalid order - invalid type ID
+        {
+            "typeId": 100, "ownerId": 3, "plentyId": 1000, "locationId": 1,
+            "statusId": 3, "orderItems": [
+                {
+                    "typeId": 1, "referrerId": 1, "itemVariationId": 1001,
+                    "countryVatId": 1, "vatField": 0, "vatRate": 19,
+                    "orderItemName": "Awesome shoes", "shippingProfileId": 1,
+                    "amounts": [
+                        {
+                            "isSystemCurrency": True, "currency": "EUR",
+                            "exchangeRate": 1, "priceOriginalGross": 300,
+                            "surcharge": 20, "discount": 10,
+                            "isPercentage": True
+                        }
+                    ],
+                    "properties": [{"typeId": 1, "value": "1"}],
+                    "orderProperties": [
+                        {
+                            "propertyId": 4, "value": "image.jpg",
+                            "fileUrl": "http://www.example.com/image.jpg"
+                        }
+                    ]
+                }
+            ],
+            "properties": [{"typeId": 13, "value": "14"}],
+            "addressRelations": [{ "typeId": 1, "addressId": 18 }],
+            "relations": [
+                {
+                    "referenceType": "contact", "referenceId": 118,
+                    "relation": "receiver"
+                }
+            ]
+        },
+        # Invalid order - empty order Items
+        {
+            "typeId": 15, "ownerId": 3, "plentyId": 1000, "locationId": 1,
+            "statusId": 3, "orderItems": [{}],
+            "properties": [{"typeId": 13, "value": "14"}],
+            "addressRelations": [{ "typeId": 1, "addressId": 18 }],
+            "relations": [
+                {
+                    "referenceType": "contact", "referenceId": 118,
+                    "relation": "receiver"
+                }
+            ]
+        },
+        # Invalid order - missing attribute (plenty Id)
+        {
+            "typeId": 3, "ownerId": 3, "locationId": 1,
+            "statusId": 3, "orderItems": [
+                {
+                    "typeId": 1, "referrerId": 1, "itemVariationId": 1001,
+                    "countryVatId": 1, "vatField": 0, "vatRate": 19,
+                    "orderItemName": "Awesome shoes", "shippingProfileId": 1,
+                    "amounts": [
+                        {
+                            "isSystemCurrency": True, "currency": "EUR",
+                            "exchangeRate": 1, "priceOriginalGross": 300,
+                            "surcharge": 20, "discount": 10,
+                            "isPercentage": True
+                        }
+                    ],
+                    "properties": [{"typeId": 1, "value": "1"}],
+                    "orderProperties": [
+                        {
+                            "propertyId": 4, "value": "image.jpg",
+                            "fileUrl": "http://www.example.com/image.jpg"
+                        }
+                    ]
+                }
+            ],
+            "properties": [{"typeId": 13, "value": "14"}],
+            "addressRelations": [{ "typeId": 1, "addressId": 18 }],
+            "relations": [
+                {
+                    "referenceType": "contact", "referenceId": 118,
+                    "relation": "receiver"
+                }
+            ]
+        },
+        # Empty order
+        {}
+    ]
+    return orders
+
 # ======== EXPECTED DATA ==========
 
 
@@ -707,3 +830,12 @@ def test_attribute_variation_mapping(sample_attributes: list,
     result.append(attribute_variation_mapping(variation=None, attribute=None))
 
     assert expected_attribute_variation_map == result
+
+
+def test_check_order_json(sample_orders: list):
+    result = []
+
+    for sample in sample_orders:
+        result.append(check_order_json(json=sample))
+
+    assert [True, False, False, False, False] == result

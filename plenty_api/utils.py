@@ -373,6 +373,39 @@ def check_date_range(date_range: dict) -> bool:
     return True
 
 
+def check_order_json(json: dict) -> bool:
+    if not json:
+        print(f"ERROR: Empty order JSON object.")
+        return False
+    missing_keys = [x for x in constants.REQUIRED_ORDER_ATTRIBUTES
+                    if x not in json.keys()]
+    if missing_keys:
+        print("ERROR: Missing JSON attributes for an order: "
+              f"{missing_keys}.")
+        return False
+
+    if len(json['orderItems']) < 1:
+        print(f"ERROR: Order must contain at least one item.")
+        return False
+
+
+    for key in json.keys():
+        if key in constants.REQUIRED_ATTRIBUTE_MAPPING.keys() and json[key]:
+            missing_keys = [x for x in
+                            constants.REQUIRED_ATTRIBUTE_MAPPING[key] if
+                            x not in json[key][0].keys()]
+            if missing_keys:
+                print(f"ERROR: Missing JSON attributes for the {key} key "
+                      f"within an order: {missing_keys}")
+                return False
+
+    if int(json['typeId']) not in range(1,16):
+        print(f"ERROR: Invalid order type ID: {json['typeId']}.")
+        return False
+
+    return True
+
+
 def parse_date(date: str) -> str:
     """
         Transform the given date into a W3C date format as required by
