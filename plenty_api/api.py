@@ -280,7 +280,8 @@ class PlentyApi():
         endpoint = utils.build_endpoint(url=self.url, route=route, path=path)
         if self.debug:
             print(f"DEBUG: Endpoint: {endpoint}")
-            print(f"DEBUG: Params: {query}")
+            if query:
+                print(f"DEBUG: Params: {query}")
         while True:
             if method.lower() == 'get':
                 raw_response = requests.get(endpoint, headers=self.creds,
