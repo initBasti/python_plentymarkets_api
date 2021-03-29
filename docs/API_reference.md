@@ -224,3 +224,39 @@ In the **target** field you have to specify:
     * The ID of the target
 Examples:  
 {'marketplace': 1}, {'mandant': 41444}, {'listing': 2}
+
+#### plenty_api_create_items:
+
+Create one or more items on Plentymarkets, but do not create the variations for it. This call requires at least a valid category ID and a valid unit type. Additionally, you are able to specify more details for the main variation (virtual doesn't represent a physical product).
+
+[*Required parameter*]:
+
+The **json** field contains either a list of json objects (dictionaries) or a single json object. Please refer to [Plentymarkets Dev documentation: REST API POST items](https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Item/post_rest_items), for a list of valid attributes.
+
+[*Example*]:
+```json
+{
+    "position": 2,
+    "manufacturerId": 1,
+    "variations": [
+        {
+            "name": "test_main_variation",
+            "variationCategories": [
+                {
+                    "categoryId": 400
+                }
+            ],
+            "unit": {
+                "unitId": 1,
+                "content": 1
+            }
+        }
+    ]
+}
+```
+
+
+[*Output format*]:
+
+Return a list of POST request JSON responses, if one of the requests fails return the error message.
+When the JSON object doesn't contain the required attributes the method will return: `{'error': 'invalid_json'}`.

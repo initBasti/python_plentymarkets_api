@@ -139,6 +139,13 @@ class PlentyApi():
 
                 Reference:
                 (https://developers.plentymarkets.com/rest-doc#/Item/post_rest_items__id__images__imageId__availabilities)
+
+            **plenty_api_create_items**
+                Create items on Plentymarkets
+                [json]          -   list of json objects or a single json
+
+                Reference:
+                (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Item/post_rest_items)
             ___
     """
     def __init__(self, base_url: str, use_keyring: bool = True,
@@ -785,3 +792,29 @@ class PlentyApi():
             return False
 
         return True
+
+    def plenty_api_create_items(self, json: list) -> list:
+        """
+            Create one or more items at Plentymarkets.
+
+            Parameter:
+                json        [list]   -   Either a list of JSON objects or a
+                                         single JSON, describing the items.
+
+            Return:
+                [list]               -   Response objects if one or more should
+                                         fail, the entry contains the error
+                                         message.
+        """
+        if isinstance(json, dict):
+            json = [json]
+
+        response = []
+        for item in json:
+            if not utils.sanity_check_json(route_name='items',
+                                           json=item):
+                response.append({'error': 'invalid_json'})
+                continue
+            response.append(self.__plenty_api_request(
+                method="post", domain="items", data=item))
+        return response
