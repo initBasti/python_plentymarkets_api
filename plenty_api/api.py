@@ -169,6 +169,14 @@ class PlentyApi():
 
                 Reference:
                 (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Item/post_rest_items_attributes__attributeId__names)
+
+            **plenty_api_create_attribute_values**
+                Create one or more attribute values for a specific attribute.
+                [attribute_id]  -   ID of the attribute to create values for
+                [json]          -   list of json objects or a single json
+
+                Reference:
+                (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Item/post_rest_items_attributes__attributeId__values)
             ___
     """
     def __init__(self, base_url: str, use_keyring: bool = True,
@@ -926,3 +934,37 @@ class PlentyApi():
 
         return self.__plenty_api_request(method="post", domain="attributes",
                                          path=path, data=data)
+
+    def plenty_api_create_attribute_values(self, attribute_id: int,
+                                           json: list) -> dict:
+        """
+            Create one or more attribute values for a specific attribute.
+
+            Parameter:
+                attribute_id[str]   -   Attribute ID from PlentyMarkets
+                json        [list]  -   Either a list of JSON objects or a
+                                        single JSON object describing an
+                                        attribute value for an attribute.
+
+            Return:
+                [list]
+        """
+        if not attribute_id:
+            return [{'error': 'missing_parameter'}]
+
+        if isinstance(json, dict):
+            json = [json]
+
+        path = str(f"/{attribute_id}/values")
+
+        response = []
+        for name in json:
+            if not utils.sanity_check_json(route_name='attribute_values',
+                                           json=name):
+                response.append({'error': 'invalid_json'})
+                continue
+
+            response.append(self.__plenty_api_request(
+                method="post", domain="attributes", path=path, data=name))
+
+        return response
