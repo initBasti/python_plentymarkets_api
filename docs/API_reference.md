@@ -292,3 +292,28 @@ Please refer to [Plentymarkets Dev documentation: REST API POST items](https://d
 Return a list of POST request JSON responses, if one of the requests fails return the error message.
 When the JSON object doesn't contain the required attributes the method will return: `{'error': 'invalid_json'}`.
 If the **item_id** field is not filled the method will return: `{'error': 'missing_parameter'}`.
+
+#### plenty_api_create_attribute
+
+Create a new attribute on Plentymarkets.
+
+[*Required parameter*]:
+
+The **json** parameter contains a single JSON object describing an attribute
+Please refer to [Plentymarkets Dev documentation: REST API POST attributes](https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Item/post_rest_items_attributes), for a list of valid attributes.
+
+[*Example*]:
+```json
+{
+    'backendName': 'Material',
+    'position': 3,
+    'isLinkableToImage': False,
+    'amazonAttribute': 'outer_material_type',
+    'isGroupable': False
+}
+```
+
+[*Output format*]:
+
+Return a POST request JSON response, if one of the requests fails return the error message.
+When the JSON object doesn't contain the required attributes the method will return: `{'error': 'invalid_json'}`.
