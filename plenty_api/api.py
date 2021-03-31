@@ -154,6 +154,13 @@ class PlentyApi():
 
                 Reference:
                 (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Item/post_rest_items__itemId__variations)
+
+            **plenty_api_create_attribute**
+                Create a new attribute on Plentymarkets.
+                [json]          -   single json object
+
+                Reference:
+                (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Item/post_rest_items_attributes)
             ___
     """
     def __init__(self, base_url: str, use_keyring: bool = True,
@@ -860,3 +867,22 @@ class PlentyApi():
 
         return response
 
+    def plenty_api_create_attribute(self, json: dict) -> dict:
+        """
+            Create a new attribute on Plentymarkets.
+
+            Parameter:
+                json        [dict]  -   A single JSON object describing an
+                                        attribute
+
+            Return:
+                            [dict]  -  Response object if the request should
+                                       fail, the entry contains the error
+                                       message.
+        """
+        if not utils.sanity_check_json(route_name='attributes',
+                                    json=json):
+            return {'error': 'invalid_json'}
+
+        return self.__plenty_api_request(method="post", domain="attributes",
+                                         data=json)
