@@ -2,7 +2,30 @@
 
 ## Reference
 
-### LOGIN
+- [Login](#login)
+- [GET-Requests](#get-requests)
+    + [Order related data](#get-order-section)
+        * [get orders by date](#get-orders-by-date)
+    + [get referrers](#get-referrers)
+    + [Item related data](#get-items-section)
+        * [get items](#get-items)
+        * [get variations](#get-variations)
+        * [get attributes](#get-attributes)
+        * [get prices](#get-prices)
+        * [get manufacturers](#get-manufacturers)
+    + [Tax related data](#get-taxes-section)
+        * [get vat id mappings](#get-vat-mappings)
+- [POST-Requests](#post-requests)
+    + [Item related data](#post-items-section)
+        * [post image avaialability](#post-image-availability)
+        * [post items](#post-items)
+        * [post variations](#post-variations)
+        * [post attributes](#post-attributes)
+        * [post attribute names](#post-attribute-names)
+        * [post attribute values](#post-attribute-values)
+        * [post attribute value names](#post-attribute-value-names)
+
+### LOGIN <a name='login'></a>
 
 The login request is sent automatically, as soon as the object is instantiated. There are three methods of providing credentials.
 
@@ -13,11 +36,11 @@ The login request is sent automatically, as soon as the object is instantiated. 
 3. Provide the username as an argument and a path to a GPG encrypted file for the password [Works for cronjobs and manual running]
     + Activated by creating the `PlentyApi` object with the arguments, `username={REST-API username}` and `password={path to GPG encrypted file containing the REST-API password}`
 
-### GET requests:
+### GET requests: <a name='get-requests'></a>
 
-#### Orders
+#### Orders <a name='get-order-section'></a>
 
-##### plenty_api_get_orders_by_date:
+##### plenty_api_get_orders_by_date: <a name='get-orders-by-date'></a>
 
 [*Required parameter*]:
 
@@ -53,7 +76,7 @@ The 'dataframe' format transforms that data structure into a pandas DataFrame, w
 
 ---
 
-##### plenty_api_get_referrers:
+##### plenty_api_get_referrers: <a name='get-referrers'></a>
 
 Fetch all referrers from PlentyMarkets, they contain the following attributes:
 'backendName', 'id', 'isEditable', 'isFilterable', 'name', 'orderOwnderId', 'origin'
@@ -71,9 +94,9 @@ The 'dataframe' format transforms that data structure into a pandas DataFrame, w
 ---
 ---
 
-#### Item data
+#### Item data <a name='get-items-section'></a>
 
-##### plenty_api_get_items:
+##### plenty_api_get_items: <a name='get-items'></a>
 
 [*Optional parameter*]:
 
@@ -100,7 +123,7 @@ The 'dataframe' format transforms that data structure into a pandas DataFrame, w
 
 ---
 
-##### plenty_api_get_variations:
+##### plenty_api_get_variations: <a name='get-variations'></a>
 
 [*Optional parameter*]:
 
@@ -123,7 +146,7 @@ The 'dataframe' format transforms that data structure into a pandas DataFrame, w
 
 ---
 
-##### plenty_api_get_attributes:
+##### plenty_api_get_attributes: <a name='get-attributes'></a>
 
 List all the attributes from PlentyMarkets (size, color etc.), additionally there is an option to link variations from the PlentyMarkets system to the attribute values.
 
@@ -149,7 +172,7 @@ The 'dataframe' format transforms that data structure into a pandas DataFrame, w
 
 ---
 
-##### plenty_api_get_price_configuration:
+##### plenty_api_get_price_configuration: <a name='get-prices'></a>
 
 Fetch price configuration from PlentyMarkets, this can be used among other things to get the ID of a price used by a specific referrer in order to get the price date from variations.
 
@@ -170,7 +193,7 @@ The 'dataframe' format transforms that data structure into a pandas DataFrame, w
 
 ---
 
-##### plenty_api_get_manufacturers:
+##### plenty_api_get_manufacturers: <a name='get-manufacturers'></a>
 
 Fetch a list of manufacturers, that were setup on PlentyMarkets.
 
@@ -197,9 +220,9 @@ The 'dataframe' format transforms that data structure into a pandas DataFrame, w
 ---
 ---
 
-#### Tax data
+#### Tax data <a name='get-tax-section'></a>
 
-##### plenty_api_get_vat_id_mappings:
+##### plenty_api_get_vat_id_mappings: <a name='get-vat-mappings'></a>
 
 Create a mapping of all the different VAT configurations, which map to a country ID together with the Tax ID.
 
@@ -211,9 +234,11 @@ Create a mapping of all the different VAT configurations, which map to a country
 
 Return a dictionary with the country IDs as keys and the corresponding VAT configuration IDs + the TaxID as value.
 
-### POST requests:
+### POST requests: <a name='post-requests'></a>
 
-#### plenty_api_set_image_availability:
+#### Items <a name='post-items-section'></a>
+
+##### plenty_api_set_image_availability: <a name='post-image-availability'></a>
 
 [*Required parameter:*]:
 
@@ -225,7 +250,7 @@ In the **target** field you have to specify:
 Examples:  
 {'marketplace': 1}, {'mandant': 41444}, {'listing': 2}
 
-#### plenty_api_create_items:
+##### plenty_api_create_items: <a name='post-items'></a>
 
 Create one or more items on Plentymarkets, but do not create the variations for it. This call requires at least a valid category ID and a valid unit type. Additionally, you are able to specify more details for the main variation (virtual doesn't represent a physical product).
 
@@ -255,13 +280,12 @@ The **json** field contains either a list of json objects (dictionaries) or a si
 }
 ```
 
-
 [*Output format*]:
 
 Return a list of POST request JSON responses, if one of the requests fails return the error message.
 When the JSON object doesn't contain the required attributes the method will return: `{'error': 'invalid_json'}`.
 
-#### plenty_api_create_variations
+#### plenty_api_create_variations <a name='post-variations'></a>
 
 Create a variation for a specific item on Plentymarkets.
 
@@ -293,7 +317,7 @@ Return a list of POST request JSON responses, if one of the requests fails retur
 When the JSON object doesn't contain the required attributes the method will return: `{'error': 'invalid_json'}`.
 If the **item_id** field is not filled the method will return: `{'error': 'missing_parameter'}`.
 
-#### plenty_api_create_attribute
+#### plenty_api_create_attribute <a name='post-attributes'></a>
 
 Create a new attribute on Plentymarkets.
 
@@ -333,7 +357,7 @@ Return a POST request JSON response, if one of the requests fails return the err
 If the **attribute_id** field is not filled the method will return: `{'error': 'missing_parameter'}`.
 In case the language within the **lang** parameter is invalid the method will return `{'error': 'invalid_language'}`.
 
-#### plenty_api_create_attribute_values
+#### plenty_api_create_attribute_values <a name='post-attribute-values'></a>
 
 Create one or more attribute values for a specific attribute on Plentymarkets.
 
