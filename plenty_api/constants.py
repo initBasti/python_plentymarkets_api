@@ -144,13 +144,25 @@ VALID_COUNTRY_MAP = {
     "BES": 260, "BL": 261
 }
 
+# JSON field types
+JSON_INTEGER = 0
+JSON_FLOAT = 1
+JSON_STRING = 2
+JSON_DICT = 3
+JSON_LIST_OF_DICTS = 4
+
 # POST route, minimum JSON requirement check constants
-REQUIRED_ITEM_FIELDS = ['variations']
-REQUIRED_VARIATION_FIELDS = ['unit', 'variationAttributeValues',
-                             'variationClients']
-REQUIRED_CATEGORY_FIELDS = ['type', 'details', 'clients']
-REQUIRED_ATTRIBUTE_FIELDS = ['backendName']
-REQUIRED_ATTRIBUTE_VALUE_FIELDS = ['backendName']
+REQUIRED_ITEM_FIELDS = [('variations', JSON_LIST_OF_DICTS)]
+REQUIRED_VARIATION_FIELDS = [
+    ('unit', JSON_DICT), ('variationAttributeValues', JSON_LIST_OF_DICTS),
+    ('variationClients', JSON_LIST_OF_DICTS)
+]
+REQUIRED_CATEGORY_FIELDS = [
+    ('type', JSON_STRING), ('details', JSON_LIST_OF_DICTS),
+    ('clients', JSON_LIST_OF_DICTS)
+]
+REQUIRED_ATTRIBUTE_FIELDS = [('backendName', JSON_STRING)]
+REQUIRED_ATTRIBUTE_VALUE_FIELDS = [('backendName', JSON_STRING)]
 
 REQUIRED_FIELDS_MAP = {
     'items': REQUIRED_ITEM_FIELDS,

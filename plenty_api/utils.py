@@ -263,12 +263,17 @@ def sanity_check_json(route_name: str, json: dict) -> bool:
         print(f"ERROR: unknown route {route_name} in required fields map.")
         return False
 
-    if not list_contains(search_list=constants.REQUIRED_FIELDS_MAP[route_name],
-                         target_list=json.keys()):
-        print(f"ERROR: {constants.REQUIRED_FIELDS_MAP[route_name]} "
+    required_keys = [x[0] for x in constants.REQUIRED_FIELDS_MAP[route_name]]
+    if not list_contains(search_list=required_keys, target_list=json.keys()):
+        print(f"ERROR: {required_keys} "
               "fields required for {route_name} creation. "
               f"Got: {list(json.keys())}")
         return False
+
+    for key, field_type in constants.REQUIRED_FIELDS_MAP[route_name]:
+        if not json_field_filled(json_field=json[key], field_type=field_type):
+            print(f"ERROR: Empty required field within JSON ({key}).")
+            return False
     return True
 
 
@@ -519,3 +524,25 @@ def list_contains(search_list: list, target_list: list) -> bool:
         Check if all elements of @search_list are found in @target_list
     """
     return all(elem in target_list for elem in search_list)
+
+
+def json_field_filled(json_field, field_type: int) -> bool:
+    """ Check if the field contains at least one valid element """
+    if field_type == constants.JSON_INTEGER:
+        if not isinstance(json_field, int):
+            return False
+    elif field_type == constants.JSON_FLOAT:
+        if not isinstance(json_field, float):
+            return False
+    elif field_type == constants.JSON_STRING:
+        if not isinstance(json_field, str):
+            return False
+    elif field_type == constants.JSON_DICT:
+        if not isinstance(json_field, dict) or len(json_field) < 1:
+            return False
+    elif field_type == constants.JSON_LIST_OF_DICTS:
+        if not isinstance(json_field, list) or len(json_field) < 1:
+            return False
+        if not all([isinstance(x, dict) and len(x) > 0 for x in json_field]):
+            return False
+    return True
