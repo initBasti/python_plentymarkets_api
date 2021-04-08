@@ -6,7 +6,7 @@ from plenty_api.utils import (
     get_route, build_endpoint, check_date_range, parse_date, build_date_range,
     get_utc_offset, build_query_date, create_vat_mapping, date_to_timestamp,
     get_language, shrink_price_configuration, sanity_check_parameter,
-    attribute_variation_mapping, list_contains
+    attribute_variation_mapping, list_contains, json_field_filled
 )
 
 
@@ -856,3 +856,19 @@ def test_list_contains():
         result.append(list_contains(search_list=lists[0],
                                     target_list=lists[1]))
 
+    assert expected == result
+
+
+def test_json_field_filled():
+    sample = [
+        (1, 0), (1.0, 1), ('test', 2), ({'test': 1}, 3),
+        ([{'test': 1}], 4), ('test', 0), (1, 2), ({}, 3), ([{}], 4)
+    ]
+    expected = [True, True, True, True, True, False, False, False, False]
+    result = []
+
+    for json_field, field_type in sample:
+        result.append(json_field_filled(json_field=json_field,
+                                        field_type=field_type))
+
+    assert expected == result
