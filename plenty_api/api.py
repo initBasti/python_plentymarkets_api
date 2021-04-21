@@ -298,6 +298,11 @@ class PlentyApi():
             if method.lower() == 'post':
                 raw_response = requests.post(endpoint, headers=self.creds,
                                              params=query, json=data)
+
+            if method.lower() == 'put':
+                raw_response = requests.put(endpoint, headers=self.creds,
+                                             params=query, data=data)
+
             if raw_response.status_code != 429:
                 break
             logging.warn(
