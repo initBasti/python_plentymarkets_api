@@ -24,6 +24,7 @@ from typing import List
 import requests
 import simplejson
 import gnupg
+import logging
 
 import plenty_api.keyring
 import plenty_api.utils as utils
@@ -165,7 +166,8 @@ class PlentyApi():
         """
         self.url = base_url
         self.keyring = plenty_api.keyring.CredentialManager()
-        self.debug = debug
+        if debug:
+            logging.basicConfig(level=logging.DEBUG)
         self.data_format = data_format.lower()
         if data_format.lower() not in ['json', 'dataframe']:
             self.data_format = 'json'
@@ -224,30 +226,35 @@ class PlentyApi():
         endpoint = self.url + '/rest/login'
         response = requests.post(endpoint, params=creds)
         if response.status_code == 403:
-            print("ERROR: Login to API failed: your account is locked")
-            print("unlock @ Setup->settings->accounts->{user}->unlock login")
+            logging.error(
+                "ERROR: Login to API failed: your account is locked\n"
+                "unlock @ Setup->settings->accounts->{user}->unlock login"
+            )
         try:
             token = utils.build_login_token(response_json=response.json())
         except KeyError:
             try:
-                if response.json()['error'] == 'invalid_credentials':
-                    print("Wrong credentials: Please enter valid credentials.")
+                if response.json()['error'] == 'invalid_credentials' and \
+                        persistent:
+                    logging.error(
+                        "Wrong credentials: Please enter valid credentials."
+                    )
                     creds = utils.update_keyring_creds(keyring=self.keyring)
                     response = requests.post(endpoint, params=creds)
                     token = utils.build_login_token(
                         response_json=response.json())
                 else:
-                    print("ERROR: Login to API failed: login token retrieval "
-                          f"was unsuccessful.\nstatus:{response}")
+                    logging.error("Login to API failed: login token retrieval "
+                                  f"was unsuccessful.\nstatus:{response}")
                     return False
             except KeyError:
-                print("ERROR: Login to API failed: login token retrieval was "
-                      f"unsuccessful.\nstatus:{response}")
+                logging.error("Login to API failed: login token retrieval was "
+                              f"unsuccessful.\nstatus:{response}")
                 try:
-                    print(f"{response.json()}")
+                    logging.debug(f"{response.json()}")
                 except Exception as err:
-                    print("ERROR: Login to API failed: Could not read the "
-                          f"response: {err}")
+                    logging.error("Login to API failed: Could not read the "
+                                  f"response: {err}")
                     return False
         if not token:
             return False
@@ -278,9 +285,8 @@ class PlentyApi():
 
         route = utils.get_route(domain=domain)
         endpoint = utils.build_endpoint(url=self.url, route=route, path=path)
-        if self.debug:
-            print(f"DEBUG: Endpoint: {endpoint}")
-            print(f"DEBUG: Params: {query}")
+        logging.debug(f"Endpoint: {endpoint}")
+        logging.debug(f"Params: {query}")
         while True:
             if method.lower() == 'get':
                 raw_response = requests.get(endpoint, headers=self.creds,
@@ -291,24 +297,24 @@ class PlentyApi():
                                              params=query, json=data)
             if raw_response.status_code != 429:
                 break
-            print("API:Request throttled, limit for subscription reached")
+            logging.warn(
+                "API:Request throttled, limit for subscription reached"
+            )
             time.sleep(3)
 
-        if self.debug:
-            print(f"DEBUG: request url: {raw_response.request.url}")
+        logging.debug(f"request url: {raw_response.request.url}")
         try:
             response = raw_response.json()
         except simplejson.errors.JSONDecodeError:
-            print(f"ERROR: No response for request {method} at {endpoint}")
+            logging.error(f"No response for request {method} at {endpoint}")
             return None
 
         if domain == 'referrer':
             # The referrer request responds with a different format
             return response
 
-        if 'error' in response.keys():
-            print(f"ERROR: Request failed:\n{response['error']['message']}")
-            return None
+        if (not isinstance(response, list)) and 'error' in response.keys():
+            logging.error(f"Request failed:\n{response['error']['message']}")
 
         return response
 
@@ -343,7 +349,7 @@ class PlentyApi():
                                                  domain=domain,
                                                  query=query)
             if not response:
-                print(f"ERROR: subsequent {domain} API requests failed.")
+                logging.error(f"subsequent {domain} API requests failed.")
                 return None
 
             entries += response['entries']
@@ -376,10 +382,10 @@ class PlentyApi():
 
         date_range = utils.build_date_range(start=start, end=end)
         if not date_range:
-            print(f"ERROR: Invalid range {start} -> {end}")
+            logging.error(f"Invalid range {start} -> {end}")
 
         if not utils.check_date_range(date_range=date_range):
-            print(f"ERROR: {date_range['start']} -> {date_range['end']}")
+            logging.error(f"{date_range['start']} -> {date_range['end']}")
             return {}
 
         query = utils.build_query_date(date_range=date_range,
@@ -598,7 +604,7 @@ class PlentyApi():
         if column in valid_columns:
             query = {'columns': column}
         else:
-            print(f"Invalid column argument removed: {column}")
+            logging.warn(f"Invalid column argument removed: {column}")
 
         # This request doesn't export in form of pages
         referrers = self.__plenty_api_request(method='get',
@@ -734,11 +740,11 @@ class PlentyApi():
                     target_name = element
                     target_id = target[element]
             else:
-                print(f"WARNING: {element} is not a valid target "
-                      "for the image availability POST request.")
+                logging.warn(f"{element} is not a valid target "
+                             "for the image availability POST request.")
 
         if not target_name or not target_id:
-            print("ERROR: target for availability configuration required.")
+            logging.error("target for availability configuration required.")
             return False
 
         data = {
