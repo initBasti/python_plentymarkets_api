@@ -25,6 +25,7 @@ from typing import List
 import requests
 import simplejson
 import gnupg
+import logging
 
 import plenty_api.keyring
 import plenty_api.utils as utils
@@ -247,7 +248,8 @@ class PlentyApi():
         """
         self.url = base_url
         self.keyring = plenty_api.keyring.CredentialManager()
-        self.debug = debug
+        if debug:
+            logging.basicConfig(level=logging.DEBUG)
         self.data_format = data_format.lower()
         if data_format.lower() not in ['json', 'dataframe']:
             self.data_format = 'json'
@@ -306,30 +308,35 @@ class PlentyApi():
         endpoint = self.url + '/rest/login'
         response = requests.post(endpoint, params=creds)
         if response.status_code == 403:
-            print("ERROR: Login to API failed: your account is locked")
-            print("unlock @ Setup->settings->accounts->{user}->unlock login")
+            logging.error(
+                "ERROR: Login to API failed: your account is locked\n"
+                "unlock @ Setup->settings->accounts->{user}->unlock login"
+            )
         try:
             token = utils.build_login_token(response_json=response.json())
         except KeyError:
             try:
-                if response.json()['error'] == 'invalid_credentials':
-                    print("Wrong credentials: Please enter valid credentials.")
+                if response.json()['error'] == 'invalid_credentials' and \
+                        persistent:
+                    logging.error(
+                        "Wrong credentials: Please enter valid credentials."
+                    )
                     creds = utils.update_keyring_creds(keyring=self.keyring)
                     response = requests.post(endpoint, params=creds)
                     token = utils.build_login_token(
                         response_json=response.json())
                 else:
-                    print("ERROR: Login to API failed: login token retrieval "
-                          f"was unsuccessful.\nstatus:{response}")
+                    logging.error("Login to API failed: login token retrieval "
+                                  f"was unsuccessful.\nstatus:{response}")
                     return False
             except KeyError:
-                print("ERROR: Login to API failed: login token retrieval was "
-                      f"unsuccessful.\nstatus:{response}")
+                logging.error("Login to API failed: login token retrieval was "
+                              f"unsuccessful.\nstatus:{response}")
                 try:
-                    print(f"{response.json()}")
+                    logging.debug(f"{response.json()}")
                 except Exception as err:
-                    print("ERROR: Login to API failed: Could not read the "
-                          f"response: {err}")
+                    logging.error("Login to API failed: Could not read the "
+                                  f"response: {err}")
                     return False
         if not token:
             return False
@@ -360,10 +367,9 @@ class PlentyApi():
 
         route = utils.get_route(domain=domain)
         endpoint = utils.build_endpoint(url=self.url, route=route, path=path)
-        if self.debug:
-            print(f"DEBUG: Endpoint: {endpoint}")
-            if query:
-                print(f"DEBUG: Params: {query}")
+        logging.debug(f"Endpoint: {endpoint}")
+        if query:
+            logging.debug(f"Params: {query}")
         while True:
             if method.lower() == 'get':
                 raw_response = requests.get(endpoint, headers=self.creds,
@@ -379,21 +385,20 @@ class PlentyApi():
 
             if raw_response.status_code != 429:
                 break
-            print("API:Request throttled, limit for subscription reached")
+            logging.warn(
+                "API:Request throttled, limit for subscription reached"
+            )
             time.sleep(3)
 
-        if self.debug:
-            print(f"DEBUG: request url: {raw_response.request.url}")
+        logging.debug(f"request url: {raw_response.request.url}")
         try:
             response = raw_response.json()
         except simplejson.errors.JSONDecodeError:
-            print(f"ERROR: No response for {method.upper()} request at "
-                  f"{endpoint}")
+            logging.error(f"No response for request {method} at {endpoint}")
             return None
 
         if isinstance(response, dict) and 'error' in response.keys():
-            print(f"ERROR: {method.upper()} Request failed:\n"
-                  f"{response['error']['message']}")
+            logging.error(f"Request failed:\n{response['error']['message']}")
 
         return response
 
@@ -434,7 +439,7 @@ class PlentyApi():
                 return None
 
             if isinstance(response, dict) and 'error' in response.keys():
-                print(f"ERROR: subsequent {domain} API requests failed.")
+                logging.error(f"subsequent {domain} API requests failed.")
                 return response
 
             entries += response['entries']
@@ -467,11 +472,11 @@ class PlentyApi():
 
         date_range = utils.build_date_range(start=start, end=end)
         if not date_range:
-            print(f"ERROR: Invalid range {start} -> {end}")
+            logging.error(f"Invalid range {start} -> {end}")
             return None
 
         if not utils.check_date_range(date_range=date_range):
-            print(f"ERROR: {date_range['start']} -> {date_range['end']}")
+            logging.error(f"{date_range['start']} -> {date_range['end']}")
             return None
 
         query = utils.build_query_date(date_range=date_range,
@@ -487,7 +492,7 @@ class PlentyApi():
         orders = self.__repeat_get_request_for_all_records(domain='orders',
                                                            query=query)
         if isinstance(orders, dict) and 'error' in orders.keys():
-            print(f"ERROR: GET orders by date failed with:\n{orders}")
+            logging.error(f"GET orders by date failed with:\n{orders}")
             return None
 
         orders = utils.transform_data_type(data=orders,
@@ -547,7 +552,7 @@ class PlentyApi():
         attributes = self.__repeat_get_request_for_all_records(
             domain='attributes', query=query)
         if isinstance(attributes, dict) and 'error' in attributes.keys():
-            print(f"ERROR: GET attributes failed with:\n{attributes}")
+            logging.error(f"GET attributes failed with:\n{attributes}")
             return None
 
         if variation_map:
@@ -580,7 +585,7 @@ class PlentyApi():
         vat_data = self.__repeat_get_request_for_all_records(domain='vat',
                                                              query={})
         if isinstance(vat_data, dict) and 'error' in vat_data.keys():
-            print(f"ERROR: GET VAT-configuration failed with:\n{vat_data}")
+            logging.error(f"GET VAT-configuration failed with:\n{vat_data}")
             return None
 
         vat_table = utils.create_vat_mapping(data=vat_data, subset=subset)
@@ -619,7 +624,7 @@ class PlentyApi():
         prices = self.__repeat_get_request_for_all_records(
             domain='prices', query=query)
         if isinstance(prices, dict) and 'error' in prices.keys():
-            print(f"ERROR: GET price-configuration failed with:\n{prices}")
+            logging.error(f"GET price-configuration failed with:\n{prices}")
             return None
 
         if not prices:
@@ -673,7 +678,7 @@ class PlentyApi():
         manufacturers = self.__repeat_get_request_for_all_records(
             domain='manufacturer', query=query)
         if isinstance(manufacturers, dict) and 'error' in manufacturers.keys():
-            print(f"ERROR: GET manufacturers failed with:\n{manufacturers}")
+            logging.error(f"GET manufacturers failed with:\n{manufacturers}")
             return None
 
         manufacturers = utils.transform_data_type(data=manufacturers,
@@ -707,14 +712,14 @@ class PlentyApi():
         if column in valid_columns:
             query = {'columns': column}
         else:
-            print(f"Invalid column argument removed: {column}")
+            logging.warn(f"Invalid column argument removed: {column}")
 
         # This request doesn't export in form of pages
         referrers = self.__plenty_api_request(method='get',
                                               domain='referrer',
                                               query=query)
         if 'error' in referrers.keys():
-            print(f"ERROR: GET referrers failed with:\n{referrers}")
+            logging.error(f"GET referrers failed with:\n{referrers}")
             return None
 
         referrers = utils.transform_data_type(data=referrers,
@@ -767,7 +772,7 @@ class PlentyApi():
         items = self.__repeat_get_request_for_all_records(domain='items',
                                                           query=query)
         if isinstance(items, dict) and 'error' in items.keys():
-            print(f"ERROR: GET items failed with:\n{items}")
+            logging.error(f"GET items failed with:\n{items}")
             return None
 
         items = utils.transform_data_type(data=items,
@@ -810,7 +815,7 @@ class PlentyApi():
         variations = self.__repeat_get_request_for_all_records(
             domain='variations', query=query)
         if isinstance(variations, dict) and 'error' in variations.keys():
-            print(f"ERROR: GET variations failed with:\n{variations}")
+            logging.error(f"GET variations failed with:\n{variations}")
             return None
 
         variations = utils.transform_data_type(data=variations,
@@ -852,11 +857,11 @@ class PlentyApi():
                     target_name = element
                     target_id = target[element]
             else:
-                print(f"WARNING: {element} is not a valid target "
-                      "for the image availability POST request.")
+                logging.warn(f"{element} is not a valid target "
+                             "for the image availability POST request.")
 
         if not target_name or not target_id:
-            print("ERROR: target for availability configuration required.")
+            logging.error("target for availability configuration required.")
             return False
 
         data = {
@@ -1090,8 +1095,8 @@ class PlentyApi():
                 transaction_response = self.plenty_api_create_transaction(
                     order_item_id=transaction['orderItemId'], json=transaction)
                 if 'error' in transaction_response.keys():
-                    print("ERROR: transaction creation failed "
-                          f"({transaction_response})")
+                    logging.warning("transaction creation failed "
+                                    f"({transaction_response})")
 
         if book_out:
             initiate_order_date = utils.build_date_update_json(

@@ -25,6 +25,7 @@ import time
 import re
 import dateutil.parser
 import pandas
+import logging
 
 import plenty_api.constants as constants
 
@@ -84,8 +85,8 @@ def attribute_variation_mapping(variation: dict, attribute: dict) -> dict:
 
     for var in variation:
         if 'variationAttributeValues' not in var.keys():
-            print("WARNING: variations without attribute values"
-                  " used for attribute mapping")
+            logging.warning("variations without attribute values"
+                            " used for attribute mapping")
             return attribute
         for attr in var['variationAttributeValues']:
             attr_id = str(attr['attributeId'])
@@ -215,14 +216,14 @@ def sanity_check_parameter(domain: str,
                        [dict]   -   updated query
     """
     if domain not in constants.VALID_DOMAINS:
-        print(f"ERROR: invalid domain name {domain}")
+        logging.error(f"Invalid domain name {domain}")
         return {}
 
     if refine:
         invalid_keys = set(refine.keys()).difference(
             constants.VALID_REFINE_KEYS[domain])
         if invalid_keys:
-            print(f"Invalid refine argument key removed: {invalid_keys}")
+            logging.info(f"Invalid refine argument key removed: {invalid_keys}")
             for invalid_key in invalid_keys:
                 refine.pop(invalid_key, None)
         if refine:
@@ -232,7 +233,8 @@ def sanity_check_parameter(domain: str,
         invalid_values = set(additional).difference(
             constants.VALID_ADDITIONAL_VALUES[domain])
         if invalid_values:
-            print(f"Invalid additional argument removed: {invalid_values}")
+            logging.info("Invalid additional argument removed: "
+                         f"{invalid_values}")
             for invalid_value in invalid_values:
                 additional.remove(invalid_value)
         if additional:
@@ -260,19 +262,18 @@ def sanity_check_json(route_name: str, json: dict) -> bool:
                        [bool]
     """
     if route_name not in constants.REQUIRED_FIELDS_MAP.keys():
-        print(f"ERROR: unknown route {route_name} in required fields map.")
+        logging.error(f"unknown route {route_name} in required fields map.")
         return False
 
     required_keys = [x[0] for x in constants.REQUIRED_FIELDS_MAP[route_name]]
     if not list_contains(search_list=required_keys, target_list=json.keys()):
-        print(f"ERROR: {required_keys} "
-              "fields required for {route_name} creation. "
-              f"Got: {list(json.keys())}")
+        logging.error(f"{required_keys} fields required for {route_name} "
+                      f"creation. Got: {list(json.keys())}")
         return False
 
     for key, field_type in constants.REQUIRED_FIELDS_MAP[route_name]:
         if not json_field_filled(json_field=json[key], field_type=field_type):
-            print(f"ERROR: Empty required field within JSON ({key}).")
+            logging.error(f"Empty required field within JSON ({key}).")
             return False
     return True
 
@@ -296,12 +297,13 @@ def validate_redistribution_template(template: dict) -> bool:
                 individual_quantities = sum(
                     [int(x['quantity']) for x in variation['locations']])
             except ValueError as err:
-                print(f"ERROR: invalid quantity value ({err})")
+                logging.error(f"invalid quantity value ({err})")
                 return False
 
             if variation['total_quantity'] != individual_quantities:
-                print("ERROR: Absolute quantity doesn't match the individual "
-                      f"quantities for variation {variation['variation_id']}")
+                logging.error("Absolute quantity doesn't match the individual "
+                              "quantities for variation "
+                              f"{variation['variation_id']}")
                 return False
 
             for location in variation['locations']:
@@ -309,10 +311,11 @@ def validate_redistribution_template(template: dict) -> bool:
                     target_quantities = sum(
                         [int(x['quantity']) for x in location['targets']])
                     if location['quantity'] != target_quantities:
-                        print("ERROR: Quantity of location "
-                              f"{location['location_id']} doesn't match the"
-                              " sum of quantities of its target locations for "
-                              f"variation {variation['variation_id']}")
+                        logging.error("Quantity of location "
+                                      f"{location['location_id']} doesn't "
+                                      "match the sum of quantities of its "
+                                      "target locations for variation "
+                                      f"{variation['variation_id']}")
                         return False
 
     return True
@@ -341,10 +344,10 @@ def build_query_date(date_range: dict, date_type: str) -> dict:
     """
     query = {}
     if not date_range or not date_type:
-        print("ERROR: Both date type and date range required")
+        logging.error("Both date type and date range required")
         return ''
     if date_type.lower() not in constants.ORDER_DATE_ARGUMENTS.keys():
-        print(f"ERROR: Invalid date type for query creation: {date_type}")
+        logging.error(f"Invalid date type for query creation: {date_type}")
         return ''
     date_type = constants.ORDER_DATE_ARGUMENTS[date_type.lower()]
     query.update({f"{date_type}AtFrom": date_range['start']})
@@ -370,12 +373,12 @@ def build_endpoint(url: str, route: str, path: str = '') -> str:
     """
     if (not (re.search(r'https://.*.plentymarkets-cloud01.com', url) or
              re.search(r'https://.*.plentymarkets.com', url))):
-        print("ERROR: invalid URL, need: https://*.plentymarkets-cloud01.com "
-              "or https://*.plentymarkets.com")
+        logging.error("invalid URL, need: https://*.plentymarkets-cloud01.com "
+                      "or https://*.plentymarkets.com")
         return ''
 
     if route not in constants.VALID_ROUTES:
-        print(f"ERROR: invalid route, [{route}]")
+        logging.error(f"Invalid route, [{route}]")
         return ''
 
     return url + route + path
@@ -395,12 +398,12 @@ def build_date_update_json(date_type: str, date: datetime.datetime) -> dict:
                                 [dict]  -   valid JSON for the request
     """
     if date_type not in constants.REDISTRIBUTION_DATE_TYPES.keys():
-        print(f"ERROR: Invalid date type {date_type} for a redistribution")
+        logging.error(f"Invalid date type {date_type} for a redistribution")
         return {}
 
     date_str = parse_date(date=date.strftime("%Y-%m-%dT%H:%M:%S"))
     if not date_str:
-        print(f"ERROR: Invalid date {str(date)}.")
+        logging.error(f"Invalid date {str(date)}.")
         return {}
 
     json = {
@@ -614,19 +617,20 @@ def check_date_range(date_range: dict) -> bool:
         start = dateutil.parser.parse(date_range['start'])
         end = dateutil.parser.parse(date_range['end'])
     except dateutil.parser._parser.ParserError as err:
-        print(f"ERROR: invalid date {date_range['start']} -> {date_range['end']}\n{err}")
+        logging.error(f"invalid date {date_range['start']} -> "
+                      f"{date_range['end']}\n{err}")
         return False
 
     if start > end:
-        print("Date range check failure: End is before the Start")
+        logging.error("Date range check failure: End is before the Start")
         return False
 
     if start == end:
-        print("Date range check failure: Start is equal to end")
+        logging.error("Date range check failure: Start is equal to end")
         return False
 
     if start > now or end > now:
-        print("Date range validation: Date range is or ends in the future")
+        logging.error("Date range validation: Date range is or ends in the future")
         return False
 
     return True
