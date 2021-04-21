@@ -346,6 +346,9 @@ class PlentyApi():
         if not response:
             return None
 
+        if isinstance(response, list):
+            return response
+
         entries = response['entries']
 
         while not response['isLastPage']:
