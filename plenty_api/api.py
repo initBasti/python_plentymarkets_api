@@ -254,7 +254,10 @@ class PlentyApi():
         if data_format.lower() not in ['json', 'dataframe']:
             self.data_format = 'json'
         self.creds = {'Authorization': ''}
-        self.__authenticate(persistent=use_keyring, user=username, pw=password)
+        logged_in = self.__authenticate(
+            persistent=use_keyring, user=username, pw=password)
+        if not logged_in:
+            raise RuntimeError('Authentication failed')
 
     def __authenticate(self, persistent: str, user: str, pw: str):
         """
