@@ -430,7 +430,8 @@ class PlentyApi():
         if not response:
             return None
 
-        if isinstance(response, dict) and 'error' in response.keys():
+        if ((isinstance(response, dict) and 'error' in response.keys()) or
+                isinstance(response, list)):
             return response
 
         entries = response['entries']
