@@ -409,7 +409,8 @@ class PlentyApi():
 
     def __repeat_get_request_for_all_records(self,
                                              domain: str,
-                                             query: dict) -> dict:
+                                             query: dict,
+                                             path: str = '') -> dict:
         """
             Collect data records from multiple API requests in a single JSON
             data structure.
@@ -424,6 +425,7 @@ class PlentyApi():
         """
         response = self.__plenty_api_request(method='get',
                                              domain=domain,
+                                             path=path,
                                              query=query)
         if not response:
             return None
@@ -437,6 +439,7 @@ class PlentyApi():
             query.update({'page': response['page'] + 1})
             response = self.__plenty_api_request(method='get',
                                                  domain=domain,
+                                                 path=path,
                                                  query=query)
             if not response:
                 return None
