@@ -178,7 +178,7 @@ class PlentyApi():
         if not logged_in:
             raise RuntimeError('Authentication failed')
 
-    def __authenticate(self, persistent: str, user: str, pw: str):
+    def __authenticate(self, persistent: bool, user: str, pw: str):
         """
             Get the bearer token from the PlentyMarkets API.
             There are three possible methods:
