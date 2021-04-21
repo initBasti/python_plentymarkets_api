@@ -22,14 +22,31 @@
     https://developers.plentymarkets.com/rest-doc#
 """
 
-VALID_DOMAINS = ['order', 'item', 'variation', 'vat', 'prices', 'manufacturer',
-                 'attribute', 'referrer']
-VALID_ROUTES = ['/rest/orders', '/rest/items', '/rest/items/variations',
-                '/rest/vat', '/rest/items/sales_prices',
-                '/rest/items/manufacturers', '/rest/items/attributes',
-                '/rest/orders/referrers']
-DOMAIN_ROUTE_MAP = {VALID_DOMAINS[i]: VALID_ROUTES[i]
-                    for i in range(len(VALID_DOMAINS))}
+VALID_DOMAINS = ['order',
+                 'item',
+                 'variation',
+                 'vat',
+                 'prices',
+                 'manufacturer',
+                 'attribute',
+                 'referrer',
+                 'stockmanagement',
+                 'warehouses',
+                 'contact',
+                 ]
+VALID_ROUTES = ['/rest/orders',
+                '/rest/items',
+                '/rest/items/variations',
+                '/rest/vat',
+                '/rest/items/sales_prices',
+                '/rest/items/manufacturers',
+                '/rest/items/attributes',
+                '/rest/orders/referrers',
+                '/rest/stockmanagement/stock',
+                '/rest/stockmanagement/warehouses',
+                '/rest/accounts/contacts',
+                ]
+DOMAIN_ROUTE_MAP = dict(zip(VALID_DOMAINS, VALID_ROUTES))
 
 # Mapping of date_type function parameter value to query parameter
 # the date_type function parameter is supposed to be more descriptive
@@ -59,7 +76,23 @@ VALID_REFINE_KEYS = {
     ],
     'manufacturer': [
         'name'
-    ]
+    ],
+    'stockmanagement': [
+        'variationId',
+    ],
+    'warehouses': [
+        'variationId',
+    ],
+    'contact': [
+        'fullText', 'contactEmail', 'email', 'postalCode', 'plentyId',
+        'externalId', 'number', 'typeId', 'rating', 'createdAtBefore',
+        'createdAtAfter', 'updatedAtBefore', 'updatedAtAfter',
+        'lastOrderAtBefore', 'lastOrderAtAfter', 'with',
+        'newsletterAllowanceAfter', 'newsletterAllowanceBefore',
+        'newsletterAllowance', 'contactId', 'contactAddress', 'countryId',
+        'userId', 'referrerId', 'name', 'nameOrId', 'town', 'privatePhone',
+        'billingAddressId', 'deliveryAddressId', 'tagIds'
+    ],
 }
 
 # Valid additional argument values for GET requests, which are used to

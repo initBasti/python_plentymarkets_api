@@ -707,6 +707,60 @@ class PlentyApi():
             query=query,
             lang=lang)
 
+    def plenty_api_get_stock(self,
+                             refine: dict = None,
+                             lang: str = ''):
+        return self.plenty_api_generic_get(
+            domain='stockmanagement',
+            refine=refine,
+            lang=lang)
+
+    def plenty_api_get_storagelocations(self,
+                                        warehouse_id: int,
+                                        refine: dict = None,
+                                        additional: list = None,
+                                        lang: str = ''):
+        return self.plenty_api_generic_get(
+            domain='warehouses',
+            path=f'/{warehouse_id}/stock/storageLocations',
+            refine=refine,
+            additional=additional,
+            lang=lang)
+
+    def plenty_api_get_variation_stock_batches(self, variation_id):
+        # get all warehouses for this item
+        refine = {'variationId': variation_id}
+
+        # returns only locations with positive stock
+        stock = self.plenty_api_get_stock(refine=refine)
+        warehouses = [s['warehouseId'] for s in stock]
+
+        # get storage data from everywhere
+        # todo – think about romoving non-essenital keys
+        storage_data = [location
+                        for warehouse_id in warehouses
+                        for location in self.plenty_api_get_storagelocations(
+                        warehouse_id, refine=refine)]
+
+        # return ordered by best before date (oldest first)
+        return sorted(storage_data, key=lambda s: s['bestBeforeDate'])
+
+    def plenty_api_get_variation_warehouses(self, item_id, variation_id):
+        return self.plenty_api_generic_get(
+            domain='item',
+            path=f'/{item_id}/variations/{variation_id}/variation_warehouses')
+
+    def plenty_api_get_contacts(self,
+                                refine: dict = None,
+                                additional: list = None,
+                                lang: str = ''):
+        return self.plenty_api_generic_get(
+            domain='contact',
+            refine=refine,
+            additional=additional,
+            lang=lang,
+        )
+
 # POST REQUESTS
 
     def plenty_api_set_image_availability(self,
