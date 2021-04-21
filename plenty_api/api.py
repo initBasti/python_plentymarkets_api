@@ -365,6 +365,24 @@ class PlentyApi():
 
         return entries
 
+    def plenty_api_generic_get(self,
+                               domain: str = '',
+                               path: str = '',
+                               refine: dict = None,
+                               additional: list = None,
+                               query: dict = {},
+                               lang: str = ''):
+
+        query = utils.sanity_check_parameter(
+            domain=domain, query=query, refine=refine,
+            additional=additional,lang=lang)
+
+        data = self.__repeat_get_request_for_all_records(
+            domain=domain, path=path, query=query)
+
+        return utils.transform_data_type(
+            data=data, data_format=self.data_format)
+
     def plenty_api_get_orders_by_date(self, start, end, date_type='create',
                                       additional=None, refine=None):
         """
@@ -569,22 +587,13 @@ class PlentyApi():
             Return:
                 [JSON(Dict) / DataFrame] <= self.data_format
         """
-        manufacturers = None
         query = {}
-        query = utils.sanity_check_parameter(domain='manufacturer',
-                                             query=query,
-                                             refine=refine,
-                                             additional=additional)
-
         if last_update:
             query.update({'updatedAt': last_update})
-
-        manufacturers = self.__repeat_get_request_for_all_records(
-            domain='manufacturer', query=query)
-
-        manufacturers = utils.transform_data_type(data=manufacturers,
-                                                  data_format=self.data_format)
-        return manufacturers
+        return self.plenty_api_generic_get(domain='manufacturer',
+                                           query=query,
+                                           refine=refine,
+                                           additional=additional)
 
     def plenty_api_get_referrers(self,
                                  column: str = ''):
@@ -654,25 +663,16 @@ class PlentyApi():
             Return:
                 [JSON(Dict) / DataFrame] <= self.data_format
         """
-        items = None
         query = {}
-
-        query = utils.sanity_check_parameter(domain='item',
-                                             query=query,
-                                             refine=refine,
-                                             additional=additional,
-                                             lang=lang)
-
         if last_update:
             query.update({'updatedBetween': utils.date_to_timestamp(
                          date=last_update)})
 
-        items = self.__repeat_get_request_for_all_records(domain='items',
-                                                          query=query)
-
-        items = utils.transform_data_type(data=items,
-                                          data_format=self.data_format)
-        return items
+        return self.plenty_api_generic_get(domain='item',
+                                           query=query,
+                                           refine=refine,
+                                           additional=additional,
+                                           lang=lang)
 
     def plenty_api_get_variations(self,
                                   refine: dict = None,
@@ -698,21 +698,14 @@ class PlentyApi():
             Return:
                 [JSON(Dict) / DataFrame] <= self.data_format
         """
-        variations = None
         query = {}
 
-        query = utils.sanity_check_parameter(domain='variation',
-                                             query=query,
-                                             refine=refine,
-                                             additional=additional,
-                                             lang=lang)
-
-        variations = self.__repeat_get_request_for_all_records(
-            domain='variations', query=query)
-
-        variations = utils.transform_data_type(data=variations,
-                                               data_format=self.data_format)
-        return variations
+        return self.plenty_api_generic_get(
+            domain='variation',
+            refine=refine,
+            additional=additional,
+            query=query,
+            lang=lang)
 
 # POST REQUESTS
 
