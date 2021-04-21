@@ -145,7 +145,7 @@ class PlentyApi():
     """
     def __init__(self, base_url: str, use_keyring: bool = True,
                  data_format: str = 'json', debug: bool = False,
-                 username: str = '', password: str = ''):
+                 username: str = '', password: str = '', use_gpg: bool = True):
         """
             Initialize the object and directly authenticate to the API to get
             the bearer token.
@@ -161,9 +161,10 @@ class PlentyApi():
                                         about the request URL and parameters
                 username    [str]   -   skip the keyring and directly enter
                                         the username to the REST-API
-                password    [str]   -   path to a gpg-encrypted file that
-                                        contains the key.
-
+                password    [str]   -   password string or path to a gpg-encrypted
+                                        file that contains the key.
+                use_gpg     [bool]  -   password is path to a gpg-encrypted
+                                        file that contains the key.
         """
         self.url = base_url
         self.keyring = plenty_api.keyring.CredentialManager()
@@ -174,11 +175,11 @@ class PlentyApi():
             self.data_format = 'json'
         self.creds = {'Authorization': ''}
         logged_in = self.__authenticate(
-            persistent=use_keyring, user=username, pw=password)
+            persistent=use_keyring, user=username, pw=password, use_gpg=use_gpg)
         if not logged_in:
             raise RuntimeError('Authentication failed')
 
-    def __authenticate(self, persistent: bool, user: str, pw: str):
+    def __authenticate(self, persistent: bool, user: str, pw: str, use_gpg: bool):
         """
             Get the bearer token from the PlentyMarkets API.
             There are three possible methods:
@@ -212,20 +213,23 @@ class PlentyApi():
         elif not persistent and not (user and pw):
             creds = utils.get_temp_creds()
         elif user and pw:
-            gpg = gnupg.GPG()
-            try:
-                with open(pw, 'rb') as pw_file:
-                    decrypt_pw = gpg.decrypt_file(pw_file)
-            except FileNotFoundError as err:
-                print("ERROR Login to API failed: Provided gpg file is not "
-                      f"valid\n=> {err}")
-                return False
-            if not decrypt_pw:
-                print("ERROR Login to API failed: Decryption of password file"
-                      " failed.")
-                return False
-            password = decrypt_pw.data.decode('utf-8').strip('\n')
-            creds = {'username': user, 'password': password}
+            if use_gpg:
+                gpg = gnupg.GPG()
+                try:
+                    with open(pw, 'rb') as pw_file:
+                        decrypt_pw = gpg.decrypt_file(pw_file)
+                except FileNotFoundError as err:
+                    logging.error("Login to API failed: Provided gpg file is not "
+                                  f"valid\n=> {err}")
+                    return False
+                if not decrypt_pw:
+                    logging.error("Login to API failed: Decryption of password"
+                                  " file failed.")
+                    return False
+                password = decrypt_pw.data.decode('utf-8').strip('\n')
+                creds = {'username': user, 'password': password}
+            else:
+                creds = {'username': user, 'password': pw}
 
         endpoint = self.url + '/rest/login'
         response = requests.post(endpoint, params=creds)
