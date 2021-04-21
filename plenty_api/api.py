@@ -26,6 +26,7 @@ import requests
 import simplejson
 import gnupg
 import logging
+from datetime import datetime, timezone
 
 import plenty_api.keyring
 import plenty_api.utils as utils
@@ -919,10 +920,7 @@ class PlentyApi():
                                              path=path,
                                              data=data)
 
-        if not response:
-            return False
-
-        return True
+        return response
 
     def plenty_api_create_items(self, json: list) -> list:
         """
@@ -1221,8 +1219,6 @@ class PlentyApi():
                                              data=data)
         return response
 
-# PUT REQUESTS
-
     def plenty_api_update_redistribution(self, order_id: int,
                                          json: dict) -> dict:
         """
@@ -1249,4 +1245,78 @@ class PlentyApi():
                                              domain="redistribution",
                                              path=path,
                                              data=json)
+
+        return response
+
+# PUT REQUESTS
+
+    def plenty_api_book_incoming_items(self,
+                                       article_item_id: int,
+                                       variation_id: int,
+                                       quantity: float,
+                                       warehouseId: int,
+                                       batch: str = None,
+                                       bestBeforeDate: str = None):
+        data = {
+            "warehouseId": warehouseId,
+            "deliveredAt": datetime.now(timezone.utc).strftime(
+                "%Y-%m-%dT%H:%M:%SZ"),
+            "currency": "EUR",
+            "quantity": quantity,
+            "reasonId": 181,
+        }
+
+        if batch:
+            data.update(batch=batch)
+        if bestBeforeDate:
+            w3c_date = utils.parse_date(bestBeforeDate)
+            if w3c_date:
+                data.update(bestBeforeDate=w3c_date)
+
+        path = str(f"/{article_item_id}/variations/{variation_id}/stock/"
+                   "bookIncomingItems")
+
+        response = self.__plenty_api_request(method="put",
+                                             domain="items",
+                                             path=path,
+                                             data=data)
+
+        # TODO Error handling and introduce proper logging
+        logging.debug(response)
+
+        return response
+
+    def plenty_api_book_outgoing_items(self,
+                                       article_item_id: int,
+                                       variation_id: int,
+                                       quantity: float,
+                                       warehouseId: int,
+                                       batch: str = None,
+                                       bestBeforeDate: str = None):
+        data = {
+            "warehouseId": warehouseId,
+            "deliveredAt": datetime.now(timezone.utc).strftime(
+                "%Y-%m-%dT%H:%M:%SZ"),
+            "currency": "EUR",
+            "quantity": quantity,
+            "reasonId": 201,
+        }
+
+        if batch:
+            data.update(batch=batch)
+        if bestBeforeDate:
+            w3c_date = utils.parse_date(bestBeforeDate)
+            if w3c_date:
+                data.update(bestBeforeDate=w3c_date)
+
+        path = str(f"/{article_item_id}/variations/{variation_id}/stock/"
+                   "bookOutgoingItems")
+
+        response = self.__plenty_api_request(method="put",
+                                             domain="items",
+                                             path=path,
+                                             data=data)
+        # TODO Error handling and introduce proper logging
+        logging.debug(response)
+
         return response
