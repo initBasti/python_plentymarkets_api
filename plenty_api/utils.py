@@ -297,10 +297,6 @@ def build_endpoint(url: str, route: str, path: str = '') -> str:
         Parameter:
                     [str]       -   complete endpoint
     """
-    if not re.search(r'https://.*.plentymarkets-cloud01.com', url):
-        print("ERROR: invalid URL, need: {https://*.plentymarkets-cloud01.com")
-        return ''
-
     if route not in constants.VALID_ROUTES:
         print(f"ERROR: invalid route, [{route}]")
         return ''
