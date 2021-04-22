@@ -260,3 +260,35 @@ The **json** field contains either a list of json objects (dictionaries) or a si
 
 Return a list of POST request JSON responses, if one of the requests fails return the error message.
 When the JSON object doesn't contain the required attributes the method will return: `{'error': 'invalid_json'}`.
+
+#### plenty_api_create_variations
+
+Create a variation for a specific item on Plentymarkets.
+
+[*Required parameter*]:
+
+The **item_id** field contains the ID given to the item by Plentymarkets, the **json** field contains a single JSON object or a list of JSON objects describing a variation.
+Please refer to [Plentymarkets Dev documentation: REST API POST items](https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Item/post_rest_items__itemId__variations), for a list of valid attributes.
+
+[*Example*]:
+```json
+{
+    'isMain': False,
+    'isActive': True,
+    'availability': 1,
+    'number': 'test1234',
+    'unit': {'unitId': 1, 'content': 1},
+    'variationAttributeValues': [
+        {'valueId': 13}, {'valueId': 17}
+    ],
+    'variationCategories': [{'categoryId': 21}],
+    'variationBarcodes': [{'code': '1234567891011', 'barcodeId': 1}],
+    "variationClients": [{"plentyId": 54017}]
+},
+```
+
+[*Output format*]:
+
+Return a list of POST request JSON responses, if one of the requests fails return the error message.
+When the JSON object doesn't contain the required attributes the method will return: `{'error': 'invalid_json'}`.
+If the **item_id** field is not filled the method will return: `{'error': 'missing_parameter'}`.
