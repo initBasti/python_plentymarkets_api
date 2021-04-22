@@ -146,6 +146,14 @@ class PlentyApi():
 
                 Reference:
                 (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Item/post_rest_items)
+
+            **plenty_api_create_variations**
+                Create a variation for a specific item on Plentymarkets.
+                [item_id]       -   ID of the item to create variations for
+                [json]          -   list of json objects or a single json
+
+                Reference:
+                (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Item/post_rest_items__itemId__variations)
             ___
     """
     def __init__(self, base_url: str, use_keyring: bool = True,
@@ -818,3 +826,37 @@ class PlentyApi():
             response.append(self.__plenty_api_request(
                 method="post", domain="items", data=item))
         return response
+
+    def plenty_api_create_variations(self, item_id: int, json: list) -> list:
+        """
+            Create a variation for a specific item on Plentymarkets.
+
+            Parameter:
+                item_id  [int]    -   Add the variations to this item
+                json     [list]   -   Either a list of JSON objects or a single
+                                      JSON object describing a variation for
+                                      an item.
+
+            Return:
+                         [list]   -   Response objects if one or more should
+                                      fail, the entry contains the error
+                                      message.
+        """
+        if not item_id:
+            return [{'error': 'missing_parameter'}]
+
+        if isinstance(json, dict):
+            json = [json]
+
+        path = str(f'/{item_id}/variations')
+
+        response = []
+        for variation in json:
+            if not utils.sanity_check_json(route_name='variations',
+                                        json=variation):
+                response.append({'error': 'invalid_json'})
+            response.append(self.__plenty_api_request(
+                method="post", domain="items", path=path, data=variation))
+
+        return response
+
