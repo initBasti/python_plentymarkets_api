@@ -3,6 +3,7 @@
 ## Reference
 
 - [Login](#login)
+    + [GPG encrypted password file workflow](#gpg_workflow)
 - [GET-Requests](#get-requests)
     + [Order related data](#get-order-section)
         * [get orders by date](#get-orders-by-date)
@@ -35,6 +36,45 @@ The login request is sent automatically, as soon as the object is instantiated. 
     + Activated by creating the `PlentyApi` object, with the option `use_keyring=True` (True is the default)
 3. Provide the username as an argument and a path to a GPG encrypted file for the password [Works for cronjobs and manual running]
     + Activated by creating the `PlentyApi` object with the arguments, `username={REST-API username}` and `password={path to GPG encrypted file containing the REST-API password}`
+
+#### Example for a GPG encrypted file workflow (on Linux) <a name='gpg_workflow'></a>
+
+The idea behind the GnuPG encrypted file is to simply write the password
+of the Plentymarkets REST API user into a `.txt` file and to encrypt that file.
+`plenty_api` is then going to decrypt it during authentication and
+read the password.
+With the username and password, `plenty_api` can then receive an Oauth2
+bearer token to be used for authentication.
+
+Here is an example (on Linux):
+```
+# With a preceding space to skip entering the line into the bash history
+  echo "password" > pw.txt
+gpg --encrpyt --sign --recipient gpg-key@email.com pw.txt
+```
+
+Within python:
+```
+api = plenty_api.PlentyApi(
+        base_url='https://company.plentymarkets-cloud01.com',
+        username='api_user',
+        password='/home/user/pw.txt.gpg')
+```
+
+This will try to access your gpg key through your gpg agent, which manages
+access to the key.
+
+In some cases, you might want to increase the time until the passphrase
+times out (in which case you would have to enter the password again).
+This is how you can modify the time:
+```
+echo -e "default-cache-ttl 18000\nmax-cache-ttl 86400\nignore-cache-for-signing" >> ~/.gnupg/gpg-agent.conf
+chmod 600 ~/.gnupg/gpg-agent.conf
+```
+This will set the default timeout time for a passphrase to 18000s (5h)
+and the maximum timeout time to 86400s (24h) (meaning even if you use
+the key multiple times during the 24h, after 24h you will have to enter
+the password again).
 
 ### GET requests: <a name='get-requests'></a>
 
