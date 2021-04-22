@@ -427,13 +427,16 @@ class PlentyApi():
         date_range = utils.build_date_range(start=start, end=end)
         if not date_range:
             print(f"ERROR: Invalid range {start} -> {end}")
+            return None
 
         if not utils.check_date_range(date_range=date_range):
             print(f"ERROR: {date_range['start']} -> {date_range['end']}")
-            return {}
+            return None
 
         query = utils.build_query_date(date_range=date_range,
                                        date_type=date_type)
+        if not query:
+            return None
 
         query = utils.sanity_check_parameter(domain='order',
                                              query=query,
