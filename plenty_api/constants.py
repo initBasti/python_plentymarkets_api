@@ -143,3 +143,19 @@ VALID_COUNTRY_MAP = {
     "ZM": 252, "ZW": 253, "AE": 254, "CUW": 258, "SXM": 259,
     "BES": 260, "BL": 261
 }
+
+# POST route, minimum JSON requirement check constants
+REQUIRED_ITEM_FIELDS = ['variations']
+REQUIRED_VARIATION_FIELDS = ['unit', 'variationAttributeValues',
+                             'variationClients']
+REQUIRED_CATEGORY_FIELDS = ['type', 'details', 'clients']
+REQUIRED_ATTRIBUTE_FIELDS = ['backendName']
+REQUIRED_ATTRIBUTE_VALUE_FIELDS = ['backendName']
+
+REQUIRED_FIELDS_MAP = {
+    'items': REQUIRED_ITEM_FIELDS,
+    'variations': REQUIRED_VARIATION_FIELDS,
+    'categories': REQUIRED_CATEGORY_FIELDS,
+    'attributes': REQUIRED_ATTRIBUTE_FIELDS,
+    'attribute_values': REQUIRED_ATTRIBUTE_VALUE_FIELDS,
+}
