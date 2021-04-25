@@ -144,33 +144,18 @@ VALID_COUNTRY_MAP = {
     "BES": 260, "BL": 261
 }
 
-REQUIRED_ORDER_ATTRIBUTES = [
-    "typeId", "ownerId", "plentyId", "locationId", "statusId",
-    "orderItems", "properties", "addressRelations", "relations"
-]
+# POST route, minimum JSON requirement check constants
+REQUIRED_ITEM_FIELDS = ['variations']
+REQUIRED_VARIATION_FIELDS = ['unit', 'variationAttributeValues',
+                             'variationClients']
+REQUIRED_CATEGORY_FIELDS = ['type', 'details', 'clients']
+REQUIRED_ATTRIBUTE_FIELDS = ['backendName']
+REQUIRED_ATTRIBUTE_VALUE_FIELDS = ['backendName']
 
-REQUIRED_RELATION_ATTRIBUTES = ["referenceType", "referenceId", "relation"]
-
-REQUIRED_ADDRESS_RELATION_ATTRIBUTES = ["typeId", "addressId"]
-
-REQUIRED_PROPERTY_ATTRIBUTES = ["typeId", "value"]
-
-REQUIRED_ORDER_PROPERTY_ATTRIBUTES = ["propertyId", "value", "fileUrl"]
-
-REQUIRED_AMOUNT_ATTRIBUTES = [
-    "isSystemCurrency", "currency", "exchangeRate", "priceOriginalGross",
-    "surcharge", "discount", "isPercentage"
-]
-
-REQUIRED_ORDER_ITEM_ATTRIBUTES = [
-    "typeId", "referrerId", "itemVariationId", "quantity",
-    "countryVatId", "vatField", "vatRate", "orderItemName",
-    "shippingProfileId", "amounts", "properties", "orderProperties",
-]
-
-REQUIRED_ATTRIBUTE_MAPPING = {
-    "relations": REQUIRED_RELATION_ATTRIBUTES,
-    "addressRelations": REQUIRED_ADDRESS_RELATION_ATTRIBUTES,
-    "properties": REQUIRED_PROPERTY_ATTRIBUTES,
-    "orderItems": REQUIRED_ORDER_ITEM_ATTRIBUTES,
+REQUIRED_FIELDS_MAP = {
+    'items': REQUIRED_ITEM_FIELDS,
+    'variations': REQUIRED_VARIATION_FIELDS,
+    'categories': REQUIRED_CATEGORY_FIELDS,
+    'attributes': REQUIRED_ATTRIBUTE_FIELDS,
+    'attribute_values': REQUIRED_ATTRIBUTE_VALUE_FIELDS,
 }

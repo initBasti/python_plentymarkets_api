@@ -247,6 +247,31 @@ def sanity_check_parameter(domain: str,
     return query
 
 
+def sanity_check_json(route_name: str, json: dict) -> bool:
+    """
+        Check if the JSON object provided for a POST request contains the
+        minimum required fields.
+
+        Parameter:
+            route_name [str]    -   specifies the route for the request
+            json       [dict]   -   JSON object for the route
+
+        Return:
+                       [bool]
+    """
+    if route_name not in constants.REQUIRED_FIELDS_MAP.keys():
+        print(f"ERROR: unknown route {route_name} in required fields map.")
+        return False
+
+    if not list_contains(search_list=constants.REQUIRED_FIELDS_MAP[route_name],
+                         target_list=json.keys()):
+        print(f"ERROR: {constants.REQUIRED_FIELDS_MAP[route_name]} "
+              "fields required for {route_name} creation. "
+              f"Got: {list(json.keys())}")
+        return False
+    return True
+
+
 def build_query_date(date_range: dict, date_type: str) -> dict:
     """
         Create a query for the API endpoint, with valid values from the
@@ -520,3 +545,10 @@ def build_login_token(response_json: dict) -> str:
     token_type = response_json['token_type']
     access_token = response_json['access_token']
     return token_type + ' ' + access_token
+
+
+def list_contains(search_list: list, target_list: list) -> bool:
+    """
+        Check if all elements of @search_list are found in @target_list
+    """
+    return all(elem in target_list for elem in search_list)

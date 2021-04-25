@@ -6,7 +6,7 @@ from plenty_api.utils import (
     get_route, build_endpoint, check_date_range, parse_date, build_date_range,
     get_utc_offset, build_query_date, create_vat_mapping, date_to_timestamp,
     get_language, shrink_price_configuration, sanity_check_parameter,
-    attribute_variation_mapping, check_order_json
+    attribute_variation_mapping, list_contains
 )
 
 
@@ -832,10 +832,27 @@ def test_attribute_variation_mapping(sample_attributes: list,
     assert expected_attribute_variation_map == result
 
 
-def test_check_order_json(sample_orders: list):
+def test_list_contains():
+    l1 = [
+        [1, 2, 3],
+        ['a', 'b', 'c'],
+        ['aba', 'bcb', 'cdc'],
+        ['a', 'b', 'c'],
+        ['aba', 'bcb'],
+        []
+    ]
+    l2 = [
+        [1, 4, 5, 6, 2, 3],
+        ['c', 'b', 'a'],
+        ['aba', 'bcb', 'cdc'],
+        ['a', 'c', 'd'],
+        [],
+        [1, 2, 3]
+    ]
     result = []
+    expected = [True, True, True, False, False, True]
 
-    for sample in sample_orders:
-        result.append(check_order_json(json=sample))
+    for lists in zip(l1, l2):
+        result.append(list_contains(search_list=lists[0],
+                                    target_list=lists[1]))
 
-    assert [True, False, False, False, False] == result
