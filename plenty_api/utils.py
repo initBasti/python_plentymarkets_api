@@ -277,6 +277,47 @@ def sanity_check_json(route_name: str, json: dict) -> bool:
     return True
 
 
+def validate_redistribution_template(template: dict) -> bool:
+    """
+        Check if the template for redistribution creation is valid
+
+        Make sure that the quantities align, the total quantity should be
+        equal to the outgoing quantity, if outgoing quanities are used and
+        the optional incoming quantities shall be equal to the outgoing
+        quantities.
+
+        Parameter:
+            template        [dict]  -   Simplified blueprint JSON for the
+                                        redistribution creation
+    """
+    for variation in template['variations']:
+        if 'locations' in variation.keys():
+            try:
+                individual_quantities = sum(
+                    [int(x['quantity']) for x in variation['locations']])
+            except ValueError as err:
+                print(f"ERROR: invalid quantity value ({err})")
+                return False
+
+            if variation['total_quantity'] != individual_quantities:
+                print("ERROR: Absolute quantity doesn't match the individual "
+                      f"quantities for variation {variation['variation_id']}")
+                return False
+
+            for location in variation['locations']:
+                if 'targets' in location.keys():
+                    target_quantities = sum(
+                        [int(x['quantity']) for x in location['targets']])
+                    if location['quantity'] != target_quantities:
+                        print("ERROR: Quantity of location "
+                              f"{location['location_id']} doesn't match the"
+                              " sum of quantities of its target locations for "
+                              f"variation {variation['variation_id']}")
+                        return False
+
+    return True
+
+
 def build_query_date(date_range: dict, date_type: str) -> dict:
     """
         Create a query for the API endpoint, with valid values from the
@@ -338,6 +379,192 @@ def build_endpoint(url: str, route: str, path: str = '') -> str:
         return ''
 
     return url + route + path
+
+
+def build_date_update_json(date_type: str, date: datetime.datetime) -> dict:
+    """
+        Create a valid JSON for a redistribution PUT request to update a date.
+
+        Used for the [PUT /rest/redistributions/{orderId}] route
+
+        Parameters:
+            date_type           [str]   -   initiate/estimated_delivery/finish
+            date           [datetime]   -   specific date to set for the event
+
+        Return:
+                                [dict]  -   valid JSON for the request
+    """
+    if date_type not in constants.REDISTRIBUTION_DATE_TYPES.keys():
+        print(f"ERROR: Invalid date type {date_type} for a redistribution")
+        return {}
+
+    date_str = parse_date(date=date.strftime("%Y-%m-%dT%H:%M:%S"))
+    if not date_str:
+        print(f"ERROR: Invalid date {str(date)}.")
+        return {}
+
+    json = {
+        'dates': [
+            {
+                'typeId': constants.REDISTRIBUTION_DATE_TYPES[date_type],
+                'date': date_str
+            }
+        ]
+    }
+    return json
+
+
+def build_redistribution_json(template: dict) -> dict:
+    """
+        Create a valid JSON for a redistribution POST request.
+
+        Used for the [POST /rest/redistributions route]
+
+        Parameters:
+            template            [dict]  -   Required and/or optional elements
+                                            for the redistribution creation
+
+        Return:
+                                [dict]  -   valid JSON for the request
+    """
+    variations = [
+        {
+            'typeId': 1,
+            'itemVariationId': x['variation_id'],
+            'quantity': x['total_quantity'],
+            'orderItemName': x['name']
+        }
+        for x in template['variations']
+    ]
+
+    for index, variation in enumerate(template['variations']):
+        if 'amounts' in variation.keys():
+            variations[index]['amounts'] = [
+                {
+                    'isSystemCurrency': True,
+                    'priceOriginalGross': variation['amounts']
+                }
+            ]
+        else:
+            variations[index]['amounts'] = [
+                {
+                    'isSystemCurrency': True,
+                    'priceOriginalGross': 0
+                }
+            ]
+
+        if 'referrer' in variation.keys():
+            variation[index]['referrerId'] = variation['referrer']
+
+    json = {
+        'typeId': 15,
+        'plentyId': template['plenty_id'],
+        'orderItems': variations,
+        'relations': [
+            {
+                'referenceType': 'warehouse',
+                'referenceId': template['sender'],
+                'relation': 'sender'
+            },
+            {
+                'referenceType': 'warehouse',
+                'referenceId': template['receiver'],
+                'relation': 'receiver'
+            }
+        ]
+    }
+
+    return json
+
+
+
+def build_transaction(order_item_id: int, location: dict,
+                      direction: str = 'out', user_id: int = -1,
+                      **kwargs) -> dict:
+    """
+        Create a valid transaction for the REST API POST route.
+
+        Used for the [POST /rest/orders/items/{orderItemId}/transactions route]
+
+        Parameters:
+            order_item_id       [int]   -   ID of the order item the
+                                            transaction is connected to
+            location            [dict]  -   Combination of location ID and
+                                            quantity
+            direction           [str]   -   OPTIONAL: in/out (default out)
+            user_id             [int]   -   OPTIONAL: ID of the user that is
+                                            responsible for the booking
+            kwargs              [dict]  -   Additional optional keys for
+                                            handling of transactions with
+                                            batches
+
+        Return:
+                                [dict]  -   valid JSON for the request
+    """
+    json = {
+        'orderItemId': order_item_id,
+        'quantity': location['quantity'],
+        'direction': direction,
+        'status': 'regular',
+        'warehouseLocationId': location['location_id']
+    }
+    if user_id > 0:
+        json['userId'] = user_id
+
+    for extra_key in ['batch', 'bestBeforeDate', 'identification']:
+        if extra_key in kwargs.keys():
+            json[extra_key] = kwargs[extra_key]
+
+    return json
+
+
+def build_transactions(order: dict, variations: dict,
+                       user_id: int = -1) -> list:
+    """
+        Create transaction JSONs for each order item in the redistribution.
+
+        Parameters:
+            order               [dict]  -   Response JSON from the order
+                                            creation
+            variations          [list]  -   Variations with warehouse location
+                                            to book stock from
+            user_id             [int]   -   OPTIONAL: ID of the user that is
+                                            responsible for the booking
+
+        Return:
+                                [tuple] -   List of transaction JSONs for
+                                            outgoing and incoming transactions
+    """
+    outgoing = []
+    incoming = []
+    for item in order['orderItems']:
+        template_variation = [
+            x for x in variations
+            if x['variation_id'] == item['itemVariationId']
+        ][0]
+        if 'locations' not in template_variation.keys():
+            continue
+        kwargs = {}
+        for extra_key in ['batch', 'bestBeforeDate', 'identification']:
+            if not extra_key in template_variation.keys():
+                continue
+            kwargs[extra_key] = template_variation[extra_key]
+
+        for location in template_variation['locations']:
+            outgoing.append(
+                build_transaction(order_item_id=item['id'], location=location,
+                                  direction='out', user_id=user_id,
+                                  **kwargs)
+            )
+            if 'targets' in location.keys():
+                for target in location['targets']:
+                    incoming.append(
+                        build_transaction(
+                            order_item_id=item['id'], location=target,
+                            direction='in', user_id=user_id, **kwargs)
+                    )
+    return (outgoing, incoming)
+
 
 
 def json_to_dataframe(json):
