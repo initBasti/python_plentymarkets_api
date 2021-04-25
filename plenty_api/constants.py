@@ -39,6 +39,14 @@ ORDER_DATE_ARGUMENTS = {
     'payment': 'paid',
     'delivery': 'outgoingItemsBooked'
 }
+
+# Redistribution event date types
+REDISTRIBUTION_DATE_TYPES = {
+    'initiate': 16,
+    'estimate_delivery': 11,
+    'finish': 17
+}
+
 # Refine argument keys for GET requests to filter the data
 VALID_REFINE_KEYS = {
     'order': [

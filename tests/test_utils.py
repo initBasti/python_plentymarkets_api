@@ -6,7 +6,8 @@ from plenty_api.utils import (
     get_route, build_endpoint, check_date_range, parse_date, build_date_range,
     get_utc_offset, build_query_date, create_vat_mapping, date_to_timestamp,
     get_language, shrink_price_configuration, sanity_check_parameter,
-    attribute_variation_mapping, list_contains, json_field_filled
+    attribute_variation_mapping, list_contains, json_field_filled,
+    build_transactions, validate_redistribution_template
 )
 
 
@@ -365,6 +366,7 @@ def sample_variation_data() -> list:
 
 
 @pytest.fixture
+<<<<<<< HEAD
 def sample_orders() -> list:
     orders = [
         # Valid order
@@ -486,6 +488,108 @@ def sample_orders() -> list:
         {}
     ]
     return orders
+
+
+def sample_redistribution():
+    order = {
+        "id": 1,
+        "plentyId": 12345,
+        "typeId": 15,
+        "relations": [
+            {
+                "orderId": 1,
+                "referenceType": "warehouse",
+                "referenceId": 105,
+                "relation": "sender"
+            },
+            {
+                "orderId": 1,
+                "referenceType": "warehouse",
+                "referenceId": 107,
+                "relation": "receiver"
+            }
+        ],
+        "orderItems": [
+            {
+                "id": 2,
+                "orderId": 1,
+                "typeId": 1,
+                "itemVariationId": 1234,
+                "quantity": 10,
+                "orderItemName": "test_1"
+            },
+            {
+                "id": 3,
+                "orderId": 1,
+                "typeId": 1,
+                "itemVariationId": 2345,
+                "quantity": 12,
+                "orderItemName": "test_2",
+            }
+        ]
+    }
+    return order
+
+
+@pytest.fixture
+def sample_redistribution_without_transactions():
+    variations = [
+        {
+            'variation_id': 1234,
+            'total_quantity': 10,
+            'name': 'test_1'
+        },
+        {
+            'variation_id': 2345,
+            'total_quantity': 12,
+            'name': 'test_2'
+        }
+    ]
+    return variations
+
+
+@pytest.fixture
+def sample_redistribution_with_outgoing_transactions(
+        sample_redistribution_without_transactions: dict):
+    sample = sample_redistribution_without_transactions
+    sample[0]['locations'] = [{'location_id': 1, 'quantity': 10}]
+    sample[1]['locations'] = [
+        {'location_id': 2, 'quantity': 6}, {'location_id': 3, 'quantity': 6}
+    ]
+    return sample
+
+
+@pytest.fixture
+def sample_redistribution_with_both_transactions(
+        sample_redistribution_with_outgoing_transactions: dict):
+    sample = sample_redistribution_with_outgoing_transactions
+    sample[0]['locations'][0]['targets'] = [
+        {'location_id': 110, 'quantity': 10}
+    ]
+    sample[1]['locations'][0]['targets'] = [
+        {'location_id': 111, 'quantity': 6}
+    ]
+    sample[1]['locations'][1]['targets'] = [
+        {'location_id': 112, 'quantity': 3},
+        {'location_id': 113, 'quantity': 3}
+    ]
+    return sample
+
+
+@pytest.fixture
+def sample_redistribution_with_extra_attributes(
+        sample_redistribution_with_outgoing_transactions: dict):
+    sample = sample_redistribution_with_outgoing_transactions
+    sample[0]['batch'] = '1234_batch'
+    sample[1]['batch'] = '2345_batch'
+    sample[0]['bestBeforeDate'] = '2020-01-03T15:00:00+02:00'
+    sample[1]['bestBeforeDate'] = '2020-01-03T15:00:00+02:00'
+    sample[0]['identification'] = '1234_identification'
+    sample[1]['identification'] = '2345_identification'
+    sample[0]['amounts'] = 10
+    sample[1]['amounts'] = 20
+    return sample
+
 
 # ======== EXPECTED DATA ==========
 
@@ -872,3 +976,154 @@ def test_json_field_filled():
                                         field_type=field_type))
 
     assert expected == result
+
+
+def describe_build_transactions():
+    def with_no_outgoing_or_incoming_transaction(
+            sample_redistribution: dict,
+            sample_redistribution_without_transactions: list):
+        result = build_transactions(
+            order=sample_redistribution,
+            variations=sample_redistribution_without_transactions)
+
+        assert ([], []) == result
+
+    def with_outgoing_transactions(
+            sample_redistribution: dict,
+            sample_redistribution_with_outgoing_transactions: list):
+        expected = (
+            [
+                {
+                    'quantity': 10, 'direction': 'out', 'status': 'regular',
+                    'warehouseLocationId': 1, 'orderItemId': 2
+                },
+                {
+                    'quantity': 6, 'direction': 'out', 'status': 'regular',
+                    'warehouseLocationId': 2, 'orderItemId': 3
+                },
+                {
+                    'quantity': 6, 'direction': 'out', 'status': 'regular',
+                    'warehouseLocationId': 3, 'orderItemId': 3
+                }
+            ],
+            []
+        )
+
+        result = build_transactions(
+            order=sample_redistribution,
+            variations=sample_redistribution_with_outgoing_transactions)
+
+        assert expected == result
+
+    def with_outgoing_and_incoming_transactions(
+            sample_redistribution: dict,
+            sample_redistribution_with_both_transactions: list):
+        expected = (
+            [
+                {
+                    'quantity': 10, 'direction': 'out', 'status': 'regular',
+                    'warehouseLocationId': 1, 'orderItemId': 2
+                },
+                {
+                    'quantity': 6, 'direction': 'out', 'status': 'regular',
+                    'warehouseLocationId': 2, 'orderItemId': 3
+                },
+                {
+                    'quantity': 6, 'direction': 'out', 'status': 'regular',
+                    'warehouseLocationId': 3, 'orderItemId': 3
+                }
+            ],
+            [
+                {
+                    'quantity': 10, 'direction': 'in', 'status': 'regular',
+                    'warehouseLocationId': 110, 'orderItemId': 2
+                },
+                {
+                    'quantity': 6, 'direction': 'in', 'status': 'regular',
+                    'warehouseLocationId': 111, 'orderItemId': 3
+                },
+                {
+                    'quantity': 3, 'direction': 'in', 'status': 'regular',
+                    'warehouseLocationId': 112, 'orderItemId': 3
+                },
+                {
+                    'quantity': 3, 'direction': 'in', 'status': 'regular',
+                    'warehouseLocationId': 113, 'orderItemId': 3
+                }
+            ]
+        )
+
+        result = build_transactions(
+            order=sample_redistribution,
+            variations=sample_redistribution_with_both_transactions)
+
+        assert expected == result
+
+    def with_extra_attributes(
+            sample_redistribution: dict,
+            sample_redistribution_with_extra_attributes: list):
+        expected = (
+            [
+                {
+                    'quantity': 10, 'direction': 'out', 'status': 'regular',
+                    'warehouseLocationId': 1, 'batch': '1234_batch',
+                    'bestBeforeDate': '2020-01-03T15:00:00+02:00',
+                    'identification': '1234_identification', 'orderItemId': 2
+                },
+                {
+                    'quantity': 6, 'direction': 'out', 'status': 'regular',
+                    'warehouseLocationId': 2, 'batch': '2345_batch',
+                    'bestBeforeDate': '2020-01-03T15:00:00+02:00',
+                    'identification': '2345_identification', 'orderItemId': 3
+                },
+                {
+                    'quantity': 6, 'direction': 'out', 'status': 'regular',
+                    'warehouseLocationId': 3, 'batch': '2345_batch',
+                    'bestBeforeDate': '2020-01-03T15:00:00+02:00',
+                    'identification': '2345_identification', 'orderItemId': 3
+                }
+            ],
+            []
+        )
+
+        result = build_transactions(
+            order=sample_redistribution,
+            variations=sample_redistribution_with_extra_attributes)
+
+        assert expected == result
+
+
+def describe_validate_redistribution_template():
+    def with_valid_template_without_transactions(
+            sample_redistribution_without_transactions):
+        sample = sample_redistribution_without_transactions
+        template = {'variations': sample}
+        assert True is validate_redistribution_template(template)
+
+    def with_valid_template_with_outgoing_transactions(
+            sample_redistribution_with_outgoing_transactions):
+        sample = sample_redistribution_with_outgoing_transactions
+        template = {'variations': sample}
+        assert True is validate_redistribution_template(template)
+
+    def with_invalid_template_with_outgoing_transactions(
+            sample_redistribution_with_outgoing_transactions):
+        sample = sample_redistribution_with_outgoing_transactions
+        # Change the quantity of one of the locations
+        sample[0]['locations'][0]['quantity'] = 8
+        template = {'variations': sample}
+        assert False is validate_redistribution_template(template)
+
+    def with_valid_transaction_with_both_transactions(
+            sample_redistribution_with_both_transactions):
+        sample = sample_redistribution_with_both_transactions
+        template = {'variations': sample}
+        assert True is validate_redistribution_template(template)
+
+    def with_invalid_transaction_with_both_transactions(
+            sample_redistribution_with_both_transactions):
+        sample = sample_redistribution_with_both_transactions
+        # Change the quantity of one of the targets
+        sample[1]['locations'][1]['targets'][0]['quantity'] = 8
+        template = {'variations': sample}
+        assert False is validate_redistribution_template(template)
