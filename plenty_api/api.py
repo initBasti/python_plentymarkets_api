@@ -177,6 +177,14 @@ class PlentyApi():
 
                 Reference:
                 (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Item/post_rest_items_attributes__attributeId__values)
+
+            **plenty_api_create_attribute_value_names**
+                Create one or more attribute value names for an attribute value.
+                [value_id]  -   ID of the attribute value to create names for
+                [json]      -   list of json objects or a single json
+
+                Reference:
+                (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Item/post_rest_items_attribute_values__valueId__names)
             ___
     """
     def __init__(self, base_url: str, use_keyring: bool = True,
@@ -968,3 +976,34 @@ class PlentyApi():
                 method="post", domain="attributes", path=path, data=name))
 
         return response
+
+    def plenty_api_create_attribute_value_name(self, value_id: int,
+                                               lang: str, name: str) -> dict:
+        """
+            Create one or more attribute value names for a specific attribute.
+
+            Parameter:
+                value_id    [str]   -   Attribute value ID from PlentyMarkets
+                lang        [str]   -   two letter abbreviation of a language
+                name        [str]   -   The visible name of the attribute in
+                                        the given language
+
+            Return:
+                [dict]
+        """
+        if not value_id or not lang or not name:
+            return [{'error': 'missing_parameter'}]
+
+        path = str(f"/attribute_values/{value_id}/names")
+
+        if utils.get_language(lang=lang) == 'INVALID_LANGUAGE':
+            return {'error': 'invalid_language'}
+
+        data = {
+            'valueId': value_id,
+            'lang': lang,
+            'name': name
+        }
+
+        return self.__plenty_api_request(method="post", domain="items",
+                                         path=path, data=data)
