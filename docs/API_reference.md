@@ -25,6 +25,13 @@
         * [post attribute names](#post-attribute-names)
         * [post attribute values](#post-attribute-values)
         * [post attribute value names](#post-attribute-value-names)
+    + [Order related data](#post-order-section)
+        * [post redistribution (move stock from one warehouse to another)](#post-redistribution)
+        * [create transaction](#post-transaction)
+        * [create booking](#post-booking)
+- [PUT-Requests](#put-requests)
+    + [Order related data](#put-order-section)
+        * [update attributes of a redistribution](#update-redistribution)
 
 ### LOGIN <a name='login'></a>
 
@@ -436,3 +443,229 @@ Please refer to [Plentymarkets Dev documentation: REST API POST attribute value 
 Return a POST request JSON response, if one of the requests fails return the error message.
 If the **value_id** field is not filled the method will return: `{'error': 'missing_parameter'}`.
 In case the language within the `lang` field of the JSON is invalid the method will return `{'error': 'invalid_language'}`.
+
+#### Orders <a name='post-oders-section'></a>
+
+#### plenty_api_create_redistribution <a name='post-redistribution'></a>
+
+[*Required parameter*]:
+
+The **template** parameter contains a simplified version of the JSON required for the creation of a redistribution, it is used for multiple purposes, at a minimum it has to contain essential IDs of the sender and receiver storage warehouse, the ID of the Plentymarkets system, and basic data about variations (ID, quantity). This information is combined with some boilerplate elements to create a valid JSON for the POST `/rest/redistribution` route. But it can also include outgoing and incoming storage locations in order to automate some pesky manual labor (More on that below in the example). The **book_out** boolean is used to indicate if any actual booking shall be performed by this function or if this should be done by the storage workers, by default this feature is off.  
+Please refer to the [Plentymarkets Dev documentation: REST API POST redistribution](https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Order/post_rest_redistributions).
+
+[*Example*]:
+
+Here is an example of a template for a redistribution:
+Required elements are: `plenty_id`, `sender`, `receiver`, and at least one variation in `variations`.
+For `variations`, the required elements are `variation_id` and `total_quantity`.
+For `locations` (and for `targets`) the required elements are `location_id` and `quantity`.
+
+Without `locations`, the redistribution order will only include the listing of items all outgoing transactions have to be added manually.
+When you include `locations` without `targets` only outgoing transactions are created automatically.
+And if you include `targets` for the `locations`, incoming transactions are booked automatically as well.
+The latter makes sense for example if you want to book all items on a transit location first.
+
+```json
+{
+    'plenty_id': 12345,
+    'sender': 104,
+    'receiver': 114,
+    'variations': [
+        {
+            'variation_id': 12345,
+            'total_quantity': 10,
+            'name': 'Awesome_product',
+            'amounts': 10.50,
+            'locations': [
+                {
+                    'location_id': 10, 'quantity': 5,
+                    'targets': [
+                        {'location_id': 3, 'quantity': 3},
+                        {'location_id': 2, 'quantity': 2}
+                    ]
+                },
+                {
+                    'location_id': 12, 'quantity': 5,
+                    'targets': [
+                        {'location_id': 4, 'quantity': 2},
+                        {'location_id': 5, 'quantity': 3}
+                    ]
+                }
+            ]
+        }
+    ]
+}
+```
+
+You can also add the following fields to each variation: 'batch', 'bestBeforeDate', 'identification'.
+
+This will be transformed into the following valid JSON object for the REST API:
+```json
+{
+    'typeId': 15,
+    'plentyId': 12345,
+    'orderItems': [
+        {
+            'typeId': 1,
+            'itemVariationId': 12345,
+            'quantity': 10,
+            'orderItemName': 'Awesome_product'
+        }
+    ],
+    'relations': [
+        {
+            'referenceType': 'warehouse',
+            'referenceId': 104,
+            'relation': 'sender'
+        },
+        {
+            'referenceType': 'warehouse',
+            'referenceId': 114,
+            'relation': 'receiver'
+        }
+    ]
+}
+```
+
+And two outgoing transactions will be created:
+```json
+{
+    'quantity': 5,
+    'direction': 'out',
+    'status': 'regular',
+    'warehouseLocationId': 10
+}
+
+{
+    'quantity': 5,
+    'direction': 'out',
+    'status': 'regular',
+    'warehouseLocationId': 12
+}
+```
+
+As well as 4 incoming transactions:
+```json
+{
+    'quantity': 3,
+    'direction': 'in',
+    'status': 'regular',
+    'warehouseLocationId': 3
+}
+
+{
+    'quantity': 2,
+    'direction': 'in',
+    'status': 'regular',
+    'warehouseLocationId': 2
+}
+
+{
+    'quantity': 2,
+    'direction': 'in',
+    'status': 'regular',
+    'warehouseLocationId': 4
+}
+
+{
+    'quantity': 3,
+    'direction': 'in',
+    'status': 'regular',
+    'warehouseLocationId': 5
+}
+```
+
+If you choose to activate **book_out**, the method will also set the initiation date with the current date:  
+(*WARNING* after the initiation of an order it *cannot be changed/deleted*)
+```json
+    'dates': [
+        {
+            'typeId': 16,
+            'date': '2021-01-01T09:00:00+01:00'
+        }
+    ]
+```
+
+Book out any outgoing transactions and if they exist also the incoming transactions and finally set the finish date with the current date:
+```json
+    'dates': [
+        {
+            'typeId': 17,
+            'date': '2021-01-01T09:00:01+01:00'
+        }
+    ]
+```
+
+[*Output format*]:
+
+Return a POST request JSON response, if one of the requests fails return the error message.
+When the **template** object cannot be validated, the method will return: `{'error': 'invalid_template'}`.
+
+#### plenty_api_create_transaction <a name=post-transaction></a>
+
+This route is used to create a new transaction for an order. A transaction is an exchange of stock between two sides (usually something like warehouse -> customer, warehouse -> warehouse, etc.). Each order contains a part called `relations`, which describes the sender and the receiver of an order.  
+The transaction is then created with an `in` or `out` direction, `out` means that the stock is moved out of the sender warehouse and, `in` means that the stock is moved into the receiver warehouse. The warehouse location ID is used to describe the specific location from which the stock is taken or where the stock shall be moved.  
+On their own transactions don't actually change the stock, they have to be booked to actually change the stock of a warehouse.
+
+[*Required parameter*]:
+
+The **order_item_id** parameter relates to the specific item (variation) of an order, for which the transaction shall occur. The **json** parameter contains a single JSON object, describing the quantity, direction and target warehouse location.
+Please refer to the [Plentymarkets Dev documentation: REST API POST transaction](https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Order/post_rest_orders_items__orderItemId__transactions).
+
+[*Example*]:
+```json
+{
+    'orderItemId': 12,
+    'quantity': 2,
+    'direction': 'out',
+    'status': 'regular',
+    'warehouseLocationId': 5
+}
+```
+
+[*Output format*]:
+
+Return a POST request JSON response, if one of the requests fails return the error message.
+If the **order_item_id** parameter is not filled the method will return: `{'error': 'missing_parameter'}`.
+If the **json** parameter contains an invalid JSON object the method will return: `{'error': 'invalid_json'}`.
+
+#### plenty_api_create_booking <a name=post-booking></a>
+
+This route is used to book in/out all pending transactions of an order.
+
+[*Required parameter*]:
+
+The booking is performed for the order specified by the **order_id** parameter, which contains the integer ID of the order assigned by Plentymarkets. The optional **delivery_note** parameter can contain a delivery note document's identifier, that should be connected to the booking.
+
+[*Output format*]:
+
+Return a POST request JSON response, if one of the requests fails return the error message.
+
+### PUT requests: <a name='put-requests'></a>
+
+#### Orders <a name='put-oders-section'></a>
+
+#### plenty_api_update_redistribution <a name=update-redistribution></a>
+
+A common scenario that requires updating a redistribution, is the setting of certain events like *order initiation*, *setting the estimated delivery date*, and the *finishing an order* event. In these cases, a JSON is provided that contains the target date and the type specifier.
+
+[*Required parameter*]:
+
+The update is performed for the order specified by the **order_id** parameter, which contains the integer ID of the order assigned by Plentymarkets. The **json** parameter contains a single JSON object, filled with the target field/s and the new value/s.
+Please refer to the [Plentymarkets Dev documentation: REST API PUT redistribution](https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Order/put_rest_redistributions__orderId_).
+
+[*Example*]:
+```json
+{
+    'dates': [
+        {
+            'typeId': 16,
+            'date': '2021-01-01T09:00:01+01:00'
+        }
+    ]
+}
+```
+[*Output format*]:
+
+Return a POST request JSON response, if one of the requests fails return the error message.
+If the **order_id** parameter is not filled the method will return: `{'error': 'missing_parameter'}`.
