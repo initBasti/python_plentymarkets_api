@@ -161,6 +161,14 @@ class PlentyApi():
 
                 Reference:
                 (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Item/post_rest_items_attributes)
+
+            **plenty_api_create_attribute_names**
+                Create one or more attribute names for a specific attribute.
+                [attribute_id]  -   ID of the attribute to create names for
+                [json]          -   list of json objects or a single json
+
+                Reference:
+                (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Item/post_rest_items_attributes__attributeId__names)
             ___
     """
     def __init__(self, base_url: str, use_keyring: bool = True,
@@ -862,6 +870,7 @@ class PlentyApi():
             if not utils.sanity_check_json(route_name='variations',
                                         json=variation):
                 response.append({'error': 'invalid_json'})
+                continue
             response.append(self.__plenty_api_request(
                 method="post", domain="items", path=path, data=variation))
 
@@ -886,3 +895,34 @@ class PlentyApi():
 
         return self.__plenty_api_request(method="post", domain="attributes",
                                          data=json)
+
+    def plenty_api_create_attribute_name(self, attribute_id: int,
+                                         lang: str, name: str) -> dict:
+        """
+            Create an attribute name for a specific attribute.
+
+            Parameter:
+                attribute_id[str]   -   Attribute ID from PlentyMarkets
+                lang        [str]   -   two letter abbreviation of a language
+                name        [str]   -   The visible name of the attribute in
+                                        the given language
+
+            Return:
+                [dict]
+        """
+        if not attribute_id or not lang or not name:
+            return [{'error': 'missing_parameter'}]
+
+        path = str(f"/{attribute_id}/names")
+
+        if utils.get_language(lang=lang) == 'INVALID_LANGUAGE':
+            return {'error': 'invalid_language'}
+
+        data = {
+            'attributeId': attribute_id,
+            'lang': lang,
+            'name': name
+        }
+
+        return self.__plenty_api_request(method="post", domain="attributes",
+                                         path=path, data=data)

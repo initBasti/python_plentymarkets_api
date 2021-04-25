@@ -317,3 +317,18 @@ Please refer to [Plentymarkets Dev documentation: REST API POST attributes](http
 
 Return a POST request JSON response, if one of the requests fails return the error message.
 When the JSON object doesn't contain the required attributes the method will return: `{'error': 'invalid_json'}`.
+
+#### plenty_api_create_attribute_name
+
+Create a attribute name for a specific attribute on Plentymarkets.
+
+[*Required parameter*]:
+
+The **attribute_id** parameter contains the ID given to the attribute by Plentymarkets, the **lang** parameter contains a two letter abbreviation of the target language (for a list of valid values look here: [Language codes](https://developers.plentymarkets.com/en-gb/developers/main/rest-api-guides/getting-started.html#_language_codes)), and the **name** parameter contains the visible name for the attribute in the given language.
+Please refer to [Plentymarkets Dev documentation: REST API POST attribute names](https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Item/post_rest_items_attributes__attributeId__names), for a list of valid attributes.
+
+[*Output format*]:
+
+Return a POST request JSON response, if one of the requests fails return the error message.
+If the **attribute_id** field is not filled the method will return: `{'error': 'missing_parameter'}`.
+In case the language within the **lang** parameter is invalid the method will return `{'error': 'invalid_language'}`.
