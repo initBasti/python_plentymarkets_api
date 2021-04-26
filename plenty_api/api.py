@@ -300,16 +300,13 @@ class PlentyApi():
         try:
             response = raw_response.json()
         except simplejson.errors.JSONDecodeError:
-            print(f"ERROR: No response for request {method} at {endpoint}")
+            print(f"ERROR: No response for {method.upper()} request at "
+                  f"{endpoint}")
             return None
 
-        if domain == 'referrer':
-            # The referrer request responds with a different format
-            return response
-
-        if 'error' in response.keys():
-            print(f"ERROR: Request failed:\n{response['error']['message']}")
-            return None
+        if isinstance(response, dict) and 'error' in response.keys():
+            print(f"ERROR: {method.upper()} Request failed:\n"
+                  f"{response['error']['message']}")
 
         return response
 
@@ -336,6 +333,9 @@ class PlentyApi():
         if not response:
             return None
 
+        if isinstance(response, dict) and 'error' in response.keys():
+            return response
+
         entries = response['entries']
 
         while not response['isLastPage']:
@@ -344,8 +344,11 @@ class PlentyApi():
                                                  domain=domain,
                                                  query=query)
             if not response:
-                print(f"ERROR: subsequent {domain} API requests failed.")
                 return None
+
+            if isinstance(response, dict) and 'error' in response.keys():
+                print(f"ERROR: subsequent {domain} API requests failed.")
+                return response
 
             entries += response['entries']
 
@@ -393,6 +396,9 @@ class PlentyApi():
 
         orders = self.__repeat_get_request_for_all_records(domain='orders',
                                                            query=query)
+        if isinstance(orders, dict) and 'error' in orders.keys():
+            print(f"ERROR: GET orders by date failed with:\n{orders}")
+            return None
 
         orders = utils.transform_data_type(data=orders,
                                            data_format=self.data_format)
@@ -450,6 +456,9 @@ class PlentyApi():
 
         attributes = self.__repeat_get_request_for_all_records(
             domain='attributes', query=query)
+        if isinstance(attributes, dict) and 'error' in attributes.keys():
+            print(f"ERROR: GET attributes failed with:\n{attributes}")
+            return None
 
         if variation_map:
             variation = self.plenty_api_get_variations(
@@ -480,6 +489,9 @@ class PlentyApi():
         """
         vat_data = self.__repeat_get_request_for_all_records(domain='vat',
                                                              query={})
+        if isinstance(vat_data, dict) and 'error' in vat_data.keys():
+            print(f"ERROR: GET VAT-configuration failed with:\n{vat_data}")
+            return None
 
         vat_table = utils.create_vat_mapping(data=vat_data, subset=subset)
 
@@ -516,6 +528,9 @@ class PlentyApi():
 
         prices = self.__repeat_get_request_for_all_records(
             domain='prices', query=query)
+        if isinstance(prices, dict) and 'error' in prices.keys():
+            print(f"ERROR: GET price-configuration failed with:\n{prices}")
+            return None
 
         if not prices:
             return None
@@ -567,6 +582,9 @@ class PlentyApi():
 
         manufacturers = self.__repeat_get_request_for_all_records(
             domain='manufacturer', query=query)
+        if isinstance(manufacturers, dict) and 'error' in manufacturers.keys():
+            print(f"ERROR: GET manufacturers failed with:\n{manufacturers}")
+            return None
 
         manufacturers = utils.transform_data_type(data=manufacturers,
                                                   data_format=self.data_format)
@@ -605,6 +623,9 @@ class PlentyApi():
         referrers = self.__plenty_api_request(method='get',
                                               domain='referrer',
                                               query=query)
+        if 'error' in referrers.keys():
+            print(f"ERROR: GET referrers failed with:\n{referrers}")
+            return None
 
         referrers = utils.transform_data_type(data=referrers,
                                               data_format=self.data_format)
@@ -655,6 +676,9 @@ class PlentyApi():
 
         items = self.__repeat_get_request_for_all_records(domain='items',
                                                           query=query)
+        if isinstance(items, dict) and 'error' in items.keys():
+            print(f"ERROR: GET items failed with:\n{items}")
+            return None
 
         items = utils.transform_data_type(data=items,
                                           data_format=self.data_format)
@@ -695,6 +719,9 @@ class PlentyApi():
 
         variations = self.__repeat_get_request_for_all_records(
             domain='variations', query=query)
+        if isinstance(variations, dict) and 'error' in variations.keys():
+            print(f"ERROR: GET variations failed with:\n{variations}")
+            return None
 
         variations = utils.transform_data_type(data=variations,
                                                data_format=self.data_format)
