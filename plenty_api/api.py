@@ -19,6 +19,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+import datetime
 import time
 from typing import List
 import requests
@@ -185,8 +186,43 @@ class PlentyApi():
 
                 Reference:
                 (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Item/post_rest_items_attribute_values__valueId__names)
-            ___
+
+            **plenty_api_create_redistribution**
+                Create a new redistribution between two warehouses
+                [template]  -   template for the creation of a redistribution
+                [book_out]  -   perform automatic booking of transactions?
+
+                Reference:
+                (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Order/post_rest_redistributions)
+
+            **plenty_api_create_transaction**
+                Create a single incoming or outgoing transaction for an order item.
+                [order_item_id]-ID of the order item (variation) of an order
+                [json]      -   Single JSON object describing the transaction
+
+                Reference:
+                (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Order/post_rest_orders_items__orderItemId__transactions)
+
+            **plenty_api_create_booking**
+                Book in/out all pending transaction of an order.
+                [order_id]  -   ID of the order on Plentymarkets
+                [delivery_note]-Identifier of the document to be connected to the booking.
+
+                Reference:
+                (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Order/post_rest_orders__orderId__booking)
+
+            PUT REQUESTS
+
+            **plenty_api_update_redistribution**
+                Change certain attributes of an redistribution.
+                [order_id]  -   ID of the target redistribution order
+                [json]      -   single JSON object describing the update
+
+                Reference:
+                (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Order/put_rest_redistributions__orderId_)
+
     """
+
     def __init__(self, base_url: str, use_keyring: bool = True,
                  data_format: str = 'json', debug: bool = False,
                  username: str = '', password: str = ''):
@@ -1015,3 +1051,154 @@ class PlentyApi():
 
         return self.__plenty_api_request(method="post", domain="items",
                                          path=path, data=data)
+
+    def plenty_api_create_redistribution(self, template: dict,
+                                         book_out: bool = False) -> dict:
+        """
+            Create a new redistribution on Plentymarkets.
+
+            The creation of a redistribution is split into multiple steps
+            with the REST API, first the order has to be created, then the
+            outgoing transaction have to be created and booked, before
+            incoming transactions are created and booked.
+
+            As soon as the order was initiated it cannot be changed/deleted
+            anymore.
+
+            Parameter:
+                template    [dict]  -   Describes the transactions between two
+                                        warehouses
+                book_out    [bool]  -   Book outgoing transaction directly
+
+            Return:
+                            [dict]
+        """
+        if not utils.validate_redistribution_template(template=template):
+            return {'error': 'invalid_template'}
+
+        redistribution_json = utils.build_redistribution_json(
+            template=template)
+        response = self.__plenty_api_request(method="post",
+                                             domain="redistribution",
+                                             data=redistribution_json)
+
+        (outgoing, incoming) = utils.build_transactions(
+            order=response, variations=template['variations'])
+
+        if outgoing:
+            for transaction in outgoing:
+                transaction_response = self.plenty_api_create_transaction(
+                    order_item_id=transaction['orderItemId'], json=transaction)
+                if 'error' in transaction_response.keys():
+                    print("ERROR: transaction creation failed "
+                          f"({transaction_response})")
+
+        if book_out:
+            initiate_order_date = utils.build_date_update_json(
+                date_type='initiate', date=datetime.datetime.now())
+            self.plenty_api_update_redistribution(order_id=response['id'],
+                                                  json=initiate_order_date)
+            self.plenty_api_create_booking(order_id=response['id'])
+
+        if incoming:
+            for transaction in incoming:
+                transaction_response = self.plenty_api_create_transaction(
+                    order_item_id=transaction['orderItemId'], json=transaction)
+            if book_out:
+                self.plenty_api_create_booking(order_id=response['id'])
+                finish_order_date = utils.build_date_update_json(
+                    date_type='finish', date=datetime.datetime.now())
+                self.plenty_api_update_redistribution(order_id=response['id'],
+                                                    json=finish_order_date)
+
+        return response
+
+    def plenty_api_create_transaction(self, order_item_id: int,
+                                      json: dict) -> dict:
+        """
+            Create an outgoing or incoming transaction for an order.
+
+            Parameter:
+                order_item_id [int] -   ID of a single item (variation) within
+                                        an order
+                json        [dict]  -   single JSON object describing the
+                                        transaction
+
+            Return:
+                            [dict]  -  Response object if the request should
+                                       fail, the entry contains the error
+                                       message.
+        """
+        if not order_item_id:
+            return {'error': 'missing_parameter'}
+
+        if not utils.sanity_check_json(route_name='transaction', json=json):
+            return {'error': 'invalid_json'}
+
+        path = str(f"/items/{order_item_id}/transactions")
+        response = self.__plenty_api_request(method="post",
+                                             domain="order",
+                                             path=path,
+                                             data=json)
+        return response
+
+    def plenty_api_create_booking(self, order_id: int,
+                                  delivery_note: str = '') -> dict:
+        """
+            Execute all pending transactions within an order.
+
+            This route handles outgoing and incoming transactions within an
+            order (sales/redistribution/reorder/etc..). Which means it books
+            out and books in.
+
+            Parameter:
+                order_id    [int]   -   ID of the order on Plentymarkets
+                delivery_note [str] -   Identifier of the delivery note
+                                        document, connected to the order
+
+            Return:
+                            [dict]  -  Response object if the request should
+                                       fail, the entry contains the error
+                                       message.
+        """
+        data = {}
+        path = str(f"/{order_id}/booking")
+        if delivery_note:
+            data = {
+                'deliveryNoteNumber': delivery_note
+            }
+        response = self.__plenty_api_request(method="post",
+                                             domain="order",
+                                             path=path,
+                                             data=data)
+        return response
+
+# PUT REQUESTS
+
+    def plenty_api_update_redistribution(self, order_id: int,
+                                         json: dict) -> dict:
+        """
+            Change certain attributes of a redistribution.
+
+            Commonly used for changing certain event dates like:
+                initiation, estimated delivery date and finish
+
+            Parameter:
+                order_id    [int]   -   ID of the order on Plentymarkets
+                json        [dict]  -   single JSON object describing the
+                                        update
+
+            Return:
+                            [dict]  -  Response object if the request should
+                                       fail, the entry contains the error
+                                       message.
+        """
+        if not order_id:
+            return {'error': 'missing_parameter'}
+
+        path = str(f"/{order_id}")
+        response = self.__plenty_api_request(method="put",
+                                             domain="redistribution",
+                                             path=path,
+                                             data=json)
+        return response

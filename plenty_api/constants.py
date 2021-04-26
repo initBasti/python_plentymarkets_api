@@ -23,11 +23,11 @@
 """
 
 VALID_DOMAINS = ['order', 'item', 'variation', 'vat', 'prices', 'manufacturer',
-                 'attribute', 'referrer']
+                 'attribute', 'referrer', 'redistribution']
 VALID_ROUTES = ['/rest/orders', '/rest/items', '/rest/items/variations',
                 '/rest/vat', '/rest/items/sales_prices',
                 '/rest/items/manufacturers', '/rest/items/attributes',
-                '/rest/orders/referrers']
+                '/rest/orders/referrers', '/rest/redistributions']
 DOMAIN_ROUTE_MAP = {VALID_DOMAINS[i]: VALID_ROUTES[i]
                     for i in range(len(VALID_DOMAINS))}
 
@@ -160,6 +160,9 @@ JSON_DICT = 3
 JSON_LIST_OF_DICTS = 4
 
 # POST route, minimum JSON requirement check constants
+REQUIRED_TRANSACTION_FIELDS = [
+    ('direction', JSON_STRING), ('status', JSON_STRING),
+    ('warehouseLocationId', JSON_INTEGER), ('quantity', JSON_INTEGER)]
 REQUIRED_ITEM_FIELDS = [('variations', JSON_LIST_OF_DICTS)]
 REQUIRED_VARIATION_FIELDS = [
     ('unit', JSON_DICT), ('variationAttributeValues', JSON_LIST_OF_DICTS),
@@ -178,4 +181,5 @@ REQUIRED_FIELDS_MAP = {
     'categories': REQUIRED_CATEGORY_FIELDS,
     'attributes': REQUIRED_ATTRIBUTE_FIELDS,
     'attribute_values': REQUIRED_ATTRIBUTE_VALUE_FIELDS,
+    'transaction': REQUIRED_TRANSACTION_FIELDS
 }
