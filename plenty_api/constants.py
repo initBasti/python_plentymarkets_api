@@ -22,32 +22,34 @@
     https://developers.plentymarkets.com/rest-doc#
 """
 
-VALID_DOMAINS = ['order',
-                 'item',
-                 'variation',
-                 'vat',
-                 'prices',
-                 'manufacturer',
-                 'attribute',
-                 'referrer',
-                 'stockmanagement',
-                 'warehouses',
-                 'contact',
-                 'redistribution'
-                 ]
-VALID_ROUTES = ['/rest/orders',
-                '/rest/items',
-                '/rest/items/variations',
-                '/rest/vat',
-                '/rest/items/sales_prices',
-                '/rest/items/manufacturers',
-                '/rest/items/attributes',
-                '/rest/orders/referrers',
-                '/rest/stockmanagement/stock',
-                '/rest/stockmanagement/warehouses',
-                '/rest/accounts/contacts',
-                '/rest/redistributions'
-                ]
+VALID_DOMAINS = [
+    'attribute',
+    'contact',
+    'item',
+    'manufacturer',
+    'order',
+    'prices',
+    'redistribution',
+    'referrer',
+    'stockmanagement',
+    'variation',
+    'vat',
+    'warehouses'
+]
+VALID_ROUTES = [
+    '/rest/items/attributes',
+    '/rest/accounts/contacts',
+    '/rest/items',
+    '/rest/items/manufacturers',
+    '/rest/orders',
+    '/rest/items/sales_prices',
+    '/rest/redistributions',
+    '/rest/orders/referrers',
+    '/rest/stockmanagement/stock',
+    '/rest/items/variations',
+    '/rest/vat',
+    '/rest/stockmanagement/warehouses'
+]
 DOMAIN_ROUTE_MAP = dict(zip(VALID_DOMAINS, VALID_ROUTES))
 
 # Mapping of date_type function parameter value to query parameter
