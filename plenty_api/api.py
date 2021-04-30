@@ -277,7 +277,10 @@ class PlentyApi():
 
             + Provide username as an argument and get the password
                 from a GnuPG encrypted file at a specified path.
-                [user TRUE and pw TRUE]
+                [user TRUE and pw TRUE and use_gpg TRUE]
+
+            + Provide username and the password as arguments
+                [user TRUE and pw TRUE an use_gpg FALSE]
 
         Parameter:
             persistent  [bool]  -   Permanent or temporary credential storage
@@ -285,6 +288,9 @@ class PlentyApi():
                                     username to the REST-API
             pw          [str]   -   path to a gpg-encrypted file that contains
                                     the key.
+            use_gpg     [bool]  -   Indicates if @pw is a password
+                                    string(False) or a file path to a
+                                    gpg encrypted file containing the password
 
         Return:
                         [bool]
