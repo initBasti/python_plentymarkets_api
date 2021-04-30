@@ -287,6 +287,8 @@ Return a dictionary with the country IDs as keys and the corresponding VAT confi
 
 ##### plenty_api_set_image_availability: <a name='post-image-availability'></a>
 
+Update a single availability for an image, an image can be available for a marketplace (ebay, webshop etc.), mandant or for a specific listing.
+
 [*Required parameter:*]:
 
 The **item_id** field contains the Item ID used in PlentyMarkets.  
@@ -294,8 +296,17 @@ With the **image_id** field, the exact image is specified. It is rather hard to 
 In the **target** field you have to specify:  
     * What kind of target to connect
     * The ID of the target
-Examples:  
+
+[*Example*]:
+```python
 {'marketplace': 1}, {'mandant': 41444}, {'listing': 2}
+```
+
+[*Output format*]:
+
+Return a POST request JSON response, if the request fails return the error message.
+If the **item_id** field, the **image_id** or the **target** field is not filled the method will return: `{'error': 'missing_parameter'}`.
+In case the language within the **target** parameter is invalid the method will return `{'error': 'invalid_target'}`.
 
 ##### plenty_api_create_items: <a name='post-items'></a>
 

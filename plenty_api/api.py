@@ -875,7 +875,7 @@ class PlentyApi():
     def plenty_api_set_image_availability(self,
                                           item_id: str,
                                           image_id: str,
-                                          target: dict) -> bool:
+                                          target: dict) -> dict:
         """
             Create a marketplace availability for a specific item/image
             combiniation.
@@ -895,8 +895,11 @@ class PlentyApi():
             Mandant IDs: (@setup->client->{client}->settings[Plenty ID])
 
             Return:
-                [bool]
+                            [dict]
         """
+        if not item_id or not image_id or not target:
+            return {'error': 'missing_parameter'}
+
         target_name = ''
         target_id = ''
         for element in target:
@@ -909,8 +912,9 @@ class PlentyApi():
                              "for the image availability POST request.")
 
         if not target_name or not target_id:
-            logging.error("target for availability configuration required.")
-            return False
+            logging.error("Invalid target for availability configuration. "
+                          f"Got: [{target}]")
+            return {'error': 'invalid_target'}
 
         data = {
             "imageId": image_id,
