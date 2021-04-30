@@ -1,22 +1,22 @@
 """
-    Python-PlentyMarkets-API-interface.
+Python-PlentyMarkets-API-interface.
 
-    Interface to the resources from PlentyMarkets(https://www.plentymarkets.eu)
+Interface to the resources from PlentyMarkets(https://www.plentymarkets.eu)
 
-    Copyright (C) 2020  Sebastian Fricke, Panasiam
+Copyright (C) 2020  Sebastian Fricke, Panasiam
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as published
-    by the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
 
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import datetime
@@ -34,194 +34,195 @@ import plenty_api.utils as utils
 
 class PlentyApi():
     """
-        Provide specified routines to access data from PlentyMarkets
-        over the RestAPI.
+    Provide specified routines to access data from PlentyMarkets
+    over the RestAPI.
 
-        Public methods:
-            GET REQUESTS
-            **plenty_api_get_orders_by_date**
-                Get all orders of all types within a specified range of two
-                dates.
-                [start]         -   start date
-                [end]           -   end date
-                [date_type]     -   {Creation, Change, Payment, Delivery}
-                [additional]    -   List of additional arguments **
-                [refine]        -   Dictionary of filter query names and values
+    Public methods:
+        GET REQUESTS
+        **plenty_api_get_orders_by_date**
+            Get all orders of all types within a specified range of two
+            dates.
+            [start]         -   start date
+            [end]           -   end date
+            [date_type]     -   {Creation, Change, Payment, Delivery}
+            [additional]    -   List of additional arguments **
+            [refine]        -   Dictionary of filter query names and values
 
-                Accepted date formats:
-                    {Y-m-d | Y-m-dTH:M | Y-m-dTH:M:S+UTC-OFFSET}
-                    Examples:
-                        2020-09-16              (get your local timezone)
-                        2020-09-16T08:00        (get your local timezone)
-                        2020-09-16T08:00Z       (UTC timezone)
-                        2020-09-16T08:00+02:00  (CEST timezone)
+            Accepted date formats:
+                {Y-m-d | Y-m-dTH:M | Y-m-dTH:M:S+UTC-OFFSET}
+                Examples:
+                    2020-09-16              (get your local timezone)
+                    2020-09-16T08:00        (get your local timezone)
+                    2020-09-16T08:00Z       (UTC timezone)
+                    2020-09-16T08:00+02:00  (CEST timezone)
 
-                ** Reference of query arguments
-                (developers.plentymarkets.com/rest-doc#/Order/get_rest_orders)
-            ___
-            **plenty_api_get_attributes**
-                List all the attributes from PlentyMarkets, optionally link
-                variation IDs to the response, that are connected to the
-                attribute value
-                [additional]    -   Add additional elements to the response.
-                [last_change]   -   filter out attributes were the last
-                                    change is older than the specified date
-                [variation_map] -   Add a list of connected variations
+            ** Reference of query arguments
+            (developers.plentymarkets.com/rest-doc#/Order/get_rest_orders)
+        ___
+        **plenty_api_get_attributes**
+            List all the attributes from PlentyMarkets, optionally link
+            variation IDs to the response, that are connected to the
+            attribute value
+            [additional]    -   Add additional elements to the response.
+            [last_change]   -   filter out attributes were the last
+                                change is older than the specified date
+            [variation_map] -   Add a list of connected variations
 
-                Reference:
-                (https://developers.plentymarkets.com/rest-doc#/Item/get_rest_items_attributes)
-            ___
-            **plenty_api_get_vat_id_mappings**
-                Get a mapping of VAT configuration IDs to country IDs,
-                together with the TaxID for each country.
-                [subset]        -   limit the data to the given country IDs
+            Reference:
+            (https://developers.plentymarkets.com/rest-doc#/Item/get_rest_items_attributes)
+        ___
+        **plenty_api_get_vat_id_mappings**
+            Get a mapping of VAT configuration IDs to country IDs,
+            together with the TaxID for each country.
+            [subset]        -   limit the data to the given country IDs
 
-                Reference:
-                (developers.plentymarkets.com/rest-doc#/Accounting/get_rest_vat)
-            ___
-            **plenty_api_get_price_configuration**
-                Fetch the set of price configuration, that were setup on
-                PlentyMarkets.
-                [minimal]       -   reduce the response body to necessary info
-                [last_change]   -   filter out configuration were the last
-                                    change is older than the specified date
+            Reference:
+            (developers.plentymarkets.com/rest-doc#/Accounting/get_rest_vat)
+        ___
+        **plenty_api_get_price_configuration**
+            Fetch the set of price configuration, that were setup on
+            PlentyMarkets.
+            [minimal]       -   reduce the response body to necessary info
+            [last_change]   -   filter out configuration were the last
+                                change is older than the specified date
 
-                Reference:
-                (https://developers.plentymarkets.com/rest-doc#/Item/get_rest_items_sales_prices)
-            ___
-            **plenty_api_get_manufacturers**
-                Fetch a list of manufacturer (brands) in PlentyMarkets.
-                [refine]        -   Apply filters to the request
-                [additional]    -   Add additional elements to the response.
-                [last_update]   -   Date of the last update
+            Reference:
+            (https://developers.plentymarkets.com/rest-doc#/Item/get_rest_items_sales_prices)
+        ___
+        **plenty_api_get_manufacturers**
+            Fetch a list of manufacturer (brands) in PlentyMarkets.
+            [refine]        -   Apply filters to the request
+            [additional]    -   Add additional elements to the response.
+            [last_update]   -   Date of the last update
 
-                Reference:
-                (https://developers.plentymarkets.com/rest-doc#/Item/get_rest_items_manufacturers)
-            ---
-            **plenty_api_get_referrers**
-                Fetch a list of referrers from PlentyMarkets.
+            Reference:
+            (https://developers.plentymarkets.com/rest-doc#/Item/get_rest_items_manufacturers)
+        ---
+        **plenty_api_get_referrers**
+            Fetch a list of referrers from PlentyMarkets.
 
-                [column]        -   Get only a specific column
+            [column]        -   Get only a specific column
 
-                Reference:
-                (https://developers.plentymarkets.com/rest-doc#/Order/get_rest_orders_referrers)
-                * WARNING the parameter description is just wrong, the columns
-                 attribute actually only takes a single 'string', instead of
-                 an integer and if you pass a list it only uses the last index*
-            ___
-            **plenty_api_get_items**
-                Generic interface to item data from Plentymarkets with little
-                abstraction.
-                [refine]        -   Apply filters to the request
-                [additional]    -   Add additional elements to the response.
-                [last_update]   -   Date of the last update
-                [lang]          -   Provide the text within a specific language
+            Reference:
+            (https://developers.plentymarkets.com/rest-doc#/Order/get_rest_orders_referrers)
+            * WARNING the parameter description is just wrong, the columns
+                attribute actually only takes a single 'string', instead of
+                an integer and if you pass a list it only uses the last index*
+        ___
+        **plenty_api_get_items**
+            Generic interface to item data from Plentymarkets with little
+            abstraction.
+            [refine]        -   Apply filters to the request
+            [additional]    -   Add additional elements to the response.
+            [last_update]   -   Date of the last update
+            [lang]          -   Provide the text within a specific language
 
-                Reference:
-                (https://developers.plentymarkets.com/rest-doc#/Item/get_rest_items)
+            Reference:
+            (https://developers.plentymarkets.com/rest-doc#/Item/get_rest_items)
 
-            ___
-            **plenty_api_get_variations**
-                Generic interface to variation data from PlentyMarkets
-                [refine]        -   Apply filters to the request
-                [additional]    -   Add additional elements to the response.
-                [lang]          -   Provide the text within a specific language
+        ___
+        **plenty_api_get_variations**
+            Generic interface to variation data from PlentyMarkets
+            [refine]        -   Apply filters to the request
+            [additional]    -   Add additional elements to the response.
+            [lang]          -   Provide the text within a specific language
 
-                Reference:
-                (https://developers.plentymarkets.com/rest-doc#/Item/get_rest_items_variations)
+            Reference:
+            (https://developers.plentymarkets.com/rest-doc#/Item/get_rest_items_variations)
 
-            POST REQUESTS
-            **plenty_api_set_image_availability**
-                Update the availability of an image for a marketplace, client
-                or listing on PlentyMarkets.
-                [item_id]       -   item ID, where the image is found
-                [image_id]      -   ID of the specific image
-                [target]        -   ID of the target
-                                    Example:
-                                        {'marketplace': 102}
+        POST REQUESTS
+        **plenty_api_set_image_availability**
+            Update the availability of an image for a marketplace, client
+            or listing on PlentyMarkets.
+            [item_id]       -   item ID, where the image is found
+            [image_id]      -   ID of the specific image
+            [target]        -   ID of the target
+                                Example:
+                                    {'marketplace': 102}
 
-                Reference:
-                (https://developers.plentymarkets.com/rest-doc#/Item/post_rest_items__id__images__imageId__availabilities)
+            Reference:
+            (https://developers.plentymarkets.com/rest-doc#/Item/post_rest_items__id__images__imageId__availabilities)
 
-            **plenty_api_create_items**
-                Create items on Plentymarkets
-                [json]          -   list of json objects or a single json
+        **plenty_api_create_items**
+            Create items on Plentymarkets
+            [json]          -   list of json objects or a single json
 
-                Reference:
-                (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Item/post_rest_items)
+            Reference:
+            (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Item/post_rest_items)
 
-            **plenty_api_create_variations**
-                Create a variation for a specific item on Plentymarkets.
-                [item_id]       -   ID of the item to create variations for
-                [json]          -   list of json objects or a single json
+        **plenty_api_create_variations**
+            Create a variation for a specific item on Plentymarkets.
+            [item_id]       -   ID of the item to create variations for
+            [json]          -   list of json objects or a single json
 
-                Reference:
-                (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Item/post_rest_items__itemId__variations)
+            Reference:
+            (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Item/post_rest_items__itemId__variations)
 
-            **plenty_api_create_attribute**
-                Create a new attribute on Plentymarkets.
-                [json]          -   single json object
+        **plenty_api_create_attribute**
+            Create a new attribute on Plentymarkets.
+            [json]          -   single json object
 
-                Reference:
-                (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Item/post_rest_items_attributes)
+            Reference:
+            (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Item/post_rest_items_attributes)
 
-            **plenty_api_create_attribute_names**
-                Create one or more attribute names for a specific attribute.
-                [attribute_id]  -   ID of the attribute to create names for
-                [json]          -   list of json objects or a single json
+        **plenty_api_create_attribute_names**
+            Create one or more attribute names for a specific attribute.
+            [attribute_id]  -   ID of the attribute to create names for
+            [json]          -   list of json objects or a single json
 
-                Reference:
-                (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Item/post_rest_items_attributes__attributeId__names)
+            Reference:
+            (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Item/post_rest_items_attributes__attributeId__names)
 
-            **plenty_api_create_attribute_values**
-                Create one or more attribute values for a specific attribute.
-                [attribute_id]  -   ID of the attribute to create values for
-                [json]          -   list of json objects or a single json
+        **plenty_api_create_attribute_values**
+            Create one or more attribute values for a specific attribute.
+            [attribute_id]  -   ID of the attribute to create values for
+            [json]          -   list of json objects or a single json
 
-                Reference:
-                (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Item/post_rest_items_attributes__attributeId__values)
+            Reference:
+            (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Item/post_rest_items_attributes__attributeId__values)
 
-            **plenty_api_create_attribute_value_names**
-                Create one or more attribute value names for an attribute value.
-                [value_id]  -   ID of the attribute value to create names for
-                [json]      -   list of json objects or a single json
+        **plenty_api_create_attribute_value_names**
+            Create one or more attribute value names for an attribute value.
+            [value_id]      -   ID of the attribute value to create names for
+            [json]          -   list of json objects or a single json
 
-                Reference:
-                (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Item/post_rest_items_attribute_values__valueId__names)
+            Reference:
+            (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Item/post_rest_items_attribute_values__valueId__names)
 
-            **plenty_api_create_redistribution**
-                Create a new redistribution between two warehouses
-                [template]  -   template for the creation of a redistribution
-                [book_out]  -   perform automatic booking of transactions?
+        **plenty_api_create_redistribution**
+            Create a new redistribution between two warehouses
+            [template]      -   template for the creation of a redistribution
+            [book_out]      -   perform automatic booking of transactions?
 
-                Reference:
-                (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Order/post_rest_redistributions)
+            Reference:
+            (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Order/post_rest_redistributions)
 
-            **plenty_api_create_transaction**
-                Create a single incoming or outgoing transaction for an order item.
-                [order_item_id]-ID of the order item (variation) of an order
-                [json]      -   Single JSON object describing the transaction
+        **plenty_api_create_transaction**
+            Create a single incoming or outgoing transaction for an order item.
+            [order_item_id]-ID of the order item (variation) of an order
+            [json]          -   Single JSON object describing the transaction
 
-                Reference:
-                (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Order/post_rest_orders_items__orderItemId__transactions)
+            Reference:
+            (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Order/post_rest_orders_items__orderItemId__transactions)
 
-            **plenty_api_create_booking**
-                Book in/out all pending transaction of an order.
-                [order_id]  -   ID of the order on Plentymarkets
-                [delivery_note]-Identifier of the document to be connected to the booking.
+        **plenty_api_create_booking**
+            Book in/out all pending transaction of an order.
+            [order_id]      -   ID of the order on Plentymarkets
+            [delivery_note] -   Identifier of the document to be connected to
+                                the booking.
 
-                Reference:
-                (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Order/post_rest_orders__orderId__booking)
+            Reference:
+            (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Order/post_rest_orders__orderId__booking)
 
-            PUT REQUESTS
+        PUT REQUESTS
 
-            **plenty_api_update_redistribution**
-                Change certain attributes of an redistribution.
-                [order_id]  -   ID of the target redistribution order
-                [json]      -   single JSON object describing the update
+        **plenty_api_update_redistribution**
+            Change certain attributes of an redistribution.
+            [order_id]      -   ID of the target redistribution order
+            [json]          -   single JSON object describing the update
 
-                Reference:
-                (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Order/put_rest_redistributions__orderId_)
+            Reference:
+            (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Order/put_rest_redistributions__orderId_)
 
     """
 
@@ -229,24 +230,25 @@ class PlentyApi():
                  data_format: str = 'json', debug: bool = False,
                  username: str = '', password: str = '', use_gpg: bool = True):
         """
-            Initialize the object and directly authenticate to the API to get
-            the bearer token.
+        Initialize the object and directly authenticate to the API to get
+        the bearer token.
 
-            Parameter:
-                base_url    [str]   -   Base URL to the PlentyMarkets API
-                                            Endpoint, format:
+        Parameter:
+            base_url    [str]   -   Base URL to the PlentyMarkets API
+                                    Endpoint, format:
                                     [https://{name}.plentymarkets-cloud01.com]
-                use_keyring [bool]  -   Save the credentials temporarily or
-                                        permanently
-                data_format [str]   -   Output format of the response
-                debug       [bool]  -   Print out additional information
-                                        about the request URL and parameters
-                username    [str]   -   skip the keyring and directly enter
-                                        the username to the REST-API
-                password    [str]   -   password string or path to a gpg-encrypted
-                                        file that contains the key.
-                use_gpg     [bool]  -   password is path to a gpg-encrypted
-                                        file that contains the key.
+            use_keyring [bool]  -   Save the credentials temporarily or
+                                    permanently
+            data_format [str]   -   Output format of the response
+            debug       [bool]  -   Print out additional information about the
+                                    request URL and parameters
+            username    [str]   -   skip the keyring and directly enter the
+                                    username to the REST-API
+            password    [str]   -   password string or path to a gpg-encrypted
+                                    file that contains the key
+            use_gpg     [bool]  -   Indicates if @password is a password
+                                    string(False) or a file path to a
+                                    gpg encrypted file containing the password
         """
         self.url = base_url
         self.keyring = plenty_api.keyring.CredentialManager()
@@ -261,28 +263,31 @@ class PlentyApi():
         if not logged_in:
             raise RuntimeError('Authentication failed')
 
-    def __authenticate(self, persistent: bool, user: str, pw: str, use_gpg: bool):
+    def __authenticate(self, persistent: bool, user: str, pw: str,
+                       use_gpg: bool) -> bool:
         """
-            Get the bearer token from the PlentyMarkets API.
-            There are three possible methods:
-                + Enter once and keep the username and the password
-                  within a keyring
-                  [persistent TRUE & (user FALSE or pw FALSE)]
+        Get the bearer token from the PlentyMarkets API.
+        There are three possible methods:
+            + Enter once and keep the username and the password
+                within a keyring
+                [persistent TRUE & (user FALSE or pw FALSE)]
 
-                + Enter the username and password directly
-                  [persistent FALSE & (user FALSE or pw FALSE)]
+            + Enter the username and password directly
+                [persistent FALSE & (user FALSE or pw FALSE)]
 
-                + Provide username as an argument and get the password
-                  from a GnuPG encrypted file at a specified path.
-                  [user TRUE and pw TRUE]
+            + Provide username as an argument and get the password
+                from a GnuPG encrypted file at a specified path.
+                [user TRUE and pw TRUE]
 
-            Parameter:
-                persistent  [bool]  -   Permanent or temporary credential
-                                        storage
-                user        [str]   -   skip the keyring and directly enter
-                                        the username to the REST-API
-                pw          [str]   -   path to a gpg-encrypted file that
-                                        contains the key.
+        Parameter:
+            persistent  [bool]  -   Permanent or temporary credential storage
+            user        [str]   -   skip the keyring and directly enter the
+                                    username to the REST-API
+            pw          [str]   -   path to a gpg-encrypted file that contains
+                                    the key.
+
+        Return:
+                        [bool]
         """
 
         token = ''
@@ -359,14 +364,14 @@ class PlentyApi():
                              data: dict = None,
                              path: str = '') -> dict:
         """
-            Make a request to the PlentyMarkets API.
+        Make a request to the PlentyMarkets API.
 
-            Parameter:
-                method      [str]   -   GET/POST
-                domain      [str]   -   Orders/Items...
-            (Optional)
-                query       [dict]  -   Additional options for the request
-                data        [dict]  -   Data body for post requests
+        Parameter:
+            method      [str]   -   GET/POST
+            domain      [str]   -   Orders/Items...
+        (Optional)
+            query       [dict]  -   Additional options for the request
+            data        [dict]  -   Data body for post requests
         """
         route = ''
         endpoint = ''
@@ -417,16 +422,16 @@ class PlentyApi():
                                              query: dict,
                                              path: str = '') -> dict:
         """
-            Collect data records from multiple API requests in a single JSON
-            data structure.
+        Collect data records from multiple API requests in a single JSON
+        data structure.
 
-            Parameter:
-                domain      [str]   -   Orders/Items/..
-                query       [dict]  -   Additional options for the request
+        Parameter:
+            domain      [str]   -   Orders/Items/..
+            query       [dict]  -   Additional options for the request
 
-            Return:
-                            [dict]  -   API response in as javascript object
-                                        notation
+        Return:
+                        [dict]  -   API response in as javascript object
+                                    notation
         """
         response = self.__plenty_api_request(method='get',
                                              domain=domain,
@@ -479,25 +484,25 @@ class PlentyApi():
     def plenty_api_get_orders_by_date(self, start, end, date_type='create',
                                       additional=None, refine=None):
         """
-            Get all orders within a specific date range.
+        Get all orders within a specific date range.
 
-            Parameter:
-                start       [str]   -   Start date
-                end         [str]   -   End date
-                date_type   [str]   -   Specify the type of date
-                                        {Creation, Change, Payment, Delivery}
-                additional  [list]  -   Additional arguments for the query
-                                        as specified in the manual
-                refine      [dict]  -   Apply filters to the request
-                                        Example:
-                                        {'orderType': '1,4', referrerId: '1'}
-                                        Restrict the request to order types:
-                                            1 and 4 (sales orders and refund)
-                                        And restrict it to only orders from
-                                        the referrer with id '1'
+        Parameter:
+            start       [str]   -   Start date
+            end         [str]   -   End date
+            date_type   [str]   -   Specify the type of date
+                                    {Creation, Change, Payment, Delivery}
+            additional  [list]  -   Additional arguments for the query as
+                                    specified in the manual
+            refine      [dict]  -   Apply filters to the request
+                                    Example:
+                                    {'orderType': '1,4', referrerId: '1'}
+                                    Restrict the request to order types:
+                                        1 and 4 (sales orders and refund)
+                                    And restrict it to only orders from the
+                                    referrer with id '1'
 
-            Return:
-                [JSON(Dict) / DataFrame] <= self.data_format
+        Return:
+                        [JSON(Dict) / DataFrame] <= self.data_format
         """
 
         date_range = utils.build_date_range(start=start, end=end)
@@ -535,30 +540,30 @@ class PlentyApi():
                                   last_update: str = '',
                                   variation_map: bool = False):
         """
-            List all attributes from PlentyMarkets, this will fetch the
-            basic attribute structures, so if you require an attribute value
-            use: additional=['values'].
-            The option variation_map performs an additional request to
-            /rest/items/variations in order to map variation IDs to
-            attribute values.
+        List all attributes from PlentyMarkets, this will fetch the basic
+        attribute structures, so if you require an attribute value use:
+        additional=['values'].
+        The option variation_map performs an additional request to
+        /rest/items/variations in order to map variation IDs to attribute
+        values.
 
-            Parameter:
-                additional  [list]  -   Add additional elements to the
-                                        response data.
-                                        Viable options:
-                                        ['values', 'names', 'maps']
-                last_update [str]   -   Date of the last update given as one
-                                        of the following formats:
-                                            YYYY-MM-DDTHH:MM:SS+UTC-OFFSET
-                                            attributes-MM-DDTHH:MM
-                                            YYYY-MM-DD
-                variation_map [bool]-   Fetch all variations and add a list
-                                        of variations, where the attribute
-                                        value matches to the corresponding
-                                        attribute value
+        Parameter:
+            additional  [list]  -   Add additional elements to the response
+                                    data
+                                    Viable options:
+                                    ['values', 'names', 'maps']
+            last_update [str]   -   Date of the last update given as one
+                                    of the following formats:
+                                        YYYY-MM-DDTHH:MM:SS+UTC-OFFSET
+                                        attributes-MM-DDTHH:MM
+                                        YYYY-MM-DD
+            variation_map[bool]-   Fetch all variations and add a list of
+                                    variations, where the attribute value
+                                    matches to the corresponding attribute
+                                    value
 
-            Return:
-                [JSON(Dict) / DataFrame] <= self.data_format
+        Return:
+                        [JSON(Dict) / DataFrame] <= self.data_format
         """
         attributes = None
         query = {}
@@ -598,19 +603,19 @@ class PlentyApi():
 
     def plenty_api_get_vat_id_mappings(self, subset: List[int] = None):
         """
-            Get a mapping of all VAT configuration IDs to each country or
-            if specified for a subset of countries.
-            A VAT configuration is a combination of country, vat rates,
-            restrictions and date range.
+        Get a mapping of all VAT configuration IDs to each country or
+        if specified for a subset of countries.
+        A VAT configuration is a combination of country, vat rates,
+        restrictions and date range.
 
-            Parameter:
-                subset      [list]  -   restrict the mappings to only
-                                        the given IDs (integer)
-                You can locate those IDs in your Plenty- Markets system under:
-                Setup-> Orders-> Shipping-> Settings-> Countries of delivery
+        Parameter:
+            subset      [list]  -   restrict the mappings to only the given
+                                    IDs (integer)
+            You can locate these IDs in your Plenty- Markets system under:
+            Setup-> Orders-> Shipping-> Settings-> Countries of delivery
 
-            Return:
-                [JSON(Dict) / DataFrame] <= self.data_format
+        Return:
+                        [JSON(Dict) / DataFrame] <= self.data_format
         """
         vat_data = self.__repeat_get_request_for_all_records(domain='vat',
                                                              query={})
@@ -628,19 +633,18 @@ class PlentyApi():
                                            minimal: bool = False,
                                            last_update: str = ''):
         """
-            Fetch the price configuration from PlentyMarkets.
+        Fetch the price configuration from PlentyMarkets.
 
-            Parameter:
-                minimal     [bool]  -   reduce the response data to necessary
-                                        IDs.
-                last_update [str]   -   Date of the last update given as one
-                                        of the following formats:
-                                            YYYY-MM-DDTHH:MM:SS+UTC-OFFSET
-                                            YYYY-MM-DDTHH:MM
-                                            YYYY-MM-DD
+        Parameter:
+            minimal     [bool]  -   reduce the response data to necessary IDs.
+            last_update [str]   -   Date of the last update given as one of the
+                                    following formats:
+                                        YYYY-MM-DDTHH:MM:SS+UTC-OFFSET
+                                        YYYY-MM-DDTHH:MM
+                                        YYYY-MM-DD
 
-            Result:
-                [JSON(Dict) / DataFrame] <= self.data_format
+        Result:
+                        [JSON(Dict) / DataFrame] <= self.data_format
         """
         prices = None
         minimal_prices: list = []
@@ -675,25 +679,25 @@ class PlentyApi():
                                      additional: list = None,
                                      last_update: str = ''):
         """
-            Get a list of manufacturers (brands), which are setup on
-            PlentyMarkets.
+        Get a list of manufacturers (brands), which are setup on
+        PlentyMarkets.
 
-            Parameter:
-                refine      [dict]  -   Apply a filter to the request
-                                        The only viable option currently is:
-                                        'name'
-                additional  [list]  -   Add additional elements to the
-                                        response data.
-                                        Viable options currently:
-                                        ['commisions', 'externals']
-                last_update [str]   -   Date of the last update given as one
-                                        of the following formats:
-                                            YYYY-MM-DDTHH:MM:SS+UTC-OFFSET
-                                            YYYY-MM-DDTHH:MM
-                                            YYYY-MM-DD
+        Parameter:
+            refine      [dict]  -   Apply a filter to the request
+                                    The only viable option currently is:
+                                    'name'
+            additional  [list]  -   Add additional elements to the response
+                                    data.
+                                    Viable options currently:
+                                    ['commisions', 'externals']
+            last_update [str]   -   Date of the last update given as one of the
+                                    following formats:
+                                        YYYY-MM-DDTHH:MM:SS+UTC-OFFSET
+                                        YYYY-MM-DDTHH:MM
+                                        YYYY-MM-DD
 
-            Return:
-                [JSON(Dict) / DataFrame] <= self.data_format
+        Return:
+                        [JSON(Dict) / DataFrame] <= self.data_format
         """
         query = {}
         if last_update:
@@ -706,20 +710,20 @@ class PlentyApi():
     def plenty_api_get_referrers(self,
                                  column: str = ''):
         """
-            Get a list of order referrers from PlentyMarkets.
+        Get a list of order referrers from PlentyMarkets.
 
-            The description within the PlentyMarkets API documentation
-            is just wrong, the parameter doesn't expect an integer nor a
-            list of integers, it actually cannot query multiple columns.
-            All the parameter can query is a "single" column, which
-            is why I renamed the parameter in this method.
+        The description within the PlentyMarkets API documentation is just
+        wrong, the parameter doesn't expect an integer nor a list of integers,
+        it actually cannot query multiple columns.
+        All the parameter can query is a "single" column, which is why I
+        renamed the parameter in this method.
 
-            Parameter:
-                column      [str]   -   Name of the field from the referrer
-                                        to be exported.
+        Parameter:
+            column      [str]   -   Name of the field from the referrer to be
+                                    exported.
 
-            Return:
-                [JSON(Dict) / DataFrame] <= self.data_format
+        Return:
+                        [JSON(Dict) / DataFrame] <= self.data_format
         """
         # TODO actually only backendName, id and name are actually useful
         # because all other attributes are useless without identification
@@ -751,28 +755,28 @@ class PlentyApi():
                              last_update: str = '',
                              lang: str = ''):
         """
-            Get product data from PlentyMarkets.
+        Get product data from PlentyMarkets.
 
-            Parameter:
-                refine      [dict]  -   Apply filters to the request
-                                        Example:
-                                        {'id': '12345', 'flagOne: '5'}
-                additional  [list]  -   Add additional elements to the
-                                        response data.
-                                        Example:
-                                        ['variations', 'itemImages']
-                last_update [str]   -   Date of the last update given as one
-                                        of the following formats:
-                                            YYYY-MM-DDTHH:MM:SS+UTC-OFFSET
-                                            YYYY-MM-DDTHH:MM
-                                            YYYY-MM-DD
-                lang        [str]   -   Provide the text within the data
-                                        in one of the following languages:
+        Parameter:
+            refine      [dict]  -   Apply filters to the request
+                                    Example:
+                                    {'id': '12345', 'flagOne: '5'}
+            additional  [list]  -   Add additional elements to the response
+                                    data.
+                                    Example:
+                                    ['variations', 'itemImages']
+            last_update [str]   -   Date of the last update given as one of the
+                                    following formats:
+                                        YYYY-MM-DDTHH:MM:SS+UTC-OFFSET
+                                        YYYY-MM-DDTHH:MM
+                                        YYYY-MM-DD
+            lang        [str]   -   Provide the text within the data in one of
+                                    the following languages:
 
-                developers.plentymarkets.com/rest-doc/gettingstarted#countries
+            developers.plentymarkets.com/rest-doc/gettingstarted#countries
 
-            Return:
-                [JSON(Dict) / DataFrame] <= self.data_format
+        Return:
+                        [JSON(Dict) / DataFrame] <= self.data_format
         """
         query = {}
         if last_update:
@@ -790,24 +794,24 @@ class PlentyApi():
                                   additional: list = None,
                                   lang: str = ''):
         """
-            Get product data from PlentyMarkets.
+        Get product data from PlentyMarkets.
 
-            Parameter:
-                refine      [dict]  -   Apply filters to the request
-                                        Example:
-                                        {'id': '2345', 'flagOne: '5'}
-                additional  [list]  -   Add additional elements to the
-                                        response data.
-                                        Example:
-                                        ['stock', 'images']
-                lang        [str]   -   Provide the text within the data
-                                        in one of the following languages:
-                                        Example: 'de', 'en', etc.
+        Parameter:
+            refine      [dict]  -   Apply filters to the request
+                                    Example:
+                                    {'id': '2345', 'flagOne: '5'}
+            additional  [list]  -   Add additional elements to the response
+                                    data.
+                                    Example:
+                                    ['stock', 'images']
+            lang        [str]   -   Provide the text within the data in one
+                                    of the following languages:
+                                    Example: 'de', 'en', etc.
 
-                developers.plentymarkets.com/rest-doc/gettingstarted#countries
+            developers.plentymarkets.com/rest-doc/gettingstarted#countries
 
-            Return:
-                [JSON(Dict) / DataFrame] <= self.data_format
+        Return:
+                        [JSON(Dict) / DataFrame] <= self.data_format
         """
         query = {}
 
@@ -877,25 +881,25 @@ class PlentyApi():
                                           image_id: str,
                                           target: dict) -> dict:
         """
-            Create a marketplace availability for a specific item/image
-            combiniation.
+        Create a marketplace availability for a specific item/image
+        combiniation.
 
-            Parameter:
-                item_id     [str]   -   Item ID from PlentyMarkets
-                image_id    [str]   -   Image ID from PlentyMarkets
-                target      [dict]  -   ID of the specific:
-                                            * marketplace
-                                            * mandant (client)
-                                            * listing
-                                        together with a specifier
+        Parameter:
+            item_id     [str]   -   Item ID from PlentyMarkets
+            image_id    [str]   -   Image ID from PlentyMarkets
+            target      [dict]  -   ID of the specific:
+                                        * marketplace
+                                        * mandant (client)
+                                        * listing
+                                    together with a specifier
 
 
 
-            Marketplace IDs: (@setup->orders->order origins)
-            Mandant IDs: (@setup->client->{client}->settings[Plenty ID])
+        Marketplace IDs: (@setup->orders->order origins)
+        Mandant IDs: (@setup->client->{client}->settings[Plenty ID])
 
-            Return:
-                            [dict]
+        Return:
+                        [dict]
         """
         if not item_id or not image_id or not target:
             return {'error': 'missing_parameter'}
@@ -932,16 +936,15 @@ class PlentyApi():
 
     def plenty_api_create_items(self, json: list) -> list:
         """
-            Create one or more items at Plentymarkets.
+        Create one or more items at Plentymarkets.
 
-            Parameter:
-                json        [list]   -   Either a list of JSON objects or a
-                                         single JSON, describing the items.
+        Parameter:
+            json        [list]   -   Either a list of JSON objects or a single
+                                     JSON, describing the items.
 
-            Return:
-                [list]               -   Response objects if one or more should
-                                         fail, the entry contains the error
-                                         message.
+        Return:
+                        [list]   -   Response objects if one or more should
+                                     fail, the entry contains the error message
         """
         if isinstance(json, dict):
             json = [json]
@@ -958,18 +961,18 @@ class PlentyApi():
 
     def plenty_api_create_variations(self, item_id: int, json: list) -> list:
         """
-            Create a variation for a specific item on Plentymarkets.
+        Create a variation for a specific item on Plentymarkets.
 
-            Parameter:
-                item_id  [int]    -   Add the variations to this item
-                json     [list]   -   Either a list of JSON objects or a single
-                                      JSON object describing a variation for
-                                      an item.
+        Parameter:
+            item_id     [int]    -   Add the variations to this item
+            json        [list]   -   Either a list of JSON objects or a single
+                                     JSON object describing a variation for an
+                                     item.
 
-            Return:
-                         [list]   -   Response objects if one or more should
-                                      fail, the entry contains the error
-                                      message.
+        Return:
+                        [list]   -   Response objects if one or more should
+                                     fail, the entry contains the error
+                                     message.
         """
         if not item_id:
             return [{'error': 'missing_parameter'}]
@@ -992,16 +995,16 @@ class PlentyApi():
 
     def plenty_api_create_attribute(self, json: dict) -> dict:
         """
-            Create a new attribute on Plentymarkets.
+        Create a new attribute on Plentymarkets.
 
-            Parameter:
-                json        [dict]  -   A single JSON object describing an
-                                        attribute
+        Parameter:
+            json        [dict]  -   A single JSON object describing an
+                                    attribute
 
-            Return:
-                            [dict]  -  Response object if the request should
-                                       fail, the entry contains the error
-                                       message.
+        Return:
+                        [dict]  -  Response object if the request should
+                                   fail, the entry contains the error
+                                   message.
         """
         if not utils.sanity_check_json(route_name='attributes',
                                     json=json):
@@ -1013,16 +1016,16 @@ class PlentyApi():
     def plenty_api_create_attribute_name(self, attribute_id: int,
                                          lang: str, name: str) -> dict:
         """
-            Create an attribute name for a specific attribute.
+        Create an attribute name for a specific attribute.
 
-            Parameter:
-                attribute_id[str]   -   Attribute ID from PlentyMarkets
-                lang        [str]   -   two letter abbreviation of a language
-                name        [str]   -   The visible name of the attribute in
-                                        the given language
+        Parameter:
+            attribute_id[str]   -   Attribute ID from PlentyMarkets
+            lang        [str]   -   two letter abbreviation of a language
+            name        [str]   -   The visible name of the attribute in
+                                    the given language
 
-            Return:
-                [dict]
+        Return:
+                        [dict]
         """
         if not attribute_id or not lang or not name:
             return [{'error': 'missing_parameter'}]
@@ -1044,16 +1047,16 @@ class PlentyApi():
     def plenty_api_create_attribute_values(self, attribute_id: int,
                                            json: list) -> dict:
         """
-            Create one or more attribute values for a specific attribute.
+        Create one or more attribute values for a specific attribute.
 
-            Parameter:
-                attribute_id[str]   -   Attribute ID from PlentyMarkets
-                json        [list]  -   Either a list of JSON objects or a
-                                        single JSON object describing an
-                                        attribute value for an attribute.
+        Parameter:
+            attribute_id[str]   -   Attribute ID from PlentyMarkets
+            json        [list]  -   Either a list of JSON objects or a
+                                    single JSON object describing an
+                                    attribute value for an attribute
 
-            Return:
-                [list]
+        Return:
+                        [list]
         """
         if not attribute_id:
             return [{'error': 'missing_parameter'}]
@@ -1078,16 +1081,16 @@ class PlentyApi():
     def plenty_api_create_attribute_value_name(self, value_id: int,
                                                lang: str, name: str) -> dict:
         """
-            Create one or more attribute value names for a specific attribute.
+        Create an attribute value name for a specific attribute.
 
-            Parameter:
-                value_id    [str]   -   Attribute value ID from PlentyMarkets
-                lang        [str]   -   two letter abbreviation of a language
-                name        [str]   -   The visible name of the attribute in
-                                        the given language
+        Parameter:
+            value_id    [str]   -   Attribute value ID from PlentyMarkets
+            lang        [str]   -   two letter abbreviation of a language
+            name        [str]   -   The visible name of the attribute in the
+                                    given language
 
-            Return:
-                [dict]
+        Return:
+                        [dict]
         """
         if not value_id or not lang or not name:
             return [{'error': 'missing_parameter'}]
@@ -1109,23 +1112,22 @@ class PlentyApi():
     def plenty_api_create_redistribution(self, template: dict,
                                          book_out: bool = False) -> dict:
         """
-            Create a new redistribution on Plentymarkets.
+        Create a new redistribution on Plentymarkets.
 
-            The creation of a redistribution is split into multiple steps
-            with the REST API, first the order has to be created, then the
-            outgoing transaction have to be created and booked, before
-            incoming transactions are created and booked.
+        The creation of a redistribution is split into multiple steps with the
+        REST API, first the order has to be created, then the outgoing
+        transaction have to be created and booked, before incoming transactions
+        are created and booked.
 
-            As soon as the order was initiated it cannot be changed/deleted
-            anymore.
+        As soon as the order was initiated it cannot be changed/deleted anymore
 
-            Parameter:
-                template    [dict]  -   Describes the transactions between two
-                                        warehouses
-                book_out    [bool]  -   Book outgoing transaction directly
+        Parameter:
+            template    [dict]  -   Describes the transactions between two
+                                    warehouses
+            book_out    [bool]  -   Book outgoing transaction directly
 
-            Return:
-                            [dict]
+        Return:
+                        [dict]
         """
         if not utils.validate_redistribution_template(template=template):
             return {'error': 'invalid_template'}
@@ -1170,18 +1172,17 @@ class PlentyApi():
     def plenty_api_create_transaction(self, order_item_id: int,
                                       json: dict) -> dict:
         """
-            Create an outgoing or incoming transaction for an order.
+        Create an outgoing or incoming transaction for an order.
 
-            Parameter:
-                order_item_id [int] -   ID of a single item (variation) within
-                                        an order
-                json        [dict]  -   single JSON object describing the
-                                        transaction
+        Parameter:
+            order_item_id [int] -   ID of a single item (variation) within an
+                                    order
+            json        [dict]  -   single JSON object describing the
+                                    transaction
 
-            Return:
-                            [dict]  -  Response object if the request should
-                                       fail, the entry contains the error
-                                       message.
+        Return:
+                        [dict]  -  Response object if the request should fail,
+                                   the entry contains the error message.
         """
         if not order_item_id:
             return {'error': 'missing_parameter'}
@@ -1199,21 +1200,20 @@ class PlentyApi():
     def plenty_api_create_booking(self, order_id: int,
                                   delivery_note: str = '') -> dict:
         """
-            Execute all pending transactions within an order.
+        Execute all pending transactions within an order.
 
-            This route handles outgoing and incoming transactions within an
-            order (sales/redistribution/reorder/etc..). Which means it books
-            out and books in.
+        This route handles outgoing and incoming transactions within an
+        order (sales/redistribution/reorder/etc..). Which means it books
+        out and books in.
 
-            Parameter:
-                order_id    [int]   -   ID of the order on Plentymarkets
-                delivery_note [str] -   Identifier of the delivery note
-                                        document, connected to the order
+        Parameter:
+            order_id    [int]   -   ID of the order on Plentymarkets
+            delivery_note [str] -   Identifier of the delivery note document,
+                                    connected to the order
 
-            Return:
-                            [dict]  -  Response object if the request should
-                                       fail, the entry contains the error
-                                       message.
+        Return:
+                        [dict]  -  Response object if the request should
+                                   fail, the entry contains the error message.
         """
         data = {}
         path = str(f"/{order_id}/booking")
@@ -1227,23 +1227,24 @@ class PlentyApi():
                                              data=data)
         return response
 
+# PUT REQUESTS
+
     def plenty_api_update_redistribution(self, order_id: int,
                                          json: dict) -> dict:
         """
-            Change certain attributes of a redistribution.
+        Change certain attributes of a redistribution.
 
-            Commonly used for changing certain event dates like:
-                initiation, estimated delivery date and finish
+        Commonly used for changing certain event dates like:
+            initiation, estimated delivery date and finish
 
-            Parameter:
-                order_id    [int]   -   ID of the order on Plentymarkets
-                json        [dict]  -   single JSON object describing the
-                                        update
+        Parameter:
+            order_id    [int]   -   ID of the order on Plentymarkets
+            json        [dict]  -   single JSON object describing the update
 
-            Return:
-                            [dict]  -  Response object if the request should
-                                       fail, the entry contains the error
-                                       message.
+        Return:
+                        [dict]  -  Response object if the request should
+                                   fail, the entry contains the error
+                                   message.
         """
         if not order_id:
             return {'error': 'missing_parameter'}
@@ -1255,8 +1256,6 @@ class PlentyApi():
                                              data=json)
 
         return response
-
-# PUT REQUESTS
 
     def plenty_api_book_incoming_items(self,
                                        article_item_id: int,
