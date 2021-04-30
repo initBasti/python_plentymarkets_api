@@ -1,22 +1,22 @@
 """
-    Python-PlentyMarkets-API-interface.
+Python-PlentyMarkets-API-interface.
 
-    Interface to the resources from PlentyMarkets(https://www.plentymarkets.eu)
+Interface to the resources from PlentyMarkets(https://www.plentymarkets.eu)
 
-    Copyright (C) 2020  Sebastian Fricke, Panasiam
+Copyright (C) 2020  Sebastian Fricke, Panasiam
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as published
-    by the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
 
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import getpass
@@ -32,14 +32,14 @@ import plenty_api.constants as constants
 
 def create_vat_mapping(data: list, subset: list = None) -> dict:
     """
-        Create a mapping of each country ID to (Tax ID and configuration ID),
-        restrict the mapping to a subset if given.
+    Create a mapping of each country ID to (Tax ID and configuration ID),
+    restrict the mapping to a subset if given.
 
-        Parameter:
-            data    [list]      -   Response JSON data from /rest/vat request
+    Parameter:
+        data            [list]      -   Response JSON data from the request
 
-        Return:
-                    [dict]
+    Return:
+                        [dict]
     """
     mapping = {}
     if not data or not isinstance(data[0], dict):
@@ -60,20 +60,19 @@ def create_vat_mapping(data: list, subset: list = None) -> dict:
 
 def attribute_variation_mapping(variation: dict, attribute: dict) -> dict:
     """
-        Add an additional field to the attribute JSON response body:
-        'linked_variations', which contains every variation ID from
-        @variation, where the attributeValueID matches the valueId of
-        the attribute value.
+    Add an additional field to the attribute JSON response body:
+    'linked_variations', which contains every variation ID from @variation,
+    where the attributeValueID matches the valueId of the attribute value.
 
-        Parameter:
-            variation[dict]     -   response body entries from:
-                                    /rest/items/variations
-                                    (with variationAttributeValues)
-            attribute[dict]     -   response body entries from:
-                                    /rest/items/attributes (with values)
+    Parameter:
+        variation       [dict]     -   response body entries from:
+                                        /rest/items/variations
+                                        (with variationAttributeValues)
+        attribute       [dict]     -   response body entries from:
+                                       /rest/items/attributes (with values)
 
-        Return:
-                    [dict]      -   extended response body of the attributes
+    Return:
+                        [dict]     -   extended response body of the attributes
     """
     value_id_map = {}
 
@@ -112,14 +111,14 @@ def attribute_variation_mapping(variation: dict, attribute: dict) -> dict:
 
 def shrink_price_configuration(data: dict) -> dict:
     """
-        reduce the API response to a minimum by deleting
-        date information and other additional mappings.
+    reduce the API response to a minimum by deleting date information and other
+    additional mappings.
 
-        Parameter:
-            data    [dict]      -   The response JSON dictionary
+    Parameter:
+        data            [dict]      -   The response JSON dictionary
 
-        Return:
-                    [dict]
+    Return:
+                        [dict]
     """
     configuration: dict = {
         'id': 0,
@@ -162,14 +161,14 @@ def shrink_price_configuration(data: dict) -> dict:
 
 def get_route(domain: str) -> str:
     """
-        Use fixed mappings to determine the correct route for the endpoint.
+    Use fixed mappings to determine the correct route for the endpoint.
 
-        Parameter:
-            domain  [str]       -   Specifies the type of route for the request
-                                    {item/order/..}
+    Parameter:
+        domain          [str]       -   type of route for the request
+                                        {item/order/..}
 
-        Return:
-                    [str]
+    Return:
+                        [str]
     """
     for valid_domain in constants.VALID_DOMAINS:
         if re.match(valid_domain, domain.lower()):
@@ -179,14 +178,14 @@ def get_route(domain: str) -> str:
 
 def get_language(lang: str) -> str:
     """
-        Check if the given language abbreviation is a valid value and
-        return it in lower-case letters.
+    Check if the given language abbreviation is a valid value and return it in
+    lower-case letters.
 
-        Parameter:
-            lang    [str]       -   Language abbreviation
+    Parameter:
+        lang            [str]       -   Language abbreviation
 
-        Return:
-                    [str]       -   Language abbreviation in lower-case
+    Return:
+                        [str]       -   Language abbreviation in lower-case
     """
     lang = lang.lower()
     if lang not in constants.VALID_LANGUAGES:
@@ -200,20 +199,20 @@ def sanity_check_parameter(domain: str,
                            additional: list = None,
                            lang: str = ''):
     """
-        Build the query dictionary, while checking for invalid arguments
-        and removing them.
+    Build the query dictionary, while checking for invalid arguments and
+    removing them.
 
-        Parameter:
-            domain     [str]    -   specifies the type of route for the request
+    Parameter:
+        domain          [str]    -   type of route for the request
                                     {item/order/..}
-            query      [dict]   -   Dictionary used for the params field
-                                    for the requests module.
-            refine     [dict]   -   Filters for the request
-            additional [list]   -   additional elements for the response body
-            lang       [str]    -   Name of the language for product texts
+        query           [dict]   -   Dictionary used for the params field for
+                                     the requests module.
+        refine          [dict]   -   Filters for the request
+        additional      [list]   -   additional elements for the response body
+        lang            [str]    -   Name of the language for product texts
 
-        Return:
-                       [dict]   -   updated query
+    Return:
+                        [dict]   -   updated query
     """
     if domain not in constants.VALID_DOMAINS:
         logging.error(f"Invalid domain name {domain}")
@@ -251,15 +250,15 @@ def sanity_check_parameter(domain: str,
 
 def sanity_check_json(route_name: str, json: dict) -> bool:
     """
-        Check if the JSON object provided for a POST request contains the
-        minimum required fields.
+    Check if the JSON object provided for a POST request contains the minimum
+    required fields.
 
-        Parameter:
-            route_name [str]    -   specifies the route for the request
-            json       [dict]   -   JSON object for the route
+    Parameter:
+        route_name      [str]    -   route for the request
+        json            [dict]   -   JSON object for the route
 
-        Return:
-                       [bool]
+    Return:
+                        [bool]
     """
     if route_name not in constants.REQUIRED_FIELDS_MAP.keys():
         logging.error(f"unknown route {route_name} in required fields map.")
@@ -280,16 +279,16 @@ def sanity_check_json(route_name: str, json: dict) -> bool:
 
 def validate_redistribution_template(template: dict) -> bool:
     """
-        Check if the template for redistribution creation is valid
+    Check if the template for redistribution creation is valid
 
-        Make sure that the quantities align, the total quantity should be
-        equal to the outgoing quantity, if outgoing quanities are used and
-        the optional incoming quantities shall be equal to the outgoing
-        quantities.
+    Make sure that the quantities align, the total quantity should be
+    equal to the outgoing quantity, if outgoing quanities are used and
+    the optional incoming quantities shall be equal to the outgoing
+    quantities.
 
-        Parameter:
-            template        [dict]  -   Simplified blueprint JSON for the
-                                        redistribution creation
+    Parameter:
+        template        [dict]  -   Simplified blueprint JSON for the
+                                    redistribution creation
     """
     for variation in template['variations']:
         if 'locations' in variation.keys():
@@ -323,23 +322,23 @@ def validate_redistribution_template(template: dict) -> bool:
 
 def build_query_date(date_range: dict, date_type: str) -> dict:
     """
-        Create a query for the API endpoint, with valid values from the
-        PlentyMarkets API documentation:
-            https://developers.plentymarkets.com/rest-doc#/
+    Create a query for the API endpoint, with valid values from the
+    PlentyMarkets API documentation:
+        https://developers.plentymarkets.com/rest-doc#/
 
-        The valid date ranges are:
-            Creation : {createdAtFrom & createdAtTo}
-            Payment : {paidAtFrom & paidAtTo}
-            Change : {updatedAtFrom & updatedAtTo}
-            Delivery : {outgoingItemsBookedAtFrom & outgoingItemsBookedAtTo}
+    The valid date ranges are:
+        Creation : {createdAtFrom & createdAtTo}
+        Payment : {paidAtFrom & paidAtTo}
+        Change : {updatedAtFrom & updatedAtTo}
+        Delivery : {outgoingItemsBookedAtFrom & outgoingItemsBookedAtTo}
 
-        Parameter:
-            date_range  [dict]  -   Start & End date in W3C date format
+    Parameter:
+        date_range      [dict]  -   Start & End date in W3C date format
                                     (use `build_date_range`)
-            date_type   [str]   -   Identifier for the type of date range
+        date_type       [str]   -   Identifier for the type of date range
                                     {Creation, Payment, Change, Delivery}
 
-        Return:
+    Return:
                         [dict]  -   Date range in python dictionary
     """
     query = {}
@@ -358,18 +357,18 @@ def build_query_date(date_range: dict, date_type: str) -> dict:
 
 def build_endpoint(url: str, route: str, path: str = '') -> str:
     """
-        Perform basic checks to ensure that a valid endpoint is used for the
-        request. Query elements should be obtained by usind the
-        `build_request_query` function to ensure using correct arguments
-        and having the correct HTTP encoding for special signs.
+    Perform basic checks to ensure that a valid endpoint is used for the
+    request. Query elements should be obtained by usind the
+    `build_request_query` function to ensure using correct arguments
+    and having the correct HTTP encoding for special signs.
 
-        Parameter:
-            url     [str]       -   Base url of the plentymarkets API
-            route   [str]       -   Route part endpoint (e.g. /rest/items)
-            path    [str]       -   Sub route part (e.g. /{item_id}/images)
+    Parameter:
+        url             [str]       -   Base url of the plentymarkets API
+        route           [str]       -   Route part endpoint (e.g. /rest/items)
+        path            [str]       -   Sub route part (e.g. /{item_id}/images)
 
-        Parameter:
-                    [str]       -   complete endpoint
+    Parameter:
+                        [str]       -   complete endpoint
     """
     if not re.search(r'https://.*', url):
         logging.error(f"Provided url parameter [{url}] is no valid https url.")
@@ -384,16 +383,16 @@ def build_endpoint(url: str, route: str, path: str = '') -> str:
 
 def build_date_update_json(date_type: str, date: datetime.datetime) -> dict:
     """
-        Create a valid JSON for a redistribution PUT request to update a date.
+    Create a valid JSON for a redistribution PUT request to update a date.
 
-        Used for the [PUT /rest/redistributions/{orderId}] route
+    Used for the [PUT /rest/redistributions/{orderId}] route
 
-        Parameters:
-            date_type           [str]   -   initiate/estimated_delivery/finish
-            date           [datetime]   -   specific date to set for the event
+    Parameters:
+        date_type       [str]       -   initiate/estimated_delivery/finish
+        date            [datetime]  -   specific date to set for the event
 
-        Return:
-                                [dict]  -   valid JSON for the request
+    Return:
+                        [dict]      -   valid JSON for the request
     """
     if date_type not in constants.REDISTRIBUTION_DATE_TYPES.keys():
         logging.error(f"Invalid date type {date_type} for a redistribution")
@@ -417,16 +416,16 @@ def build_date_update_json(date_type: str, date: datetime.datetime) -> dict:
 
 def build_redistribution_json(template: dict) -> dict:
     """
-        Create a valid JSON for a redistribution POST request.
+    Create a valid JSON for a redistribution POST request.
 
-        Used for the [POST /rest/redistributions route]
+    Used for the [POST /rest/redistributions route]
 
-        Parameters:
-            template            [dict]  -   Required and/or optional elements
-                                            for the redistribution creation
+    Parameters:
+        template            [dict]  -   Required and/or optional elements for
+                                        the redistribution creation
 
-        Return:
-                                [dict]  -   valid JSON for the request
+    Return:
+                            [dict]  -   valid JSON for the request
     """
     variations = [
         {
@@ -483,24 +482,22 @@ def build_transaction(order_item_id: int, location: dict,
                       direction: str = 'out', user_id: int = -1,
                       **kwargs) -> dict:
     """
-        Create a valid transaction for the REST API POST route.
+    Create a valid transaction for the REST API POST route.
 
-        Used for the [POST /rest/orders/items/{orderItemId}/transactions route]
+    Used for the [POST /rest/orders/items/{orderItemId}/transactions route]
 
-        Parameters:
-            order_item_id       [int]   -   ID of the order item the
-                                            transaction is connected to
-            location            [dict]  -   Combination of location ID and
-                                            quantity
-            direction           [str]   -   OPTIONAL: in/out (default out)
-            user_id             [int]   -   OPTIONAL: ID of the user that is
-                                            responsible for the booking
-            kwargs              [dict]  -   Additional optional keys for
-                                            handling of transactions with
-                                            batches
+    Parameters:
+        order_item_id   [int]   -   ID of the order item the transaction is
+                                    connected to
+        location        [dict]  -   Combination of location ID and quantity
+        direction       [str]   -   OPTIONAL: in/out (default out)
+        user_id         [int]   -   OPTIONAL: ID of the user that is
+                                    responsible for the booking
+        kwargs          [dict]  -   Additional optional keys for handling of
+                                    transactions with batches
 
-        Return:
-                                [dict]  -   valid JSON for the request
+    Return:
+                        [dict]  -   valid JSON for the request
     """
     json = {
         'orderItemId': order_item_id,
@@ -522,19 +519,18 @@ def build_transaction(order_item_id: int, location: dict,
 def build_transactions(order: dict, variations: dict,
                        user_id: int = -1) -> list:
     """
-        Create transaction JSONs for each order item in the redistribution.
+    Create transaction JSONs for each order item in the redistribution.
 
-        Parameters:
-            order               [dict]  -   Response JSON from the order
-                                            creation
-            variations          [list]  -   Variations with warehouse location
-                                            to book stock from
-            user_id             [int]   -   OPTIONAL: ID of the user that is
-                                            responsible for the booking
+    Parameters:
+        order           [dict]  -   Response JSON from the order creation
+        variations      [list]  -   Variations with warehouse location to book
+                                    stock from
+        user_id         [int]   -   OPTIONAL: ID of the user that is
+                                    responsible for the booking
 
-        Return:
-                                [tuple] -   List of transaction JSONs for
-                                            outgoing and incoming transactions
+    Return:
+                        [tuple] -   List of transaction JSONs for outgoing and
+                                    incoming transactions
     """
     outgoing = []
     incoming = []
@@ -588,11 +584,11 @@ def transform_data_type(data: dict, data_format: str):
 
 def get_utc_offset() -> str:
     """
-        Determine the time difference between the current timezone of the user
-        and UTC and return a string with the format "02:00"
+    Determine the time difference between the current timezone of the user
+    and UTC and return a string with the format "02:00"
 
-        Return:
-                    [str]
+    Return:
+                        [str]
     """
     current = datetime.datetime.now(datetime.timezone.utc).astimezone()
     offset = current.tzinfo.utcoffset(None)
@@ -602,13 +598,13 @@ def get_utc_offset() -> str:
 
 def check_date_range(date_range: dict) -> bool:
     """
-        Check if the user specified date range is a valid range in the past.
+    Check if the user specified date range is a valid range in the past.
 
-        Parameter:
-            date_range [dict]   -   start and end date
+    Parameter:
+        date_range      [dict]   -   start and end date
 
-        Return:
-                       [bool]
+    Return:
+                        [bool]
     """
     now = datetime.datetime.now().astimezone()
     try:
@@ -636,15 +632,14 @@ def check_date_range(date_range: dict) -> bool:
 
 def parse_date(date: str) -> str:
     """
-        Transform the given date into a W3C date format as required by
-        the PlentyMarkets API.
+    Transform the given date into a W3C date format as required by the
+    PlentyMarkets API.
 
-        Parameter:
-            date    [str]       -   user supplied string with the
-                                    original date.
+    Parameter:
+        date            [str]       -   string with the original date.
 
-        Return:
-                    [str]
+    Return:
+                        [str]
     """
     try:
         date = dateutil.parser.parse(date)
@@ -659,14 +654,14 @@ def parse_date(date: str) -> str:
 
 def build_date_range(start: str, end: str) -> dict:
     """
-        Create a range of 2 dates in the W3C dateformat.
+    Create a range of 2 dates in the W3C dateformat.
 
-        Parameter:
-            start   [str]       -   user supplied string with the start date
-            end     [str]       -   user supplied string with the end date
+    Parameter:
+        start           [str]       -   string with the start date
+        end             [str]       -   string with the end date
 
-        Return:
-                    [dict]/None
+    Return:
+                        [dict]/None
     """
     w3c_start = parse_date(date=start)
     w3c_end = parse_date(date=end)
@@ -677,17 +672,17 @@ def build_date_range(start: str, end: str) -> dict:
 
 def date_to_timestamp(date: str) -> int:
     """
-        Parse a date object in to a unix timestamp.
+    Parse a date object in to a unix timestamp.
 
-        Parameter:
-            date    [str]       -   date as function parameter in on of the
-                                    following formats:
-                                    YYYY-MM-DD
-                                    YYYY-MM-DDTHH:MM
-                                    YYYY-MM-DDTHH:MM:SS+UTC-OFFSET
+    Parameter:
+        date            [str]       -   date as function parameter in on of the
+                                        following formats:
+                                            YYYY-MM-DD
+                                            YYYY-MM-DDTHH:MM
+                                            YYYY-MM-DDTHH:MM:SS+UTC-OFFSET
 
-        Return:
-                    [int]       -   Unix timestamp since 1970-01-01
+    Return:
+                        [int]       -   Unix timestamp since 1970-01-01
     """
     # Check if the date starts with anything else but the year
     first_number = re.search(r'^\d{2,}(?=\D)', date)
@@ -702,8 +697,9 @@ def date_to_timestamp(date: str) -> int:
 
 
 def get_temp_creds() -> dict:
-    """ Get the credentials for the API from the user and don't store
-        them permanently """
+    """
+    Get the credentials for the API from the user and store them temporary.
+    """
     username = ''
     password = ''
     while len(username) < 2:
@@ -715,13 +711,13 @@ def get_temp_creds() -> dict:
 
 def new_keyring_creds(keyring: object) -> dict:
     """
-        Get the credentials for the API from the user and store them into
-        a system wide keyring
+    Get the credentials for the API from the user and store them into a
+    system-wide keyring.
 
-        Parameter:
-            keyring [CredentialManager object]
-        Return:
-                    [dict]      - containing username and password
+    Parameter:
+        keyring         [CredentialManager object]
+    Return:
+                        [dict]      - containing username and password
     """
     keyring.set_credentials()
     return keyring.get_credentials()
@@ -729,13 +725,13 @@ def new_keyring_creds(keyring: object) -> dict:
 
 def update_keyring_creds(keyring: object) -> dict:
     """
-        Delete the current content of the keyring and get new credentials
-        for the API from the user, store them into the keyring
+    Delete the current content of the keyring and get new credentials for the
+    API from the user, store them into the keyring.
 
-        Parameter:
-            keyring [CredentialManager object]
-        Return:
-                    [dict]      - containing username and password
+    Parameter:
+        keyring         [CredentialManager object]
+    Return:
+                        [dict]      -   containing username and password
     """
     keyring.delete_credentials()
     return new_keyring_creds(keyring=keyring)
@@ -749,9 +745,7 @@ def build_login_token(response_json: dict) -> str:
 
 
 def list_contains(search_list: list, target_list: list) -> bool:
-    """
-        Check if all elements of @search_list are found in @target_list
-    """
+    """ Check if all elements of @search_list are found in @target_list """
     return all(elem in target_list for elem in search_list)
 
 
