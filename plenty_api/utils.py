@@ -361,7 +361,7 @@ def build_endpoint(url: str, route: str, path: str = '') -> str:
         Perform basic checks to ensure that a valid endpoint is used for the
         request. Query elements should be obtained by usind the
         `build_request_query` function to ensure using correct arguments
-        and having the correcting HTTP encoding for special signs.
+        and having the correct HTTP encoding for special signs.
 
         Parameter:
             url     [str]       -   Base url of the plentymarkets API
@@ -371,10 +371,8 @@ def build_endpoint(url: str, route: str, path: str = '') -> str:
         Parameter:
                     [str]       -   complete endpoint
     """
-    if (not (re.search(r'https://.*.plentymarkets-cloud01.com', url) or
-             re.search(r'https://.*.plentymarkets.com', url))):
-        logging.error("invalid URL, need: https://*.plentymarkets-cloud01.com "
-                      "or https://*.plentymarkets.com")
+    if not re.search(r'https://.*', url):
+        logging.error(f"Provided url parameter [{url}] is no valid https url.")
         return ''
 
     if route not in constants.VALID_ROUTES:

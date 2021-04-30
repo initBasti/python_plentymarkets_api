@@ -775,7 +775,7 @@ def test_build_endpoint() -> None:
          'route': '/rest/orders'},
         {'url': 'https://test.plentymarkets-cloud01.com',
          'route': '/rest/orders'},
-        {'url': 'https://invalid.com',
+        {'url': 'invalid.com',
          'route': '/rest/orders'},
         {'url': 'https://test.plentymarkets-cloud01.com',
          'route': '/rest/invalid'},
