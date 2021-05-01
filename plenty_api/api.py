@@ -273,7 +273,7 @@ class PlentyApi():
 
             if raw_response.status_code != 429:
                 break
-            logging.warn(
+            logging.warning(
                 "API:Request throttled, limit for subscription reached"
             )
             time.sleep(3)
@@ -623,7 +623,7 @@ class PlentyApi():
         if column in valid_columns:
             query = {'columns': column}
         else:
-            logging.warn(f"Invalid column argument removed: {column}")
+            logging.warning(f"Invalid column argument removed: {column}")
 
         # This request doesn't export in form of pages
         referrers = self.__plenty_api_request(method='get',
@@ -858,8 +858,8 @@ class PlentyApi():
                     target_name = element
                     target_id = target[element]
             else:
-                logging.warn(f"{element} is not a valid target "
-                             "for the image availability POST request.")
+                logging.warning(f"{element} is not a valid target for the "
+                                "image availability POST request.")
 
         if not target_name or not target_id:
             logging.error("Invalid target for availability configuration. "
