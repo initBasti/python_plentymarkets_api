@@ -1208,6 +1208,7 @@ class PlentyApi():
                                        variation_id: int,
                                        quantity: float,
                                        warehouse_id: int,
+                                       location_id: int = 0,
                                        batch: str = None,
                                        best_before_date: str = None) -> dict:
         """
@@ -1225,6 +1226,8 @@ class PlentyApi():
             variation_id[int]   -   Plentymarkets ID of the specific variation
             quantity    [float] -   Amount to be booked into the location
             warehouse_id[int]   -   Plentymarkets ID of the target warehouse
+            location_id [int]   -   Assigned ID for the storage location by
+                                    default 0 (standard location)
             batch       [str]   -   Batch number that describes a specific
                                     group of products that are created within a
                                     limited time window
@@ -1236,6 +1239,7 @@ class PlentyApi():
         """
         data = {
             "warehouseId": warehouse_id,
+            "storageLocationId": location_id,
             "deliveredAt": datetime.now(timezone.utc).strftime(
                 "%Y-%m-%dT%H:%M:%SZ"),
             "currency": "EUR",
@@ -1268,6 +1272,7 @@ class PlentyApi():
                                        variation_id: int,
                                        quantity: float,
                                        warehouse_id: int,
+                                       location_id: int = 0,
                                        batch: str = None,
                                        best_before_date: str = None):
         """
@@ -1285,6 +1290,8 @@ class PlentyApi():
             variation_id[int]   -   Plentymarkets ID of the specific variation
             quantity    [float] -   Amount to be booked into the location
             warehouse_id[int]   -   Plentymarkets ID of the target warehouse
+            location_id [int]   -   Assigned ID for the storage location by
+                                    default 0 (standard location)
             batch       [str]   -   Batch number that describes a specific
                                     group of products that are created within a
                                     limited time window
@@ -1296,6 +1303,7 @@ class PlentyApi():
         """
         data = {
             "warehouseId": warehouse_id,
+            "storageLocationId": location_id,
             "deliveredAt": datetime.now(timezone.utc).strftime(
                 "%Y-%m-%dT%H:%M:%SZ"),
             "currency": "EUR",
