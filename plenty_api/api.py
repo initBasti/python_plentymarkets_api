@@ -130,6 +130,16 @@ class PlentyApi():
             Reference:
             (https://developers.plentymarkets.com/rest-doc#/Item/get_rest_items_variations)
 
+        **plenty_api_get_stock**
+
+        **plenty_api_get_storagelocations**
+
+        **plenty_api_get_variation_stock_batches**
+
+        **plenty_api_get_variation_warehouses**
+
+        **plenty_api_get_contacts**
+
         POST REQUESTS
         **plenty_api_set_image_availability**
             Update the availability of an image for a marketplace, client
@@ -224,6 +234,9 @@ class PlentyApi():
             Reference:
             (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Order/put_rest_redistributions__orderId_)
 
+        **plenty_api_book_incoming_items**
+
+        **plenty_api_book_outgoing_items**
     """
 
     def __init__(self, base_url: str, use_keyring: bool = True,
@@ -476,7 +489,21 @@ class PlentyApi():
                                additional: list = None,
                                query: dict = {},
                                lang: str = ''):
+        """
+        Generic wrapper for GET routes that includes basic checks, repeated
+        requests and data type conversion.
 
+        Parameters:
+            domain      [str]   -   orders/items/...
+            path        [str]   -   Addition to the domain for a specific route
+            refine      [dict]  -   Apply filters to the request
+            additional  [list]  -   Additional arguments for the query
+            query       [dict]  -   Extra elements for the query
+            lang        [str]   -   Language for the export
+
+        Return:
+                        [JSON(Dict) / DataFrame] <= self.data_format
+        """
         query = utils.sanity_check_parameter(
             domain=domain, query=query, refine=refine,
             additional=additional,lang=lang)
@@ -779,7 +806,7 @@ class PlentyApi():
             lang        [str]   -   Provide the text within the data in one of
                                     the following languages:
 
-            developers.plentymarkets.com/rest-doc/gettingstarted#countries
+            (plenty documentation: https://rb.gy/r6koft)
 
         Return:
                         [JSON(Dict) / DataFrame] <= self.data_format
@@ -814,7 +841,7 @@ class PlentyApi():
                                     of the following languages:
                                     Example: 'de', 'en', etc.
 
-            developers.plentymarkets.com/rest-doc/gettingstarted#countries
+            (plenty documentation: https://rb.gy/r6koft)
 
         Return:
                         [JSON(Dict) / DataFrame] <= self.data_format
@@ -830,6 +857,17 @@ class PlentyApi():
     def plenty_api_get_stock(self,
                              refine: dict = None,
                              lang: str = ''):
+        """
+        Get stock data from PlentyMarkets.
+
+        Parameter:
+            refine      [dict]  -   Apply filters to the request
+                                    Example:
+                                    {'variationId': 2345}
+
+        Return:
+                        [JSON(Dict) / DataFrame] <= self.data_format
+        """
         return self.plenty_api_generic_get(domain='stockmanagement',
                                            refine=refine,
                                            lang=lang)
@@ -839,6 +877,22 @@ class PlentyApi():
                                         refine: dict = None,
                                         additional: list = None,
                                         lang: str = ''):
+        """
+        Get storage location data from PlentyMarkets.
+
+        Parameter:
+            warehouse_id[int]   -   Plentymarkets ID of the target warehouse
+            refine      [dict]  -   Apply filters to the request
+                                    Example:
+                                    {'variationId': 2345}
+            additional  [list]  -   Add additional elements to the response
+                                    data.
+                                    Example:
+                                    ['storageLocation']
+
+        Return:
+                        [JSON(Dict) / DataFrame] <= self.data_format
+        """
         return self.plenty_api_generic_get(
             domain='warehouses',
             path=f'/{warehouse_id}/stock/storageLocations',
@@ -847,6 +901,17 @@ class PlentyApi():
             lang=lang)
 
     def plenty_api_get_variation_stock_batches(self, variation_id: int):
+        """
+        Get all storage locations from all available warehouses for the given
+        variation.
+
+        Parameter:
+            variation_id[int]   -   Plentymarkets ID of the target variation
+
+        Return:
+                        [list]  -   list of storage locations ordered by the
+                                    `bestBeforeDate`
+        """
         # get all warehouses for this item
         refine = {'variationId': variation_id}
 
@@ -865,7 +930,18 @@ class PlentyApi():
 
     def plenty_api_get_variation_warehouses(self,
                                             item_id: int,
-                                            variation_id: int):
+                                            variation_id: int) -> list:
+        """
+        Get all a list of warehouses, where the given variation is stored.
+
+        Parameters:
+            item_id     [int]   -   Plentymarkets ID of the item
+                                    (variation container)
+            variation_id[int]   -   Plentymarkets ID of the specific variation
+
+        Return:
+                        [JSON(Dict) / DataFrame] <= self.data_format
+        """
         return self.plenty_api_generic_get(
             domain='item',
             path=f'/{item_id}/variations/{variation_id}/variation_warehouses')
@@ -874,6 +950,21 @@ class PlentyApi():
                                 refine: dict = None,
                                 additional: list = None,
                                 lang: str = ''):
+        """
+        List all contacts on the Plentymarkets system.
+
+        Parameter:
+            refine      [dict]  -   Apply filters to the request
+                                    Example:
+                                    {'email': 'a@posteo.net', 'name': 'Thomas'}
+            additional  [list]  -   Add additional elements to the response
+                                    data.
+                                    Example:
+                                    ['addresses']
+
+        Return:
+                        [JSON(Dict) / DataFrame] <= self.data_format
+        """
         return self.plenty_api_generic_get(
             domain='contact',
             refine=refine,
@@ -1269,7 +1360,31 @@ class PlentyApi():
                                        quantity: float,
                                        warehouseId: int,
                                        batch: str = None,
-                                       bestBeforeDate: str = None):
+                                       bestBeforeDate: str = None) -> dict:
+        """
+        Book a certain amount of stock of a specific variation into a location.
+
+        If no stock location is given, this will book the stock into the
+        standard location.
+        The difference to the `plenty_api_create_booking` method is that the
+        `plenty_api_create_booking` route needs existing transactions, while
+        this method performs the booking directly.
+
+        Parameters:
+            article_item_id[int]-   Plentymarkets ID of the item
+                                    (variation container)
+            variation_id[int]   -   Plentymarkets ID of the specific variation
+            quantity    [float] -   Amount to be booked into the location
+            warehouseId [int]   -   Plentymarkets ID of the target warehouse
+            batch       [str]   -   Batch number that describes a specific
+                                    group of products that are created within a
+                                    limited time window
+            bestBeforeDate[str] -   Date at which a product loses guarantees
+                                    for certain properties to be effective
+
+        Return:
+                        [dict]
+        """
         data = {
             "warehouseId": warehouseId,
             "deliveredAt": datetime.now(timezone.utc).strftime(
@@ -1306,6 +1421,30 @@ class PlentyApi():
                                        warehouseId: int,
                                        batch: str = None,
                                        bestBeforeDate: str = None):
+        """
+        Book a certain amount of stock of a specific variation from a location.
+
+        If no stock location is given, this will book the stock from the
+        standard location.
+        The difference to the `plenty_api_create_booking` method is that the
+        `plenty_api_create_booking` route needs existing transactions, while
+        this method performs the booking directly.
+
+        Parameters:
+            article_item_id[int]-   Plentymarkets ID of the item
+                                    (variation container)
+            variation_id[int]   -   Plentymarkets ID of the specific variation
+            quantity    [float] -   Amount to be booked into the location
+            warehouseId [int]   -   Plentymarkets ID of the target warehouse
+            batch       [str]   -   Batch number that describes a specific
+                                    group of products that are created within a
+                                    limited time window
+            bestBeforeDate[str] -   Date at which a product loses guarantees
+                                    for certain properties to be effective
+
+        Return:
+                        [dict]
+        """
         data = {
             "warehouseId": warehouseId,
             "deliveredAt": datetime.now(timezone.utc).strftime(

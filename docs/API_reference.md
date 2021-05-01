@@ -16,6 +16,13 @@
         * [get manufacturers](#get-manufacturers)
     + [Tax related data](#get-taxes-section)
         * [get vat id mappings](#get-vat-mappings)
+    + [Stock related data](#get-stock-section)
+        * [get stock](#get-stock)
+        * [get storage locations](#get-storage-locations)
+        * [get stock batches for a variation](#get-stock-batches)
+        * [get warehouses for a variation](#get-warehouses)
+    + [Contact data (CRM)](#get-contact-section)
+        * [get contact data](#get-contacts)
 - [POST-Requests](#post-requests)
     + [Item related data](#post-items-section)
         * [post image avaialability](#post-image-availability)
@@ -32,6 +39,9 @@
 - [PUT-Requests](#put-requests)
     + [Order related data](#put-order-section)
         * [update attributes of a redistribution](#update-redistribution)
+    + [Stock related data](#put-stock-section)
+        * [book incoming quanity](#book-incoming)
+        * [book outgoing quanity](#book-outgoing)
 
 ### LOGIN <a name='login'></a>
 
@@ -267,7 +277,7 @@ The 'dataframe' format transforms that data structure into a pandas DataFrame, w
 ---
 ---
 
-#### Tax data <a name='get-tax-section'></a>
+#### Tax data <a name='get-taxes-section'></a>
 
 ##### plenty_api_get_vat_id_mappings: <a name='get-vat-mappings'></a>
 
@@ -280,6 +290,101 @@ Create a mapping of all the different VAT configurations, which map to a country
 [*Output format*]:
 
 Return a dictionary with the country IDs as keys and the corresponding VAT configuration IDs + the TaxID as value.
+
+#### Stock data <a name='get-stock-section'></a>
+
+##### plenty_api_get_stock <a name='get-stock'></a>
+
+List stock of all warehouses.
+
+[Plentymarkets Developer documentation reference](https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/StockManagement/get_rest_stockmanagement_stock)
+
+[*Optional parameter*]:
+
+The **refine** field can be used to reduce the request by applying certain filters, valid values are:  
+variationId
+
+[*Output format*]:
+
+There are currently two supported output formats: 'json' and 'dataframe'.  
+The 'json' format simply returns the raw response, without page information and with multiple pages combined into a single data structure.  
+The 'dataframe' format transforms that data structure into a pandas DataFrame, which contains subparts in json, that can be split further by the user application.
+
+##### plenty_api_get_storagelocations <a name='get-storage-locations'></a>
+
+Get storage locations from the plentymarkets system.
+
+[Plentymarkets Developer documentation reference](https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/StockManagement/get_rest_stockmanagement_warehouses__warehouseId__stock_storageLocations)
+
+[*Required parameter*]:
+
+This method requires the **warehouse_id** parameter, which contains the target warehouse ID assigned by Plentymarkets. It pulls all storage locations from that warehouse.
+
+[*Optional parameter*]:
+
+The **refine** field can be used to reduce the request by applying certain filters, valid values are:  
+variationId, storageLocationId
+
+Use the **additional** field to add more values to the response, valid values are:  
+storageLocation
+
+[*Output format*]:
+
+There are currently two supported output formats: 'json' and 'dataframe'.  
+The 'json' format simply returns the raw response, without page information and with multiple pages combined into a single data structure.  
+The 'dataframe' format transforms that data structure into a pandas DataFrame, which contains subparts in json, that can be split further by the user application.
+
+##### plenty_api_get_variation_stock_batches <a name='get-stock-batches'></a>
+
+Get all storage locations that have stock of the given variation.
+
+The method makes multiple API calls, it call `plenty_api_get_stock` once and `plenty_api_get_storagelocations` for every warehouse, that contains stock of the given variation.
+
+[*Required parameter*]:
+
+The only required parameter is the **variation_id**, which refers to ID assigned by Plentymarkets for the target variation.
+
+[*Output format*]:
+
+Returns a list of storage locations (dictionaries).
+
+##### plenty_api_get_variation_warehouses <a name='get-warehouses'></a>
+
+Get basic information about all warehouses, where the target variation is stored.
+
+[Plentymarkets Developer documentation reference](https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Item/get_rest_items__id__variations__variationId__variation_warehouses)
+
+[*Required parameter*]:
+
+The request needs the **item_id** parameter as well as the **variation_id** variable, to find the correct warehouses for the variation. The **item_id** parameter refers to the ID assigned by Plentymarkets to the container of the variation, while **variation_id** contains the Plentymarkets assigned ID of the specific variation.
+
+[*Output format*]:
+
+There are currently two supported output formats: 'json' and 'dataframe'.  
+The 'json' format simply returns the raw response, without page information and with multiple pages combined into a single data structure.  
+The 'dataframe' format transforms that data structure into a pandas DataFrame, which contains subparts in json, that can be split further by the user application.
+
+#### Contact data (CRM) <a name='get-contact-section'></a>
+
+##### plenty_api_get_contacts <a name='get-contacts'></a>
+
+Pull contact data from Plentymarkets.
+
+[Plentymarkets Developer documentation reference](https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Account/get_rest_accounts_contacts)
+
+[*Optional parameter*]:
+
+The **refine** field can be used to reduce the request by applying certain filters, valid values are:  
+fullText, contactEmail, email, postalCode, plentyId, externalId, number, typeId, rating, newsletterAllowanceAfter, newsletterAllowanceBefore, newsletterAllowance, contactId, contactAddress, countryId, userId, referrerId, name, nameOrId, town, privatePhone, billingAddressId, deliveryAddressId, tagIds
+
+Use the **additional** field to add more values to the response, valid values are:  
+addresses, accounts, options, orderSummary, primaryBillingAddress, contactOrders
+
+[*Output format*]:
+
+There are currently two supported output formats: 'json' and 'dataframe'.  
+The 'json' format simply returns the raw response, without page information and with multiple pages combined into a single data structure.  
+The 'dataframe' format transforms that data structure into a pandas DataFrame, which contains subparts in json, that can be split further by the user application.
 
 ### POST requests: <a name='post-requests'></a>
 
@@ -680,3 +785,49 @@ Please refer to the [Plentymarkets Dev documentation: REST API PUT redistributio
 
 Return a POST request JSON response, if one of the requests fails return the error message.
 If the **order_id** parameter is not filled the method will return: `{'error': 'missing_parameter'}`.
+
+#### plenty_api_book_incoming_items <a name=book-incoming></a>
+
+Book a certain amount of stock of a specific variation into a location.
+
+[Plentymarkets Developer documentation reference](https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Item/put_rest_items__id__variations__variationId__stock_bookIncomingItems)
+
+[*Required parameter*]:
+
+The **article_item_id**, **variation_id**, and **warehouse_id** parameters are required to book the stock for the correct variation and the correct warehouse. The **article_item_id** parameter contains the Plentymarkets assigned ID of the container of the variation. **variation_id** describes the assigned ID for the specific variation to book stock for and **warehouse_id** contains the assigned ID for the warehouse, that contains the target location, which in case of no given location ID points to the standard location (ID 0) of the warehouse.
+The **quantity** field contains the amount of stock to book into the target location for the given variation, it's data type is float and it has to contain a non negative value.
+
+[*Optional parameter*]:
+
+Optionally, it is possible to only book in stock for a given **batch** and **bestBeforeDate**.
+The dates are accepted in the following formats:
+- YEAR-MONTH-DAY                                    (2020-09-16)        [ISO 8601 date format]
+- YEAR-MONTH-DAYTHOUR:MINUTE                        (2020-09-16T08:00)
+- YEAR-MONTH-DAYTHOUR:MINUTE:SECOND+UTC-OFFSET      (2020-09-16T08:00)  [W3C date format]
+
+[*Output format*]:
+
+Return a POST request JSON response, if one of the requests fails return the error message.
+
+#### plenty_api_book_outgoing_items <a name=book-outgoing></a>
+
+Book a certain amount of stock of a specific variation from a location.
+
+[Plentymarkets Developer documentation reference](https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Item/put_rest_items__id__variations__variationId__stock_bookOutgoingItems)
+
+[*Required parameter*]:
+
+The **article_item_id**, **variation_id**, and **warehouse_id** parameters are required to book the stock from the correct variation and the correct warehouse. The **article_item_id** parameter contains the Plentymarkets assigned ID of the container of the variation. **variation_id** describes the assigned ID for the specific variation to book stock for and **warehouse_id** contains the assigned ID for the warehouse, that contains the target location, which in case of no given location ID points to the standard location (ID 0) of the warehouse.
+The **quantity** field contains the amount of stock to book from the target location for the given variation, it's data type is float and it has to contain a negative value.
+
+[*Optional parameter*]:
+
+Optionally, it is possible to only book stock from a given **batch** and **bestBeforeDate**.
+The dates are accepted in the following formats:
+- YEAR-MONTH-DAY                                    (2020-09-16)        [ISO 8601 date format]
+- YEAR-MONTH-DAYTHOUR:MINUTE                        (2020-09-16T08:00)
+- YEAR-MONTH-DAYTHOUR:MINUTE:SECOND+UTC-OFFSET      (2020-09-16T08:00)  [W3C date format]
+
+[*Output format*]:
+
+Return a POST request JSON response, if one of the requests fails return the error message.
