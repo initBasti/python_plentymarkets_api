@@ -710,9 +710,7 @@ class PlentyApi():
                                              query=query,
                                              lang=lang)
 
-    def plenty_api_get_stock(self,
-                             refine: dict = None,
-                             lang: str = ''):
+    def plenty_api_get_stock(self, refine: dict = None):
         """
         Get stock data from PlentyMarkets.
 
@@ -725,14 +723,12 @@ class PlentyApi():
                         [JSON(Dict) / DataFrame] <= self.data_format
         """
         return self.__plenty_api_generic_get(domain='stockmanagement',
-                                             refine=refine,
-                                             lang=lang)
+                                             refine=refine)
 
     def plenty_api_get_storagelocations(self,
                                         warehouse_id: int,
                                         refine: dict = None,
-                                        additional: list = None,
-                                        lang: str = ''):
+                                        additional: list = None):
         """
         Get storage location data from PlentyMarkets.
 
@@ -753,8 +749,7 @@ class PlentyApi():
             domain='warehouses',
             path=f'/{warehouse_id}/stock/storageLocations',
             refine=refine,
-            additional=additional,
-            lang=lang)
+            additional=additional)
 
     def plenty_api_get_variation_stock_batches(self, variation_id: int):
         """
@@ -804,8 +799,7 @@ class PlentyApi():
 
     def plenty_api_get_contacts(self,
                                 refine: dict = None,
-                                additional: list = None,
-                                lang: str = ''):
+                                additional: list = None):
         """
         List all contacts on the Plentymarkets system.
 
@@ -824,8 +818,7 @@ class PlentyApi():
         return self.__plenty_api_generic_get(
             domain='contact',
             refine=refine,
-            additional=additional,
-            lang=lang)
+            additional=additional)
 
 # POST REQUESTS
 
