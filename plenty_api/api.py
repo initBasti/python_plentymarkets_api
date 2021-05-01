@@ -1214,9 +1214,9 @@ class PlentyApi():
                                        item_id: int,
                                        variation_id: int,
                                        quantity: float,
-                                       warehouseId: int,
+                                       warehouse_id: int,
                                        batch: str = None,
-                                       bestBeforeDate: str = None) -> dict:
+                                       best_before_date: str = None) -> dict:
         """
         Book a certain amount of stock of a specific variation into a location.
 
@@ -1231,18 +1231,18 @@ class PlentyApi():
                                     (variation container)
             variation_id[int]   -   Plentymarkets ID of the specific variation
             quantity    [float] -   Amount to be booked into the location
-            warehouseId [int]   -   Plentymarkets ID of the target warehouse
+            warehouse_id[int]   -   Plentymarkets ID of the target warehouse
             batch       [str]   -   Batch number that describes a specific
                                     group of products that are created within a
                                     limited time window
-            bestBeforeDate[str] -   Date at which a product loses guarantees
+            best_before_date[str] -   Date at which a product loses guarantees
                                     for certain properties to be effective
 
         Return:
                         [dict]
         """
         data = {
-            "warehouseId": warehouseId,
+            "warehouseId": warehouse_id,
             "deliveredAt": datetime.now(timezone.utc).strftime(
                 "%Y-%m-%dT%H:%M:%SZ"),
             "currency": "EUR",
@@ -1252,10 +1252,10 @@ class PlentyApi():
 
         if batch:
             data.update(batch=batch)
-        if bestBeforeDate:
-            w3c_date = utils.parse_date(bestBeforeDate)
+        if best_before_date:
+            w3c_date = utils.parse_date(best_before_date)
             if w3c_date:
-                data.update(bestBeforeDate=w3c_date)
+                data.update(best_before_date=w3c_date)
 
         path = str(f"/{item_id}/variations/{variation_id}/stock/"
                    "bookIncomingItems")
@@ -1274,9 +1274,9 @@ class PlentyApi():
                                        item_id: int,
                                        variation_id: int,
                                        quantity: float,
-                                       warehouseId: int,
+                                       warehouse_id: int,
                                        batch: str = None,
-                                       bestBeforeDate: str = None):
+                                       best_before_date: str = None):
         """
         Book a certain amount of stock of a specific variation from a location.
 
@@ -1291,18 +1291,18 @@ class PlentyApi():
                                     (variation container)
             variation_id[int]   -   Plentymarkets ID of the specific variation
             quantity    [float] -   Amount to be booked into the location
-            warehouseId [int]   -   Plentymarkets ID of the target warehouse
+            warehouse_id[int]   -   Plentymarkets ID of the target warehouse
             batch       [str]   -   Batch number that describes a specific
                                     group of products that are created within a
                                     limited time window
-            bestBeforeDate[str] -   Date at which a product loses guarantees
+            best_before_date[str] -   Date at which a product loses guarantees
                                     for certain properties to be effective
 
         Return:
                         [dict]
         """
         data = {
-            "warehouseId": warehouseId,
+            "warehouseId": warehouse_id,
             "deliveredAt": datetime.now(timezone.utc).strftime(
                 "%Y-%m-%dT%H:%M:%SZ"),
             "currency": "EUR",
@@ -1312,10 +1312,10 @@ class PlentyApi():
 
         if batch:
             data.update(batch=batch)
-        if bestBeforeDate:
-            w3c_date = utils.parse_date(bestBeforeDate)
+        if best_before_date:
+            w3c_date = utils.parse_date(best_before_date)
             if w3c_date:
-                data.update(bestBeforeDate=w3c_date)
+                data.update(best_before_date=w3c_date)
 
         path = str(f"/{item_id}/variations/{variation_id}/stock/"
                    "bookOutgoingItems")
