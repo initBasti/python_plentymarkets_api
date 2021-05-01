@@ -1211,7 +1211,7 @@ class PlentyApi():
         return response
 
     def plenty_api_book_incoming_items(self,
-                                       article_item_id: int,
+                                       item_id: int,
                                        variation_id: int,
                                        quantity: float,
                                        warehouseId: int,
@@ -1227,7 +1227,7 @@ class PlentyApi():
         this method performs the booking directly.
 
         Parameters:
-            article_item_id[int]-   Plentymarkets ID of the item
+            item_id     [int]   -   Plentymarkets ID of the item
                                     (variation container)
             variation_id[int]   -   Plentymarkets ID of the specific variation
             quantity    [float] -   Amount to be booked into the location
@@ -1257,7 +1257,7 @@ class PlentyApi():
             if w3c_date:
                 data.update(bestBeforeDate=w3c_date)
 
-        path = str(f"/{article_item_id}/variations/{variation_id}/stock/"
+        path = str(f"/{item_id}/variations/{variation_id}/stock/"
                    "bookIncomingItems")
 
         response = self.__plenty_api_request(method="put",
@@ -1271,7 +1271,7 @@ class PlentyApi():
         return response
 
     def plenty_api_book_outgoing_items(self,
-                                       article_item_id: int,
+                                       item_id: int,
                                        variation_id: int,
                                        quantity: float,
                                        warehouseId: int,
@@ -1287,7 +1287,7 @@ class PlentyApi():
         this method performs the booking directly.
 
         Parameters:
-            article_item_id[int]-   Plentymarkets ID of the item
+            item_id     [int]   -   Plentymarkets ID of the item
                                     (variation container)
             variation_id[int]   -   Plentymarkets ID of the specific variation
             quantity    [float] -   Amount to be booked into the location
@@ -1317,7 +1317,7 @@ class PlentyApi():
             if w3c_date:
                 data.update(bestBeforeDate=w3c_date)
 
-        path = str(f"/{article_item_id}/variations/{variation_id}/stock/"
+        path = str(f"/{item_id}/variations/{variation_id}/stock/"
                    "bookOutgoingItems")
 
         response = self.__plenty_api_request(method="put",
