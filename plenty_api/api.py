@@ -338,13 +338,13 @@ class PlentyApi():
 
         return entries
 
-    def plenty_api_generic_get(self,
-                               domain: str = '',
-                               path: str = '',
-                               refine: dict = None,
-                               additional: list = None,
-                               query: dict = {},
-                               lang: str = ''):
+    def __plenty_api_generic_get(self,
+                                 domain: str = '',
+                                 path: str = '',
+                                 refine: dict = None,
+                                 additional: list = None,
+                                 query: dict = {},
+                                 lang: str = ''):
         """
         Generic wrapper for GET routes that includes basic checks, repeated
         requests and data type conversion.
@@ -591,10 +591,10 @@ class PlentyApi():
         query = {}
         if last_update:
             query.update({'updatedAt': last_update})
-        return self.plenty_api_generic_get(domain='manufacturer',
-                                           query=query,
-                                           refine=refine,
-                                           additional=additional)
+        return self.__plenty_api_generic_get(domain='manufacturer',
+                                             query=query,
+                                             refine=refine,
+                                             additional=additional)
 
     def plenty_api_get_referrers(self,
                                  column: str = ''):
@@ -672,11 +672,11 @@ class PlentyApi():
             query.update({'updatedBetween': utils.date_to_timestamp(
                          date=last_update)})
 
-        return self.plenty_api_generic_get(domain='item',
-                                           query=query,
-                                           refine=refine,
-                                           additional=additional,
-                                           lang=lang)
+        return self.__plenty_api_generic_get(domain='item',
+                                             query=query,
+                                             refine=refine,
+                                             additional=additional,
+                                             lang=lang)
 
     def plenty_api_get_variations(self,
                                   refine: dict = None,
@@ -704,11 +704,11 @@ class PlentyApi():
         """
         query = {}
 
-        return self.plenty_api_generic_get(domain='variation',
-                                           refine=refine,
-                                           additional=additional,
-                                           query=query,
-                                           lang=lang)
+        return self.__plenty_api_generic_get(domain='variation',
+                                             refine=refine,
+                                             additional=additional,
+                                             query=query,
+                                             lang=lang)
 
     def plenty_api_get_stock(self,
                              refine: dict = None,
@@ -724,9 +724,9 @@ class PlentyApi():
         Return:
                         [JSON(Dict) / DataFrame] <= self.data_format
         """
-        return self.plenty_api_generic_get(domain='stockmanagement',
-                                           refine=refine,
-                                           lang=lang)
+        return self.__plenty_api_generic_get(domain='stockmanagement',
+                                             refine=refine,
+                                             lang=lang)
 
     def plenty_api_get_storagelocations(self,
                                         warehouse_id: int,
@@ -749,7 +749,7 @@ class PlentyApi():
         Return:
                         [JSON(Dict) / DataFrame] <= self.data_format
         """
-        return self.plenty_api_generic_get(
+        return self.__plenty_api_generic_get(
             domain='warehouses',
             path=f'/{warehouse_id}/stock/storageLocations',
             refine=refine,
@@ -798,7 +798,7 @@ class PlentyApi():
         Return:
                         [JSON(Dict) / DataFrame] <= self.data_format
         """
-        return self.plenty_api_generic_get(
+        return self.__plenty_api_generic_get(
             domain='item',
             path=f'/{item_id}/variations/{variation_id}/variation_warehouses')
 
@@ -821,7 +821,7 @@ class PlentyApi():
         Return:
                         [JSON(Dict) / DataFrame] <= self.data_format
         """
-        return self.plenty_api_generic_get(
+        return self.__plenty_api_generic_get(
             domain='contact',
             refine=refine,
             additional=additional,
