@@ -97,14 +97,12 @@ VALID_REFINE_KEYS = {
     ],
     'contact': [
         'fullText', 'contactEmail', 'email', 'postalCode', 'plentyId',
-        'externalId', 'number', 'typeId', 'rating', 'createdAtBefore',
-        'createdAtAfter', 'updatedAtBefore', 'updatedAtAfter',
-        'lastOrderAtBefore', 'lastOrderAtAfter', 'with',
-        'newsletterAllowanceAfter', 'newsletterAllowanceBefore',
-        'newsletterAllowance', 'contactId', 'contactAddress', 'countryId',
-        'userId', 'referrerId', 'name', 'nameOrId', 'town', 'privatePhone',
-        'billingAddressId', 'deliveryAddressId', 'tagIds'
-    ],
+        'externalId', 'number', 'typeId', 'rating', 'newsletterAllowanceAfter',
+        'newsletterAllowanceBefore', 'newsletterAllowance', 'contactId',
+        'contactAddress', 'countryId', 'userId', 'referrerId', 'name',
+        'nameOrId', 'town', 'privatePhone', 'billingAddressId',
+        'deliveryAddressId', 'tagIds'
+    ]
 }
 
 # Valid additional argument values for GET requests, which are used to
@@ -137,6 +135,10 @@ VALID_ADDITIONAL_VALUES = {
     ],
     'attribute': [
         'names', 'values', 'maps'
+    ],
+    'contact': [
+        'addresses', 'accounts', 'options', 'orderSummary',
+        'primaryBillingAddress', 'contactOrders'
     ]
 }
 
