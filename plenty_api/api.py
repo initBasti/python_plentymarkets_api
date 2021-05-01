@@ -40,95 +40,20 @@ class PlentyApi():
     Public methods:
         GET REQUESTS
         **plenty_api_get_orders_by_date**
-            Get all orders of all types within a specified range of two
-            dates.
-            [start]         -   start date
-            [end]           -   end date
-            [date_type]     -   {Creation, Change, Payment, Delivery}
-            [additional]    -   List of additional arguments **
-            [refine]        -   Dictionary of filter query names and values
 
-            Accepted date formats:
-                {Y-m-d | Y-m-dTH:M | Y-m-dTH:M:S+UTC-OFFSET}
-                Examples:
-                    2020-09-16              (get your local timezone)
-                    2020-09-16T08:00        (get your local timezone)
-                    2020-09-16T08:00Z       (UTC timezone)
-                    2020-09-16T08:00+02:00  (CEST timezone)
-
-            ** Reference of query arguments
-            (developers.plentymarkets.com/rest-doc#/Order/get_rest_orders)
-        ___
         **plenty_api_get_attributes**
-            List all the attributes from PlentyMarkets, optionally link
-            variation IDs to the response, that are connected to the
-            attribute value
-            [additional]    -   Add additional elements to the response.
-            [last_change]   -   filter out attributes were the last
-                                change is older than the specified date
-            [variation_map] -   Add a list of connected variations
 
-            Reference:
-            (https://developers.plentymarkets.com/rest-doc#/Item/get_rest_items_attributes)
-        ___
         **plenty_api_get_vat_id_mappings**
-            Get a mapping of VAT configuration IDs to country IDs,
-            together with the TaxID for each country.
-            [subset]        -   limit the data to the given country IDs
 
-            Reference:
-            (developers.plentymarkets.com/rest-doc#/Accounting/get_rest_vat)
-        ___
         **plenty_api_get_price_configuration**
-            Fetch the set of price configuration, that were setup on
-            PlentyMarkets.
-            [minimal]       -   reduce the response body to necessary info
-            [last_change]   -   filter out configuration were the last
-                                change is older than the specified date
 
-            Reference:
-            (https://developers.plentymarkets.com/rest-doc#/Item/get_rest_items_sales_prices)
-        ___
         **plenty_api_get_manufacturers**
-            Fetch a list of manufacturer (brands) in PlentyMarkets.
-            [refine]        -   Apply filters to the request
-            [additional]    -   Add additional elements to the response.
-            [last_update]   -   Date of the last update
 
-            Reference:
-            (https://developers.plentymarkets.com/rest-doc#/Item/get_rest_items_manufacturers)
-        ---
         **plenty_api_get_referrers**
-            Fetch a list of referrers from PlentyMarkets.
 
-            [column]        -   Get only a specific column
-
-            Reference:
-            (https://developers.plentymarkets.com/rest-doc#/Order/get_rest_orders_referrers)
-            * WARNING the parameter description is just wrong, the columns
-                attribute actually only takes a single 'string', instead of
-                an integer and if you pass a list it only uses the last index*
-        ___
         **plenty_api_get_items**
-            Generic interface to item data from Plentymarkets with little
-            abstraction.
-            [refine]        -   Apply filters to the request
-            [additional]    -   Add additional elements to the response.
-            [last_update]   -   Date of the last update
-            [lang]          -   Provide the text within a specific language
 
-            Reference:
-            (https://developers.plentymarkets.com/rest-doc#/Item/get_rest_items)
-
-        ___
         **plenty_api_get_variations**
-            Generic interface to variation data from PlentyMarkets
-            [refine]        -   Apply filters to the request
-            [additional]    -   Add additional elements to the response.
-            [lang]          -   Provide the text within a specific language
-
-            Reference:
-            (https://developers.plentymarkets.com/rest-doc#/Item/get_rest_items_variations)
 
         **plenty_api_get_stock**
 
@@ -142,97 +67,28 @@ class PlentyApi():
 
         POST REQUESTS
         **plenty_api_set_image_availability**
-            Update the availability of an image for a marketplace, client
-            or listing on PlentyMarkets.
-            [item_id]       -   item ID, where the image is found
-            [image_id]      -   ID of the specific image
-            [target]        -   ID of the target
-                                Example:
-                                    {'marketplace': 102}
-
-            Reference:
-            (https://developers.plentymarkets.com/rest-doc#/Item/post_rest_items__id__images__imageId__availabilities)
 
         **plenty_api_create_items**
-            Create items on Plentymarkets
-            [json]          -   list of json objects or a single json
-
-            Reference:
-            (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Item/post_rest_items)
 
         **plenty_api_create_variations**
-            Create a variation for a specific item on Plentymarkets.
-            [item_id]       -   ID of the item to create variations for
-            [json]          -   list of json objects or a single json
-
-            Reference:
-            (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Item/post_rest_items__itemId__variations)
 
         **plenty_api_create_attribute**
-            Create a new attribute on Plentymarkets.
-            [json]          -   single json object
-
-            Reference:
-            (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Item/post_rest_items_attributes)
 
         **plenty_api_create_attribute_names**
-            Create one or more attribute names for a specific attribute.
-            [attribute_id]  -   ID of the attribute to create names for
-            [json]          -   list of json objects or a single json
-
-            Reference:
-            (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Item/post_rest_items_attributes__attributeId__names)
 
         **plenty_api_create_attribute_values**
-            Create one or more attribute values for a specific attribute.
-            [attribute_id]  -   ID of the attribute to create values for
-            [json]          -   list of json objects or a single json
-
-            Reference:
-            (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Item/post_rest_items_attributes__attributeId__values)
 
         **plenty_api_create_attribute_value_names**
-            Create one or more attribute value names for an attribute value.
-            [value_id]      -   ID of the attribute value to create names for
-            [json]          -   list of json objects or a single json
-
-            Reference:
-            (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Item/post_rest_items_attribute_values__valueId__names)
 
         **plenty_api_create_redistribution**
-            Create a new redistribution between two warehouses
-            [template]      -   template for the creation of a redistribution
-            [book_out]      -   perform automatic booking of transactions?
-
-            Reference:
-            (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Order/post_rest_redistributions)
 
         **plenty_api_create_transaction**
-            Create a single incoming or outgoing transaction for an order item.
-            [order_item_id]-ID of the order item (variation) of an order
-            [json]          -   Single JSON object describing the transaction
-
-            Reference:
-            (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Order/post_rest_orders_items__orderItemId__transactions)
 
         **plenty_api_create_booking**
-            Book in/out all pending transaction of an order.
-            [order_id]      -   ID of the order on Plentymarkets
-            [delivery_note] -   Identifier of the document to be connected to
-                                the booking.
-
-            Reference:
-            (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Order/post_rest_orders__orderId__booking)
 
         PUT REQUESTS
 
         **plenty_api_update_redistribution**
-            Change certain attributes of an redistribution.
-            [order_id]      -   ID of the target redistribution order
-            [json]          -   single JSON object describing the update
-
-            Reference:
-            (https://developers.plentymarkets.com/en-gb/plentymarkets-rest-api/index.html#/Order/put_rest_redistributions__orderId_)
 
         **plenty_api_book_incoming_items**
 
