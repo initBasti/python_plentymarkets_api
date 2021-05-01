@@ -2,7 +2,7 @@
 Python-PlentyMarkets-API-interface
 Interface to the resources from PlentyMarkets(https://www.plentymarkets.eu)
 
-Copyright (C) 2020  Sebastian Fricke, Panasiam
+Copyright (C) 2021  Sebastian Fricke, Panasiam
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
