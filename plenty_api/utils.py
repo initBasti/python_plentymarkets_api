@@ -214,6 +214,9 @@ def sanity_check_parameter(domain: str,
     Return:
                         [dict]   -   updated query
     """
+    if not query:
+        query = {}
+
     if domain not in constants.VALID_DOMAINS:
         logging.error(f"Invalid domain name {domain}")
         return {}
