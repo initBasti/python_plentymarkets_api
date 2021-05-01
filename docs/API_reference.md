@@ -805,6 +805,8 @@ The dates are accepted in the following formats:
 - YEAR-MONTH-DAYTHOUR:MINUTE                        (2020-09-16T08:00)
 - YEAR-MONTH-DAYTHOUR:MINUTE:SECOND+UTC-OFFSET      (2020-09-16T08:00)  [W3C date format]
 
+By specifying a storage location ID within **location_id**, you can target a specific location instead of the standard location (ID 0).
+
 [*Output format*]:
 
 Return a POST request JSON response, if one of the requests fails return the error message.
@@ -827,6 +829,8 @@ The dates are accepted in the following formats:
 - YEAR-MONTH-DAY                                    (2020-09-16)        [ISO 8601 date format]
 - YEAR-MONTH-DAYTHOUR:MINUTE                        (2020-09-16T08:00)
 - YEAR-MONTH-DAYTHOUR:MINUTE:SECOND+UTC-OFFSET      (2020-09-16T08:00)  [W3C date format]
+
+By specifying a storage location ID within **location_id**, you can target a specific location instead of the standard location (ID 0).
 
 [*Output format*]:
 
