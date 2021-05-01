@@ -80,7 +80,7 @@ VALID_REFINE_KEYS = {
         'statusTo', 'hasDocument', 'hasDocumentNumber', 'parentOrderId'
     ],
     'item': [
-        'name', 'manfacturerId', 'id', 'flagOne', 'flagTwo'
+        'name', 'manufacturerId', 'id', 'flagOne', 'flagTwo'
     ],
     'variation': [
         'id', 'itemId', 'flagOne', 'flagTwo', 'categoryId', 'isMain',
