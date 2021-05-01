@@ -343,7 +343,7 @@ class PlentyApi():
                                  path: str = '',
                                  refine: dict = None,
                                  additional: list = None,
-                                 query: dict = {},
+                                 query: dict = None,
                                  lang: str = ''):
         """
         Generic wrapper for GET routes that includes basic checks, repeated
