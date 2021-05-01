@@ -93,7 +93,7 @@ VALID_REFINE_KEYS = {
         'variationId',
     ],
     'warehouses': [
-        'variationId',
+        'variationId', 'storageLocationId'
     ],
     'contact': [
         'fullText', 'contactEmail', 'email', 'postalCode', 'plentyId',
@@ -139,6 +139,9 @@ VALID_ADDITIONAL_VALUES = {
     'contact': [
         'addresses', 'accounts', 'options', 'orderSummary',
         'primaryBillingAddress', 'contactOrders'
+    ],
+    'warehouses': [
+        'storageLocation'
     ]
 }
 
