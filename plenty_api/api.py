@@ -1252,7 +1252,7 @@ class PlentyApi():
         if best_before_date:
             w3c_date = utils.parse_date(best_before_date)
             if w3c_date:
-                data.update(best_before_date=w3c_date)
+                data.update(bestBeforeDate=w3c_date)
 
         path = str(f"/{item_id}/variations/{variation_id}/stock/"
                    "bookIncomingItems")
@@ -1316,7 +1316,7 @@ class PlentyApi():
         if best_before_date:
             w3c_date = utils.parse_date(best_before_date)
             if w3c_date:
-                data.update(best_before_date=w3c_date)
+                data.update(bestBeforeDate=w3c_date)
 
         path = str(f"/{item_id}/variations/{variation_id}/stock/"
                    "bookOutgoingItems")
