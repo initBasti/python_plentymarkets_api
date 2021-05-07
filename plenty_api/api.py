@@ -1237,6 +1237,10 @@ class PlentyApi():
         Return:
                         [dict]
         """
+        # The REST API only accepts positive quantities for incoming bookings
+        if quantity <= 0:
+            return {'error': 'invalid_quantity'}
+
         data = {
             "warehouseId": warehouse_id,
             "storageLocationId": location_id,
@@ -1301,6 +1305,10 @@ class PlentyApi():
         Return:
                         [dict]
         """
+        # The REST API only accepts negative quantities for outgoing bookings
+        if quantity >= 0:
+            return {'error': 'invalid_quantity'}
+
         data = {
             "warehouseId": warehouse_id,
             "storageLocationId": location_id,

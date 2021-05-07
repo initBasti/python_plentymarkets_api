@@ -795,7 +795,7 @@ Book a certain amount of stock of a specific variation into a location.
 [*Required parameter*]:
 
 The **item_id**, **variation_id**, and **warehouse_id** parameters are required to book the stock for the correct variation and the correct warehouse. The **item_id** parameter contains the Plentymarkets assigned ID of the container of the variation. **variation_id** describes the assigned ID for the specific variation to book stock for and **warehouse_id** contains the assigned ID for the warehouse, that contains the target location, which in case of no given location ID points to the standard location (ID 0) of the warehouse.
-The **quantity** field contains the amount of stock to book into the target location for the given variation, it's data type is float and it has to contain a non negative value.
+The **quantity** field contains the amount of stock to book into the target location for the given variation, it's data type is float and it has to contain a positive value.
 
 [*Optional parameter*]:
 
