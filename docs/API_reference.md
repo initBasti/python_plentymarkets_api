@@ -42,6 +42,7 @@
     + [Stock related data](#put-stock-section)
         * [book incoming quanity](#book-incoming)
         * [book outgoing quanity](#book-outgoing)
+- [Extra features](#extras)
 
 ### LOGIN <a name='login'></a>
 
@@ -835,3 +836,17 @@ By specifying a storage location ID within **location_id**, you can target a spe
 [*Output format*]:
 
 Return a POST request JSON response, if one of the requests fails return the error message.
+
+### Extra features <a name=extras></a>
+
+**Activating a progress bar for a CLI application**, you can activate a progress bar for requests with multiple pages, by setting the `cli_progress_bar` class attribute to `True` at any point before making the request. You can deactivate it at any point as well, by setting it to `False` again.  
+
+Example
+```python
+import plenty_api
+
+plenty = plenty_api.PlentyApi(base_url='...')
+plenty.cli_progress_bar = True
+variations = plenty.plenty_api_get_variations()
+plenty.cli_progress_bar = False
+```

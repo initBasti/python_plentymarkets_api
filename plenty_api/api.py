@@ -26,6 +26,7 @@ import requests
 import simplejson
 import gnupg
 import logging
+import tqdm
 from datetime import datetime, timezone
 
 import plenty_api.keyring
@@ -131,6 +132,8 @@ class PlentyApi():
             persistent=use_keyring, user=username, pw=password, use_gpg=use_gpg)
         if not logged_in:
             raise RuntimeError('Authentication failed')
+
+        self.cli_progress_bar = False
 
     def __authenticate(self, persistent: bool, user: str, pw: str,
                        use_gpg: bool) -> bool:
@@ -321,6 +324,12 @@ class PlentyApi():
 
         entries = response['entries']
 
+        if self.cli_progress_bar:
+            pbar = None
+            if not response['isLastPage']:
+                pbar = tqdm.tqdm(desc=f'Plentymarkets {domain} request',
+                                total=response['lastPageNumber'])
+
         while not response['isLastPage']:
             query.update({'page': response['page'] + 1})
             response = self.__plenty_api_request(method='get',
@@ -335,6 +344,14 @@ class PlentyApi():
                 return response
 
             entries += response['entries']
+
+            if self.cli_progress_bar:
+                if pbar:
+                    pbar.update(1)
+
+        if self.cli_progress_bar:
+            if pbar:
+                pbar.close()
 
         return entries
 

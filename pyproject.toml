@@ -32,6 +32,7 @@ simplejson = "^3.17.2"
 pandas = "^1.1.2"
 requests = "^2.24.0"
 python-gnupg = "^0.4.6"
+tqdm = "^4.60.0"
 
 [tool.poetry.dev-dependencies]
 
